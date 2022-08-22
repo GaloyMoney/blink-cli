@@ -1,8 +1,7 @@
 use anyhow::*;
 use graphql_client::{reqwest::post_graphql_blocking as post_graphql, GraphQLQuery};
-use reqwest::blocking::Client;
 
-use self::query_globals::QueryGlobalsGlobals;
+pub use self::query_globals::QueryGlobalsGlobals;
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -12,12 +11,10 @@ use self::query_globals::QueryGlobalsGlobals;
 )]
 struct QueryGlobals;
 
-pub fn globals(api_url: &String) -> Result<QueryGlobalsGlobals, anyhow::Error> {
-    let client = Client::builder().build().expect("error creating client");
-
+pub fn globals(client: super::ClientWrapper) -> Result<QueryGlobalsGlobals, anyhow::Error> {
     let variables = query_globals::Variables;
 
-    let response_body = post_graphql::<QueryGlobals, _>(&client, api_url, variables)
+    let response_body = post_graphql::<QueryGlobals, _>(&client.client, client.api_url, variables)
         .expect("issue fetching response");
 
     let response_data = response_body.data.expect("bad response from server");
