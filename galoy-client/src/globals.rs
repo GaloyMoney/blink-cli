@@ -1,7 +1,6 @@
 use anyhow::*;
 use graphql_client::{reqwest::post_graphql_blocking as post_graphql, GraphQLQuery};
 use reqwest::blocking::Client;
-// use serde::Serialize;
 
 use self::query_globals::QueryGlobalsGlobals;
 
