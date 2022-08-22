@@ -1,4 +1,4 @@
-use anyhow::*;
+use anyhow::{anyhow, Result};
 use graphql_client::{reqwest::post_graphql_blocking as post_graphql, GraphQLQuery};
 use reqwest::blocking::Client;
 
@@ -12,8 +12,8 @@ use self::query_globals::QueryGlobalsGlobals;
 )]
 struct QueryGlobals;
 
-pub fn globals(api_url: &String) -> Result<QueryGlobalsGlobals, anyhow::Error> {
-    let client = Client::builder().build().expect("error creating client");
+pub fn globals(api_url: String) -> anyhow::Result<QueryGlobalsGlobals> {
+    let client = Client::builder().build()?;
 
     let variables = query_globals::Variables;
 
@@ -24,7 +24,7 @@ pub fn globals(api_url: &String) -> Result<QueryGlobalsGlobals, anyhow::Error> {
 
     let result = match response_data.globals {
         Some(value) => value,
-        None => panic!("empty response"),
+        None => return Err(anyhow!("empty response")),
     };
 
     Ok(result)

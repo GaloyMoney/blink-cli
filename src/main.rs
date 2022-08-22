@@ -5,6 +5,8 @@ use url::Url;
 use galoy_client::default_wallet::default_wallet;
 use galoy_client::globals::globals;
 
+use anyhow::Result;
+
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 struct Cli {
@@ -29,7 +31,7 @@ enum Commands {
     },
 }
 
-fn main() {
+fn main() -> Result<()> {
     log::set_max_level(LevelFilter::Warn);
 
     let cli = Cli::parse();
@@ -50,14 +52,16 @@ fn main() {
 
     match cli.command {
         Commands::Getinfo {} => {
-            let result = globals(&api).unwrap();
+            let result = globals(api).unwrap();
             let serialized_str = serde_json::to_string(&result).unwrap();
             println!("{}", serialized_str);
         }
         Commands::DefaultWallet { username } => {
-            let result = default_wallet(&api, &username).unwrap();
+            let result = default_wallet(api, username).unwrap();
             let serialized_str = serde_json::to_string(&result).unwrap();
             println!("{}", serialized_str);
         }
     };
+
+    return Ok(());
 }

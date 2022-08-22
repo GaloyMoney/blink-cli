@@ -3,6 +3,8 @@ use reqwest::blocking::Client;
 
 use self::query_default_wallet::QueryDefaultWalletAccountDefaultWallet;
 
+use anyhow::anyhow;
+
 type Username = String;
 
 #[derive(GraphQLQuery)]
@@ -14,15 +16,13 @@ type Username = String;
 struct QueryDefaultWallet;
 
 pub fn default_wallet(
-    api_url: &String,
+    api_url: String,
     // TODO pass graphql client instead
-    username: &String,
-) -> Result<QueryDefaultWalletAccountDefaultWallet, String> {
-    let client = Client::builder().build().expect("error creating client");
+    username: String,
+) -> anyhow::Result<QueryDefaultWalletAccountDefaultWallet> {
+    let client = Client::builder().build()?;
 
-    let variables = query_default_wallet::Variables {
-        username: username.to_string(),
-    };
+    let variables = query_default_wallet::Variables { username };
 
     let response_body = post_graphql::<QueryDefaultWallet, _>(&client, api_url, variables)
         .expect("issue fetching response");
@@ -30,8 +30,8 @@ pub fn default_wallet(
     let response_data = match response_body.data {
         Some(value) => value,
         None => {
-            // TODO: proper error management
-            return Err("Username doesn't exist".to_string());
+            return Err(anyhow!("Username doesn't exist".to_string()));
+            // equivalent to bail!("Username doesn't exist".to_string()));
         }
     };
 
