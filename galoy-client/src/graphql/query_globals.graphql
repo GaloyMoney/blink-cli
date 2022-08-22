@@ -1,0 +1,6 @@
+query QueryGlobals {
+  globals {
+    nodesIds
+    lightningAddressDomain
+  }
+}
