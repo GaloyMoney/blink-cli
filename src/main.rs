@@ -2,6 +2,9 @@ use clap::{Parser, Subcommand};
 use log::{self, info, LevelFilter};
 use url::Url;
 
+use galoy_client::default_wallet::default_wallet;
+use galoy_client::globals::globals;
+
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 struct Cli {
@@ -25,9 +28,6 @@ enum Commands {
         username: String,
     },
 }
-
-use galoy_client::default_wallet::default_wallet;
-use galoy_client::globals::globals;
 
 fn main() {
     log::set_max_level(LevelFilter::Warn);
