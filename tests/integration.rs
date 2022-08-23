@@ -28,6 +28,12 @@ fn test_default_wallet() {
 
     assert_eq!(query.is_err(), true);
 
+    if let Err(value) = query {
+        assert_eq!(value.to_string(), "Username doesn't exist");
+    } else {
+        panic!("should error")
+    }
+
     let username = "userA".to_string();
     let query = galoy_client.default_wallet(username);
 

@@ -3,7 +3,7 @@ use reqwest::blocking::Client;
 
 pub use self::query_default_wallet::QueryDefaultWalletAccountDefaultWallet;
 
-use anyhow::{anyhow, Context};
+use anyhow::Context;
 
 type Username = String;
 
@@ -25,13 +25,7 @@ pub fn run(
     let response_body = post_graphql::<QueryDefaultWallet, _>(&client, api_url, variables)
         .context("issue fetching response")?;
 
-    let response_data = match response_body.data {
-        Some(value) => value,
-        None => {
-            return Err(anyhow!("Username doesn't exist"));
-            // equivalent to bail!("Username doesn't exist"));
-        }
-    };
+    let response_data = response_body.data.context("Username doesn't exist")?;
 
     Ok(response_data.account_default_wallet)
 }

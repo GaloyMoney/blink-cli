@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Result, Context};
+use anyhow::Context;
 use graphql_client::{reqwest::post_graphql_blocking as post_graphql, GraphQLQuery};
 use reqwest::blocking::Client;
 
@@ -12,7 +12,7 @@ pub use self::query_globals::QueryGlobalsGlobals;
 )]
 struct QueryGlobals;
 
-pub fn run(client: &Client, api_url: &String) -> Result<QueryGlobalsGlobals> {
+pub fn run(client: &Client, api_url: &String) -> anyhow::Result<QueryGlobalsGlobals> {
     let variables = query_globals::Variables;
 
     let response_body = post_graphql::<QueryGlobals, _>(&client, api_url, variables)
@@ -20,10 +20,7 @@ pub fn run(client: &Client, api_url: &String) -> Result<QueryGlobalsGlobals> {
 
     let response_data = response_body.data.context("bad response from server")?;
 
-    let result = match response_data.globals {
-        Some(value) => value,
-        None => return Err(anyhow!("empty response")),
-    };
+    let result = response_data.globals.context("empty response")?;
 
     Ok(result)
 }

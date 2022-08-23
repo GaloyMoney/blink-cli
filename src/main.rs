@@ -4,12 +4,12 @@ use url::Url;
 
 use galoy_client::GaloyClient;
 
-use anyhow::{Context, Result};
+use anyhow::Context;
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 struct Cli {
-    #[clap(short, long, value_parser, env = "GALOYAPI")]
+    #[clap(short, long, value_parser, env = "GALOY_API")]
     api: Option<String>,
 
     #[clap(short, long, value_parser, default_value_t = false)]
@@ -30,7 +30,7 @@ enum Commands {
     },
 }
 
-fn main() -> Result<()> {
+fn main() -> anyhow::Result<()> {
     log::set_max_level(LevelFilter::Warn);
 
     let cli = Cli::parse();
@@ -38,10 +38,9 @@ fn main() -> Result<()> {
         log::set_max_level(LevelFilter::Debug);
     }
 
-    let api = match cli.api {
-        None => String::from("http://localhost:4002/graphql"),
-        Some(value) => value,
-    };
+    let api = cli
+        .api
+        .unwrap_or_else(|| String::from("http://localhost:4002/graphql"));
 
     Url::parse(&api).context(format!("API: {api} is not valid"))?;
 
@@ -51,13 +50,13 @@ fn main() -> Result<()> {
 
     match cli.command {
         Commands::Getinfo {} => {
-            let result = galoy_client.globals().unwrap();
-            let serialized_str = serde_json::to_string(&result).unwrap();
+            let result = galoy_client.globals()?;
+            let serialized_str = serde_json::to_string(&result)?;
             println!("{}", serialized_str);
         }
         Commands::DefaultWallet { username } => {
-            let result = galoy_client.default_wallet(username).unwrap();
-            let serialized_str = serde_json::to_string(&result).unwrap();
+            let result = galoy_client.default_wallet(username)?;
+            let serialized_str = serde_json::to_string(&result)?;
             println!("{}", serialized_str);
         }
     };
