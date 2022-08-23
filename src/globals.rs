@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Result};
+use anyhow::{anyhow, Result, Context};
 use graphql_client::{reqwest::post_graphql_blocking as post_graphql, GraphQLQuery};
 use reqwest::blocking::Client;
 
@@ -16,9 +16,9 @@ pub fn run(client: &Client, api_url: &String) -> Result<QueryGlobalsGlobals> {
     let variables = query_globals::Variables;
 
     let response_body = post_graphql::<QueryGlobals, _>(&client, api_url, variables)
-        .expect("issue fetching response");
+        .context("issue fetching response")?;
 
-    let response_data = response_body.data.expect("bad response from server");
+    let response_data = response_body.data.context("bad response from server")?;
 
     let result = match response_data.globals {
         Some(value) => value,

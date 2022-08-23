@@ -3,7 +3,7 @@ use reqwest::blocking::Client;
 
 pub use self::query_default_wallet::QueryDefaultWalletAccountDefaultWallet;
 
-use anyhow::anyhow;
+use anyhow::{anyhow, Context};
 
 type Username = String;
 
@@ -23,7 +23,7 @@ pub fn run(
     let variables = query_default_wallet::Variables { username };
 
     let response_body = post_graphql::<QueryDefaultWallet, _>(&client, api_url, variables)
-        .expect("issue fetching response");
+        .context("issue fetching response")?;
 
     let response_data = match response_body.data {
         Some(value) => value,

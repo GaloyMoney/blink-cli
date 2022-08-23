@@ -4,7 +4,7 @@ use url::Url;
 
 use galoy_client::GaloyClient;
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -43,7 +43,7 @@ fn main() -> Result<()> {
         Some(value) => value,
     };
 
-    Url::parse(&api).expect(&format!("Api url \"{api}\" is not valid"));
+    Url::parse(&api).context(format!("API: {api} is not valid"))?;
 
     info!("using api: {api}");
 
