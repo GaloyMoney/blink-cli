@@ -1,7 +1,7 @@
 use graphql_client::{reqwest::post_graphql_blocking as post_graphql, GraphQLQuery};
 use reqwest::blocking::Client;
 
-use self::query_default_wallet::QueryDefaultWalletAccountDefaultWallet;
+pub use self::query_default_wallet::QueryDefaultWalletAccountDefaultWallet;
 
 use anyhow::anyhow;
 
@@ -15,13 +15,11 @@ type Username = String;
 )]
 struct QueryDefaultWallet;
 
-pub fn default_wallet(
-    api_url: String,
-    // TODO pass graphql client instead
+pub fn run(
+    client: &Client,
+    api_url: &String,
     username: String,
 ) -> anyhow::Result<QueryDefaultWalletAccountDefaultWallet> {
-    let client = Client::builder().build()?;
-
     let variables = query_default_wallet::Variables { username };
 
     let response_body = post_graphql::<QueryDefaultWallet, _>(&client, api_url, variables)

@@ -2,7 +2,7 @@ use anyhow::{anyhow, Result};
 use graphql_client::{reqwest::post_graphql_blocking as post_graphql, GraphQLQuery};
 use reqwest::blocking::Client;
 
-use self::query_globals::QueryGlobalsGlobals;
+pub use self::query_globals::QueryGlobalsGlobals;
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -12,9 +12,7 @@ use self::query_globals::QueryGlobalsGlobals;
 )]
 struct QueryGlobals;
 
-pub fn globals(api_url: String) -> anyhow::Result<QueryGlobalsGlobals> {
-    let client = Client::builder().build()?;
-
+pub fn run(client: &Client, api_url: &String) -> Result<QueryGlobalsGlobals> {
     let variables = query_globals::Variables;
 
     let response_body = post_graphql::<QueryGlobals, _>(&client, api_url, variables)
