@@ -28,8 +28,8 @@ pub fn run(
     let response_data = match response_body.data {
         Some(value) => value,
         None => {
-            return Err(anyhow!("Username doesn't exist".to_string()));
-            // equivalent to bail!("Username doesn't exist".to_string()));
+            return Err(anyhow!("Username doesn't exist"));
+            // equivalent to bail!("Username doesn't exist"));
         }
     };
 
