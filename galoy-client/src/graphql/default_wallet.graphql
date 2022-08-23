@@ -1,4 +1,4 @@
-query accountDefaultWallet($username: Username!) {
+query QueryDefaultWallet($username: Username!) {
   accountDefaultWallet(username: $username) {
     __typename
     id

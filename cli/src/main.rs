@@ -1,4 +1,3 @@
-use anyhow::Result;
 use clap::{Parser, Subcommand};
 use log::{self, info, LevelFilter};
 use url::Url;
@@ -19,12 +18,15 @@ struct Cli {
 #[derive(Subcommand, Debug)]
 enum Commands {
     /// Get globals value from the instance
-    Getinfo {
+    Getinfo {},
+    /// Get WalletId for an account
+    DefaultWallet {
         #[clap(value_parser)]
-        name: Option<String>,
+        username: String,
     },
 }
 
+use galoy_client::default_wallet::default_wallet;
 use galoy_client::globals::globals;
 
 fn main() {
@@ -47,11 +49,15 @@ fn main() {
     info!("using api: {api}");
 
     match cli.command {
-        Commands::Getinfo { name } => {
+        Commands::Getinfo {} => {
             let result = globals(&api).unwrap();
             let serialized_str = serde_json::to_string(&result).unwrap();
             println!("{}", serialized_str);
         }
-        _ => panic!("need a command"),
+        Commands::DefaultWallet { username } => {
+            let result = default_wallet(&api, &username).unwrap();
+            let serialized_str = serde_json::to_string(&result).unwrap();
+            println!("{}", serialized_str);
+        }
     };
 }
