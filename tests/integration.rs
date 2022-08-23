@@ -9,11 +9,7 @@ fn test_globals() {
 
     let query = galoy_client.globals();
 
-    if let Err(err) = query {
-        println!("{}", err);
-        panic!("enum should not be None");
-    }
-
+    assert!(query.is_ok());
     let r = query.unwrap();
 
     println!("{:?}", r);
