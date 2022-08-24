@@ -1,0 +1,20 @@
+query QueryMe {
+  me {
+    __typename
+    id
+    language
+    username
+    phone
+    defaultAccount {
+      __typename
+      id
+      defaultWalletId
+      wallets {
+        __typename
+        id
+        balance
+        walletCurrency
+      }
+    }
+  }
+}
