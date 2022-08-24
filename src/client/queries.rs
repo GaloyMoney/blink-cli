@@ -20,4 +20,4 @@ pub use self::query_globals::QueryGlobalsGlobals;
     query_path = "src/client/graphql/query_globals.graphql",
     response_derives = "Debug, Serialize"
 )]
-pub struct QueryGlobals;
+pub(super) struct QueryGlobals;
