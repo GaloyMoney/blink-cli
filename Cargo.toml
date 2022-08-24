@@ -19,3 +19,4 @@ graphql_client = { version = "0.11.0", features = ["reqwest-blocking"] }
 clap     = { version =  "3.2", features = ["derive", "env"] }
 url = { version = "2.2.2", features = ["serde"] }
 log = "0.4.17"
+jsonwebtoken = "8"

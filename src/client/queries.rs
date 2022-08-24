@@ -33,6 +33,7 @@ pub use self::query_globals::QueryGlobalsGlobals;
     response_derives = "Debug, Serialize"
 )]
 pub(super) struct QueryMe;
+pub use self::query_me::QueryMeMe;
 
 #[derive(GraphQLQuery)]
 #[graphql(

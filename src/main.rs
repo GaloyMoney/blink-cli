@@ -9,6 +9,8 @@ use galoy_client::GaloyClient;
 
 use anyhow::Context;
 
+use jsonwebtoken::decode_header;
+
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 struct Cli {
@@ -17,6 +19,9 @@ struct Cli {
 
     #[clap(short, long, value_parser, default_value_t = false)]
     debug: bool,
+
+    #[clap(short, long, value_parser, env = "GALOY_JWT")]
+    jwt: Option<String>,
 
     #[clap(subcommand)]
     command: Commands,
@@ -31,6 +36,8 @@ enum Commands {
         #[clap(value_parser)]
         username: String,
     },
+    /// Execute Me query
+    Me {},
 }
 
 fn main() -> anyhow::Result<()> {
@@ -47,9 +54,14 @@ fn main() -> anyhow::Result<()> {
 
     Url::parse(&api).context(format!("API: {api} is not valid"))?;
 
-    info!("using api: {api}");
+    let jwt = cli.jwt;
 
-    let galoy_client = GaloyClient::new(api);
+    if let Some(jwt) = &jwt {
+        decode_header(jwt).context("jwt syntax issue")?;
+    }
+
+    info!("using api: {api} and jwt: {:?}", &jwt);
+    let galoy_client = GaloyClient::new(api, jwt);
 
     match cli.command {
         Commands::Getinfo {} => {
@@ -61,6 +73,12 @@ fn main() -> anyhow::Result<()> {
             let result = galoy_client.default_wallet(username)?;
             let serialized_str = serde_json::to_string(&result)?;
             println!("{}", serialized_str);
+        }
+        Commands::Me {} => {
+            galoy_client.me();
+            // let result = galoy_client.me()?;
+            // let serialized_str = serde_json::to_string(&result)?;
+            // println!("{}", serialized_str);
         }
     };
 
