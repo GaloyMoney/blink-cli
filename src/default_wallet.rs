@@ -22,7 +22,7 @@ pub fn run(
 ) -> anyhow::Result<QueryDefaultWalletAccountDefaultWallet> {
     let variables = query_default_wallet::Variables { username };
 
-    let response_body = post_graphql::<QueryDefaultWallet, _>(&client, api_url, variables)
+    let response_body = post_graphql::<QueryDefaultWallet, _>(client, api_url, variables)
         .context("issue fetching response")?;
 
     let response_data = response_body.data.context("Username doesn't exist")?;

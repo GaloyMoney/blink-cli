@@ -1,3 +1,6 @@
+#![cfg_attr(feature = "fail-on-warnings", deny(warnings))]
+#![cfg_attr(feature = "fail-on-warnings", deny(clippy::all))]
+
 use clap::{Parser, Subcommand};
 use log::{self, info, LevelFilter};
 use url::Url;
@@ -61,5 +64,5 @@ fn main() -> anyhow::Result<()> {
         }
     };
 
-    return Ok(());
+    Ok(())
 }

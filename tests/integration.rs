@@ -3,7 +3,7 @@ use galoy_client::GaloyClient;
 #[test]
 fn test_globals() {
     let api = "http://localhost:4002/graphql".to_string();
-    // TOOD: setup settings
+    // TODO: setup settings
 
     let galoy_client = GaloyClient::new(api);
 
@@ -19,7 +19,7 @@ fn test_globals() {
 #[test]
 fn test_default_wallet() {
     let api = "http://localhost:4002/graphql".to_string();
-    // TOOD: setup settings
+    // TODO: setup settings
 
     let username = "wrong username".to_string();
 

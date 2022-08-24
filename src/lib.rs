@@ -1,3 +1,6 @@
+#![cfg_attr(feature = "fail-on-warnings", deny(warnings))]
+#![cfg_attr(feature = "fail-on-warnings", deny(clippy::all))]
+
 use default_wallet::QueryDefaultWalletAccountDefaultWallet;
 use globals::QueryGlobalsGlobals;
 use reqwest::blocking::Client;
