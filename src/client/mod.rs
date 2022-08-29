@@ -93,17 +93,21 @@ impl GaloyClient {
 
         let response_data = response_body.data.context("Query failed or is empty")?; // TODO: understand when this can fail here
 
-        if let Some(success) = response_data.user_request_auth_code.success {
-            if success {
-                Ok(true)
-            } else {
+        let UserRequestAuthCodeUserRequestAuthCode { success, errors } =
+            response_data.user_request_auth_code;
+
+        match success {
+            Some(true) => Ok(true),
+            _ if !errors.is_empty() => {
+                println!("{:?}", errors);
+                bail!("request failed (graphql errors)")
+            }
+            Some(false) => {
                 bail!("request failed (success is false)")
             }
-        } else if response_data.user_request_auth_code.success.is_none() {
-            println!("{:?}", response_data.user_request_auth_code.errors);
-            bail!("request failed (graphql errors)")
-        } else {
-            bail!("request failed (unknown)")
+            _ => {
+                bail!("request failed (unknown)");
+            }
         }
     }
 
