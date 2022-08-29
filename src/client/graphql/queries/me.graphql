@@ -1,8 +1,6 @@
 query QueryMe {
   me {
-    __typename
     id
-    language
     username
     phone
     defaultAccount {

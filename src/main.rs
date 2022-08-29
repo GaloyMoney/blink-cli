@@ -38,6 +38,19 @@ enum Commands {
     },
     /// Execute Me query
     Me {},
+    /// Do an intraledger transaction
+    SendIntraledger {
+        #[clap(value_parser)]
+        username: String,
+        amount: u64,
+    },
+    /// Request a code from a Phone number
+    RequestPhoneCode {
+        #[clap(value_parser)]
+        phone: String,
+    },
+    /// get JWT of an account
+    UserLogin { phone: String, code: String },
 }
 
 fn main() -> anyhow::Result<()> {
@@ -66,19 +79,33 @@ fn main() -> anyhow::Result<()> {
     match cli.command {
         Commands::Getinfo {} => {
             let result = galoy_client.globals()?;
-            let serialized_str = serde_json::to_string(&result)?;
-            println!("{}", serialized_str);
+            println!("{:#?}", result);
         }
         Commands::DefaultWallet { username } => {
             let result = galoy_client.default_wallet(username)?;
-            let serialized_str = serde_json::to_string(&result)?;
-            println!("{}", serialized_str);
+            println!("{:#?}", result);
         }
         Commands::Me {} => {
-            galoy_client.me();
-            // let result = galoy_client.me()?;
-            // let serialized_str = serde_json::to_string(&result)?;
-            // println!("{}", serialized_str);
+            let result = galoy_client.me().context("can't get me")?;
+            println!("{:#?}", result);
+        }
+        Commands::SendIntraledger { username, amount } => {
+            let result = galoy_client
+                .intraleger_send(username, amount)
+                .context("issue sending intraledger")?;
+            println!("{:#?}", result);
+        }
+        Commands::RequestPhoneCode { phone } => {
+            let result = galoy_client
+                .request_auth_code(phone)
+                .context("issue getting code")?;
+            println!("{:#?}", result);
+        }
+        Commands::UserLogin { phone, code } => {
+            let result = galoy_client
+                .user_login(phone, code)
+                .context("issue logging in")?;
+            println!("{:#?}", result);
         }
     };
 

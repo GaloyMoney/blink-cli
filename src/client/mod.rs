@@ -1,5 +1,6 @@
-use anyhow::Context;
+use anyhow::{bail, Context};
 use graphql_client::reqwest::post_graphql_blocking as post_graphql;
+use log::info;
 use reqwest::blocking::Client;
 
 mod queries;
@@ -62,38 +63,107 @@ impl GaloyClient {
         Ok(response_data.account_default_wallet)
     }
 
-    pub fn me(&self) {
-        // pub fn me(&self) -> anyhow::Result<QueryMeMe> {
+    pub fn me(&self) -> anyhow::Result<QueryMeMe> {
         let variables = query_me::Variables;
 
         let response_body = post_graphql::<QueryMe, _>(&self.graphql_client, &self.api, variables)
-            .expect("issue fetching response");
+            .context("issue fetching response")?;
 
-        let response_data = response_body.data.expect("Empty fields"); // TODO: check the error given is correct
-                                                                       // let response_data = response_body.data.context("Empty fields")?; // TODO: check the error given is correct
+        let response_data = response_body.data.context("Empty fields")?; // TODO: check the error given is correct
 
-        // response_data.me
-        // Ok(response_data.me)
-        if let Some(me) = response_data.me {
+        let me = response_data.me.context("impossible to unwrap .me")?;
+        let default_account = &me.id;
+        let default_wallet = &me.default_account.default_wallet_id;
+        info!(
+            "default account {:?}, default walletId {:?}",
+            default_account, default_wallet
+        );
 
-            // FIXME: why is `me` below typed as `unknown`?
-            println!("{:?}", me);
-        };
-        // println!("{:?}", response_data.me);
+        Ok(me)
     }
 
-    // pub fn intradleger_send(
-    //     &self,
-    //     username: String,
-    // ) -> anyhow::Result<QueryDefaultWalletAccountDefaultWallet> {
-    //     let variables = query_default_wallet::Variables { username };
+    pub fn request_auth_code(&self, phone: String) -> anyhow::Result<bool> {
+        let input = UserRequestAuthCodeInput { phone };
 
-    //     let response_body =
-    //         post_graphql::<QueryDefaultWallet, _>(&self.graphql_client, &self.api, variables)
-    //             .context("issue fetching response")?;
+        let variables = user_request_auth_code::Variables { input };
 
-    //     let response_data = response_body.data.context("Username doesn't exist")?;
+        let response_body =
+            post_graphql::<UserRequestAuthCode, _>(&self.graphql_client, &self.api, variables)
+                .context("issue fetching response")?;
 
-    //     Ok(response_data.account_default_wallet)
-    // }
+        let response_data = response_body.data.context("Query failed or is empty")?; // TODO: understand when this can fail here
+
+        if let Some(success) = response_data.user_request_auth_code.success {
+            if success {
+                Ok(true)
+            } else {
+                bail!("request failed (success is false)")
+            }
+        } else if response_data.user_request_auth_code.success.is_none() {
+            println!("{:?}", response_data.user_request_auth_code.errors);
+            bail!("request failed (graphql errors)")
+        } else {
+            bail!("request failed (unknown)")
+        }
+    }
+
+    pub fn user_login(&self, phone: String, code: String) -> anyhow::Result<String> {
+        let input = UserLoginInput { phone, code };
+
+        let variables = user_login::Variables { input };
+
+        let response_body =
+            post_graphql::<UserLogin, _>(&self.graphql_client, &self.api, variables)
+                .context("issue fetching response")?;
+
+        let response_data = response_body.data.context("Query failed or is empty")?; // TODO: understand when this can fail here
+
+        if let Some(auth_token) = response_data.user_login.auth_token {
+            Ok(auth_token)
+        } else if response_data.user_login.errors.is_empty() {
+            bail!("request failed (unknown)")
+        } else {
+            println!("{:?}", response_data.user_login.errors);
+            bail!("request failed (graphql errors)")
+        }
+    }
+
+    pub fn intraleger_send(
+        &self,
+        username: String,
+        amount: u64,
+    ) -> anyhow::Result<PaymentSendResult> {
+        let me = self.me()?;
+        let wallet_id = me.default_account.default_wallet_id;
+
+        let query = self.default_wallet(username);
+        let recipient_wallet_id = query.expect("result should be received").id;
+
+        let input = IntraLedgerPaymentSendInput {
+            amount,
+            memo: None,
+            recipient_wallet_id,
+            wallet_id,
+        };
+
+        let variables = intra_ledger_payment_send::Variables { input };
+
+        let response_body =
+            post_graphql::<IntraLedgerPaymentSend, _>(&self.graphql_client, &self.api, variables)
+                .context("issue fetching response")?;
+
+        let response_data = response_body.data.context("Query failed or is empty")?; // TODO: understand when this can fail here
+
+        if !response_data.intra_ledger_payment_send.errors.is_empty() {
+            bail!(format!(
+                "payment error: {:?}",
+                response_data.intra_ledger_payment_send.errors
+            ))
+        };
+
+        match response_data.intra_ledger_payment_send.status {
+            Some(status) => Ok(status),
+            None => bail!("failed payment (empty response)"),
+        }
+    }
 }
