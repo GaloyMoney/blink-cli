@@ -37,7 +37,7 @@ enum Commands {
         username: String,
     },
     /// Execute Me query
-    Me {},
+    Me,
     /// Do an intraledger transaction
     SendIntraledger {
         #[clap(value_parser)]
@@ -85,7 +85,7 @@ fn main() -> anyhow::Result<()> {
             let result = galoy_client.default_wallet(username)?;
             println!("{:#?}", result);
         }
-        Commands::Me {} => {
+        Commands::Me => {
             let result = galoy_client.me().context("can't get me")?;
             println!("{:#?}", result);
         }

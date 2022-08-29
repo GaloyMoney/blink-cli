@@ -50,19 +50,15 @@ fn login() {
 
     let galoy_client = GaloyClient::new(api, None);
 
-    {
-        let result = galoy_client
-            .request_auth_code(phone.to_string())
-            .expect("request should succeed");
-        assert_eq!(result, true);
-    }
+    let result = galoy_client
+        .request_auth_code(phone.clone())
+        .expect("request should succeed");
+    assert!(result);
 
-    {
-        let result = galoy_client
-            .user_login(phone.to_string(), code)
-            .expect("request should succeed");
-        assert_eq!(result[..2], "ey".to_string());
-    }
+    let result = galoy_client
+        .user_login(phone, code)
+        .expect("request should succeed");
+    assert_eq!(result[..2], "ey".to_string());
 }
 
 #[test]
@@ -72,19 +68,19 @@ fn intraledger_send() {
     let phone = "+16505554321".to_string();
     let code = "321321".to_string();
 
-    let galoy_client = GaloyClient::new(api.to_string(), None);
+    let galoy_client = GaloyClient::new(api.clone(), None);
 
     let jwt = galoy_client
-        .user_login(phone.to_string(), code)
+        .user_login(phone, code)
         .expect("request should succeed");
 
     let username = "userB".to_string();
 
-    let galoy_client = GaloyClient::new(api.to_string(), Some(jwt));
+    let galoy_client = GaloyClient::new(api, Some(jwt));
 
     let amount = 2;
 
     let result = galoy_client.intraleger_send(username, amount);
 
-    assert_eq!(result.is_err(), false)
+    assert!(result.is_ok())
 }
