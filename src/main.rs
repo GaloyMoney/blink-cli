@@ -9,6 +9,8 @@ use galoy_client::GaloyClient;
 
 use anyhow::Context;
 
+use jsonwebtoken::decode_header;
+
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 struct Cli {
@@ -17,6 +19,9 @@ struct Cli {
 
     #[clap(short, long, value_parser, default_value_t = false)]
     debug: bool,
+
+    #[clap(short, long, value_parser, env = "GALOY_JWT")]
+    jwt: Option<String>,
 
     #[clap(subcommand)]
     command: Commands,
@@ -31,6 +36,21 @@ enum Commands {
         #[clap(value_parser)]
         username: String,
     },
+    /// Execute Me query
+    Me,
+    /// Do an intraledger transaction
+    SendIntraledger {
+        #[clap(value_parser)]
+        username: String,
+        amount: u64,
+    },
+    /// Request a code from a Phone number
+    RequestPhoneCode {
+        #[clap(value_parser)]
+        phone: String,
+    },
+    /// get JWT of an account
+    UserLogin { phone: String, code: String },
 }
 
 fn main() -> anyhow::Result<()> {
@@ -47,20 +67,45 @@ fn main() -> anyhow::Result<()> {
 
     Url::parse(&api).context(format!("API: {api} is not valid"))?;
 
-    info!("using api: {api}");
+    let jwt = cli.jwt;
 
-    let galoy_client = GaloyClient::new(api);
+    if let Some(jwt) = &jwt {
+        decode_header(jwt).context("jwt syntax issue")?;
+    }
+
+    info!("using api: {api} and jwt: {:?}", &jwt);
+    let galoy_client = GaloyClient::new(api, jwt);
 
     match cli.command {
         Commands::Getinfo {} => {
             let result = galoy_client.globals()?;
-            let serialized_str = serde_json::to_string(&result)?;
-            println!("{}", serialized_str);
+            println!("{:#?}", result);
         }
         Commands::DefaultWallet { username } => {
             let result = galoy_client.default_wallet(username)?;
-            let serialized_str = serde_json::to_string(&result)?;
-            println!("{}", serialized_str);
+            println!("{:#?}", result);
+        }
+        Commands::Me => {
+            let result = galoy_client.me().context("can't get me")?;
+            println!("{:#?}", result);
+        }
+        Commands::SendIntraledger { username, amount } => {
+            let result = galoy_client
+                .intraleger_send(username, amount)
+                .context("issue sending intraledger")?;
+            println!("{:#?}", result);
+        }
+        Commands::RequestPhoneCode { phone } => {
+            let result = galoy_client
+                .request_auth_code(phone)
+                .context("issue getting code")?;
+            println!("{:#?}", result);
+        }
+        Commands::UserLogin { phone, code } => {
+            let result = galoy_client
+                .user_login(phone, code)
+                .context("issue logging in")?;
+            println!("{:#?}", result);
         }
     };
 
