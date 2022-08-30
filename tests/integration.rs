@@ -37,8 +37,7 @@ fn default_wallet_for_username() {
     let username = "userA".to_string();
     let query = galoy_client.default_wallet(username);
 
-    println!("errors: {:?}", query.err());
-    // assert_eq!(query.is_err(), false)
+    assert_eq!(query.is_err(), false)
 }
 
 #[test]

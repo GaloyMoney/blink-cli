@@ -7,6 +7,8 @@ mod queries;
 
 use queries::*;
 
+pub mod batch;
+
 pub struct GaloyClient {
     graphql_client: Client,
     api: String,
@@ -48,10 +50,7 @@ impl GaloyClient {
         Ok(result)
     }
 
-    pub fn default_wallet(
-        &self,
-        username: String,
-    ) -> anyhow::Result<QueryDefaultWalletAccountDefaultWallet> {
+    pub fn default_wallet(&self, username: String) -> anyhow::Result<String> {
         let variables = query_default_wallet::Variables { username };
 
         let response_body =
@@ -60,7 +59,9 @@ impl GaloyClient {
 
         let response_data = response_body.data.context("Username doesn't exist")?;
 
-        Ok(response_data.account_default_wallet)
+        let recipient_wallet_id = response_data.account_default_wallet.id;
+
+        Ok(recipient_wallet_id)
     }
 
     pub fn me(&self) -> anyhow::Result<QueryMeMe> {
@@ -140,8 +141,7 @@ impl GaloyClient {
         let me = self.me()?;
         let wallet_id = me.default_account.default_wallet_id;
 
-        let query = self.default_wallet(username);
-        let recipient_wallet_id = query.expect("result should be received").id;
+        let recipient_wallet_id = self.default_wallet(username)?;
 
         let input = IntraLedgerPaymentSendInput {
             amount,
