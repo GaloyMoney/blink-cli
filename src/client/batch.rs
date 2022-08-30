@@ -87,18 +87,18 @@ impl Batch {
 
     pub fn check_self_payment(&self) -> anyhow::Result<()> {
         let me = self.client.me()?;
-        let me_wallet_id = &me.default_account.default_wallet_id;
+
+        #[allow(deprecated)]
+        let me_username = match &me.username {
+            Some(value) => value,
+            None => bail!("no username has been set"),
+        };
 
         for payment in &self.payments {
-            match &payment.wallet_id {
-                Some(wallet_id) => {
-                    if me_wallet_id == wallet_id {
-                        println!("{:#?}", (me_wallet_id, wallet_id));
-                        bail!("can't pay to self wallet_id")
-                    }
-                }
-                None => bail!("wallet_id is not present"),
-            };
+            if me_username == &payment.username {
+                println!("{:#?}", (me_username, &payment.username));
+                bail!("can't pay to self wallet_id")
+            }
         }
 
         Ok(())
