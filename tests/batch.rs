@@ -2,6 +2,8 @@ use galoy_client::batch::Batch;
 use galoy_client::GaloyClient;
 use std::path::PathBuf;
 
+use rust_decimal_macros::dec;
+
 #[test]
 fn batch_csv() {
     let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
@@ -10,7 +12,7 @@ fn batch_csv() {
     let api = "http://localhost:4002/graphql".to_string();
     let galoy_client = GaloyClient::new(api, None);
 
-    let mut batch = Batch::new(galoy_client, 10000.);
+    let mut batch = Batch::new(galoy_client, dec!(10000));
 
     batch.add_csv(filename).unwrap();
     assert_eq!(batch.len(), 1);
@@ -35,8 +37,8 @@ fn batch_is_ready() {
 
     let galoy_client = GaloyClient::new(api, Some(jwt));
 
-    let mut batch = Batch::new(galoy_client, 10000.);
-    batch.add("userB".to_string(), 10);
+    let mut batch = Batch::new(galoy_client, dec!(10000));
+    batch.add("userB".to_string(), dec!(10));
 
     assert!(batch.populate_wallet_id().is_ok());
     assert!(batch.populate_sats().is_ok());
@@ -58,8 +60,8 @@ fn batch_cant_pay_self() {
 
     let galoy_client = GaloyClient::new(api, Some(jwt));
 
-    let mut batch = Batch::new(galoy_client, 10000.);
-    batch.add("userA".to_string(), 10);
+    let mut batch = Batch::new(galoy_client, dec!(10000));
+    batch.add("userA".to_string(), dec!(10));
 
     assert!(batch.populate_wallet_id().is_ok());
     assert!(batch.populate_sats().is_ok());
@@ -81,8 +83,8 @@ fn batch_balance_too_low() {
 
     let galoy_client = GaloyClient::new(api, Some(jwt));
 
-    let mut batch = Batch::new(galoy_client, 10000.);
-    batch.add("userB".to_string(), 1_000_000_000);
+    let mut batch = Batch::new(galoy_client, dec!(10000));
+    batch.add("userB".to_string(), dec!(1_000_000_000));
 
     assert!(batch.populate_wallet_id().is_ok());
     assert!(batch.populate_sats().is_ok());

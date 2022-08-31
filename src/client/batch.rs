@@ -4,17 +4,21 @@ use std::fs::File;
 
 use super::*;
 
+use rust_decimal::prelude::*;
+use rust_decimal::Decimal;
+use rust_decimal_macros::dec;
+
 #[derive(Debug, Deserialize)]
 struct PaymentInput {
     username: String,
-    usd: u64,
+    usd: String,
 }
 
 #[derive(Debug)]
 struct Payment {
     username: String,
-    usd: u64,
-    sats: Option<u64>,
+    usd: Decimal,
+    sats: Option<Decimal>,
     wallet_id: Option<String>,
 }
 
@@ -22,11 +26,11 @@ pub struct Batch {
     payments: Vec<Payment>,
     client: GaloyClient,
     /// price in btc/usd
-    price: f64,
+    price: Decimal,
 }
 
 impl Batch {
-    pub fn new(client: GaloyClient, price: f64) -> Self {
+    pub fn new(client: GaloyClient, price: Decimal) -> Self {
         let payments: Vec<Payment> = vec![];
         Self {
             payments,
@@ -35,7 +39,7 @@ impl Batch {
         }
     }
 
-    pub fn add(&mut self, username: String, usd: u64) {
+    pub fn add(&mut self, username: String, usd: Decimal) {
         self.payments.push(Payment {
             username,
             usd,
@@ -49,7 +53,7 @@ impl Batch {
         let mut rdr = csv::Reader::from_reader(file);
         for result in rdr.deserialize() {
             let record: PaymentInput = result?;
-            self.add(record.username, record.usd);
+            self.add(record.username, Decimal::from_str(&record.usd).unwrap());
         }
 
         Ok(())
@@ -78,8 +82,8 @@ impl Batch {
 
     pub fn populate_sats(&mut self) -> anyhow::Result<()> {
         for payment in &mut self.payments {
-            let payment_btc: f64 = (payment.usd as f64) / self.price;
-            payment.sats = Some((payment_btc * 100_000_000.) as u64);
+            let payment_btc: Decimal = payment.usd / self.price;
+            payment.sats = Some(payment_btc * dec!(100_000_000));
         }
 
         Ok(())
@@ -108,7 +112,7 @@ impl Batch {
         let me = self.client.me()?;
         let me_wallet_id = me.default_account.default_wallet_id;
 
-        let mut total_sats: u64 = 0;
+        let mut total_sats = dec!(0);
 
         for payment in &self.payments {
             let sats = match payment.sats {
@@ -125,7 +129,7 @@ impl Batch {
             .find(|wallet| wallet.id == me_wallet_id);
 
         let balance_sats = match me_default_wallet {
-            Some(value) => value.balance as u64,
+            Some(value) => Decimal::from(value.balance),
             None => bail!("no balance"),
         };
         if total_sats > balance_sats {
@@ -149,8 +153,8 @@ impl Batch {
 
         for payment in &self.payments {
             let username = payment.username.clone();
-            let amount = match &payment.sats {
-                Some(value) => *value,
+            let amount: u64 = match &payment.sats {
+                Some(value) => Decimal::try_into(*value).context("number conversion issue")?,
                 None => bail!("need sats amount"),
             };
             let usd = &payment.usd;
