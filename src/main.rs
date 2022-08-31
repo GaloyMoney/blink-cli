@@ -26,7 +26,7 @@ struct Cli {
     #[clap(short, long, value_parser, default_value_t = false)]
     debug: bool,
 
-    #[clap(short, long, value_parser, env = "GALOY_JWT")]
+    #[clap(short, long, value_parser, env = "GALOY_JWT", hide_env_values = true)]
     jwt: Option<String>,
 
     #[clap(subcommand)]
