@@ -8,9 +8,20 @@ use rust_decimal::Decimal;
 use rust_decimal_macros::dec;
 
 #[derive(Debug, Deserialize)]
-struct PaymentInput {
-    username: String,
-    usd: Decimal,
+pub struct PaymentInput {
+    pub username: String,
+    pub usd: Decimal,
+}
+
+impl From<PaymentInput> for Payment {
+    fn from(input: PaymentInput) -> Payment {
+        Payment {
+            username: input.username,
+            usd: input.usd,
+            sats: None,
+            wallet_id: None,
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -38,13 +49,8 @@ impl Batch {
         }
     }
 
-    pub fn add(&mut self, username: String, usd: Decimal) {
-        self.payments.push(Payment {
-            username,
-            usd,
-            wallet_id: None,
-            sats: None,
-        });
+    pub fn add(&mut self, input: PaymentInput) {
+        self.payments.push(input.into());
     }
 
     pub fn add_csv(&mut self, filename: String) -> anyhow::Result<()> {
@@ -52,7 +58,7 @@ impl Batch {
         let mut rdr = csv::Reader::from_reader(file);
         for result in rdr.deserialize() {
             let record: PaymentInput = result?;
-            self.add(record.username, record.usd);
+            self.add(record);
         }
 
         Ok(())

@@ -1,6 +1,7 @@
 use galoy_client::batch::Batch;
 use galoy_client::GaloyClient;
 
+use galoy_client::batch::PaymentInput;
 use rust_decimal_macros::dec;
 
 #[test]
@@ -36,7 +37,10 @@ fn batch_is_ready() {
     let galoy_client = GaloyClient::new(api, Some(jwt));
 
     let mut batch = Batch::new(galoy_client, dec!(10000));
-    batch.add("userB".to_string(), dec!(10));
+    batch.add(PaymentInput {
+        username: "userB".to_string(),
+        usd: dec!(10),
+    });
 
     assert!(batch.populate_wallet_id().is_ok());
     assert!(batch.populate_sats().is_ok());
@@ -59,7 +63,11 @@ fn batch_cant_pay_self() {
     let galoy_client = GaloyClient::new(api, Some(jwt));
 
     let mut batch = Batch::new(galoy_client, dec!(10000));
-    batch.add("userA".to_string(), dec!(10));
+
+    batch.add(PaymentInput {
+        username: "userA".to_string(),
+        usd: dec!(10),
+    });
 
     assert!(batch.populate_wallet_id().is_ok());
     assert!(batch.populate_sats().is_ok());
@@ -82,7 +90,11 @@ fn batch_balance_too_low() {
     let galoy_client = GaloyClient::new(api, Some(jwt));
 
     let mut batch = Batch::new(galoy_client, dec!(10000));
-    batch.add("userB".to_string(), dec!(1_000_000_000));
+
+    batch.add(PaymentInput {
+        username: "userB".to_string(),
+        usd: dec!(1_000_000_000),
+    });
 
     assert!(batch.populate_wallet_id().is_ok());
     assert!(batch.populate_sats().is_ok());
