@@ -8,6 +8,9 @@ mod queries;
 use queries::*;
 
 pub mod batch;
+use batch::Batch;
+
+use rust_decimal::Decimal;
 
 pub struct GaloyClient {
     graphql_client: Client,
@@ -136,7 +139,7 @@ impl GaloyClient {
     pub fn intraleger_send(
         &self,
         username: String,
-        amount: u64,
+        amount: Decimal,
     ) -> anyhow::Result<PaymentSendResult> {
         let me = self.me()?;
         let wallet_id = me.default_account.default_wallet_id;
@@ -169,5 +172,27 @@ impl GaloyClient {
             Some(status) => Ok(status),
             None => bail!("failed payment (empty response)"),
         }
+    }
+
+    // TODO: check if we can do self without &
+    pub fn batch(self, filename: String, price: Decimal) -> anyhow::Result<()> {
+        let mut batch = Batch::new(self, price);
+
+        batch.add_csv(filename).context("can't load file")?;
+
+        batch
+            .populate_wallet_id()
+            .context("cant get wallet id for all username")?;
+
+        batch
+            .populate_sats()
+            .context("cant set sats all payments")?;
+
+        println!("going to execute:");
+        batch.show();
+
+        batch.execute().context("can't make payment successfully")?;
+
+        Ok(())
     }
 }

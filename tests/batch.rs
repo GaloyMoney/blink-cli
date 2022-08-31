@@ -1,13 +1,11 @@
 use galoy_client::batch::Batch;
 use galoy_client::GaloyClient;
-use std::path::PathBuf;
 
 use rust_decimal_macros::dec;
 
 #[test]
 fn batch_csv() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    let filename = format!("{}/tests/example.csv", root.display());
+    let filename = "./tests/fixtures/example.csv".to_string();
 
     let api = "http://localhost:4002/graphql".to_string();
     let galoy_client = GaloyClient::new(api, None);

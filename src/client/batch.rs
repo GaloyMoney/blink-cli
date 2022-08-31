@@ -4,14 +4,13 @@ use std::fs::File;
 
 use super::*;
 
-use rust_decimal::prelude::*;
 use rust_decimal::Decimal;
 use rust_decimal_macros::dec;
 
 #[derive(Debug, Deserialize)]
 struct PaymentInput {
     username: String,
-    usd: String,
+    usd: Decimal,
 }
 
 #[derive(Debug)]
@@ -53,7 +52,7 @@ impl Batch {
         let mut rdr = csv::Reader::from_reader(file);
         for result in rdr.deserialize() {
             let record: PaymentInput = result?;
-            self.add(record.username, Decimal::from_str(&record.usd).unwrap());
+            self.add(record.username, record.usd);
         }
 
         Ok(())
@@ -64,11 +63,11 @@ impl Batch {
     }
 
     pub fn is_empty(&self) -> bool {
-        self.payments.len() == 0
+        self.payments.is_empty()
     }
 
     pub fn populate_wallet_id(&mut self) -> anyhow::Result<()> {
-        for payment in &mut self.payments {
+        for payment in self.payments.iter_mut() {
             let username = payment.username.to_string();
             let query = &self.client.default_wallet(username.clone());
             match query {
@@ -81,7 +80,7 @@ impl Batch {
     }
 
     pub fn populate_sats(&mut self) -> anyhow::Result<()> {
-        for payment in &mut self.payments {
+        for payment in self.payments.iter_mut() {
             let payment_btc: Decimal = payment.usd / self.price;
             payment.sats = Some(payment_btc * dec!(100_000_000));
         }
@@ -93,15 +92,15 @@ impl Batch {
         let me = self.client.me()?;
 
         #[allow(deprecated)]
-        let me_username = match &me.username {
+        let me_username = match me.username {
             Some(value) => value,
             None => bail!("no username has been set"),
         };
 
-        for payment in &self.payments {
-            if me_username == &payment.username {
+        for payment in self.payments.iter() {
+            if me_username == payment.username {
                 println!("{:#?}", (me_username, &payment.username));
-                bail!("can't pay to self wallet_id")
+                bail!("can't pay to self")
             }
         }
 
@@ -114,7 +113,7 @@ impl Batch {
 
         let mut total_sats = dec!(0);
 
-        for payment in &self.payments {
+        for payment in self.payments.iter() {
             let sats = match payment.sats {
                 Some(value) => value,
                 None => bail!("sats needs to be populated first"),
@@ -129,7 +128,7 @@ impl Batch {
             .find(|wallet| wallet.id == me_wallet_id);
 
         let balance_sats = match me_default_wallet {
-            Some(value) => Decimal::from(value.balance),
+            Some(value) => value.balance,
             None => bail!("no balance"),
         };
         if total_sats > balance_sats {
@@ -151,9 +150,9 @@ impl Batch {
         self.check_self_payment()?;
         self.check_balance()?;
 
-        for payment in &self.payments {
+        for payment in self.payments.iter() {
             let username = payment.username.clone();
-            let amount: u64 = match &payment.sats {
+            let amount = match &payment.sats {
                 Some(value) => Decimal::try_into(*value).context("number conversion issue")?,
                 None => bail!("need sats amount"),
             };

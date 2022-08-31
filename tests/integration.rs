@@ -1,5 +1,7 @@
 use galoy_client::GaloyClient;
 
+use rust_decimal_macros::dec;
+
 #[test]
 fn globals() {
     let api = "http://localhost:4002/graphql".to_string();
@@ -77,7 +79,7 @@ fn intraledger_send() {
 
     let galoy_client = GaloyClient::new(api, Some(jwt));
 
-    let amount = 2;
+    let amount = dec!(2);
 
     let result = galoy_client.intraleger_send(username, amount);
 
