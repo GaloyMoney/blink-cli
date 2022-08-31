@@ -1,13 +1,15 @@
 use graphql_client::GraphQLQuery;
 
+use rust_decimal::Decimal;
+
 type Username = String;
 type WalletId = String;
-type SatAmount = u64;
+type SatAmount = Decimal;
 type Memo = String;
 type Phone = String;
 type AuthToken = String;
 type OneTimeAuthCode = String;
-type SignedAmount = i64;
+type SignedAmount = Decimal;
 
 // queries
 

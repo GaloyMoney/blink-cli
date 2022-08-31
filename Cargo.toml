@@ -20,3 +20,6 @@ clap     = { version =  "3.2", features = ["derive", "env"] }
 url = { version = "2.2.2", features = ["serde"] }
 log = "0.4.17"
 jsonwebtoken = "8"
+csv = "1.1.6"
+rust_decimal = "1.26.1"
+rust_decimal_macros = "1.20"

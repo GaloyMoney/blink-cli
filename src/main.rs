@@ -11,6 +11,8 @@ use anyhow::Context;
 
 use jsonwebtoken::decode_header;
 
+use rust_decimal::Decimal;
+
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 struct Cli {
@@ -48,7 +50,7 @@ enum Commands {
     SendIntraledger {
         #[clap(value_parser)]
         username: String,
-        amount: u64,
+        amount: Decimal,
     },
     /// Request a code from a Phone number
     RequestPhoneCode {
@@ -57,6 +59,8 @@ enum Commands {
     },
     /// get JWT of an account
     UserLogin { phone: String, code: String },
+    /// execute a batch payment
+    Batch { filename: String, price: Decimal },
 }
 
 fn main() -> anyhow::Result<()> {
@@ -109,6 +113,12 @@ fn main() -> anyhow::Result<()> {
             let result = galoy_client
                 .user_login(phone, code)
                 .context("issue logging in")?;
+            println!("{:#?}", result);
+        }
+        Commands::Batch { filename, price } => {
+            let result = galoy_client
+                .batch(filename, price)
+                .context("issue batching payment");
             println!("{:#?}", result);
         }
     };
