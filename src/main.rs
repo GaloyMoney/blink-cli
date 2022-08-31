@@ -14,8 +14,14 @@ use jsonwebtoken::decode_header;
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 struct Cli {
-    #[clap(short, long, value_parser, env = "GALOY_API")]
-    api: Option<String>,
+    #[clap(
+        short,
+        long,
+        value_parser,
+        env = "GALOY_API",
+        default_value = "http://localhost:4002/graphql"
+    )]
+    api: String,
 
     #[clap(short, long, value_parser, default_value_t = false)]
     debug: bool,
@@ -61,9 +67,7 @@ fn main() -> anyhow::Result<()> {
         log::set_max_level(LevelFilter::Debug);
     }
 
-    let api = cli
-        .api
-        .unwrap_or_else(|| String::from("http://localhost:4002/graphql"));
+    let api = cli.api;
 
     Url::parse(&api).context(format!("API: {api} is not valid"))?;
 
