@@ -11,6 +11,7 @@ use rust_decimal_macros::dec;
 pub struct PaymentInput {
     pub username: String,
     pub usd: Decimal,
+    pub memo: Option<String>,
 }
 
 impl From<PaymentInput> for Payment {
@@ -20,6 +21,7 @@ impl From<PaymentInput> for Payment {
             usd: input.usd,
             sats: None,
             wallet_id: None,
+            memo: input.memo,
         }
     }
 }
@@ -30,6 +32,7 @@ struct Payment {
     usd: Decimal,
     sats: Option<Decimal>,
     wallet_id: Option<String>,
+    memo: Option<String>,
 }
 
 pub struct Batch {
@@ -162,6 +165,7 @@ impl Batch {
 
         for payment in self.payments.iter() {
             let username = payment.username.clone();
+            let memo = payment.memo.clone();
             let amount = match &payment.sats {
                 Some(value) => Decimal::try_into(*value).context("number conversion issue")?,
                 None => bail!("need sats amount"),
@@ -169,7 +173,7 @@ impl Batch {
             let usd = &payment.usd;
             let res = &self
                 .client
-                .intraleger_send(username.clone(), amount)
+                .intraleger_send(username.clone(), amount, memo)
                 .context("issue sending intraledger")?;
 
             println!(
