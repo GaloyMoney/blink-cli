@@ -7,7 +7,7 @@ use url::Url;
 
 use galoy_client::GaloyClient;
 
-use anyhow::Context;
+use anyhow::{bail, Context};
 
 use jsonwebtoken::decode_header;
 
@@ -61,7 +61,12 @@ enum Commands {
     /// get JWT of an account
     Login { phone: String, code: String },
     /// execute a batch payment
-    Batch { filename: String, price: Decimal },
+    Batch {
+        filename: String,
+        price: Decimal,
+        #[clap(short, long)]
+        force: bool,
+    },
 }
 
 fn main() -> anyhow::Result<()> {
@@ -83,7 +88,7 @@ fn main() -> anyhow::Result<()> {
     }
 
     info!("using api: {api} and jwt: {:?}", &jwt);
-    let galoy_client = GaloyClient::new(api, jwt);
+    let galoy_client = GaloyClient::new(api, jwt.clone());
 
     match cli.command {
         Commands::Getinfo {} => {
@@ -92,20 +97,6 @@ fn main() -> anyhow::Result<()> {
         }
         Commands::DefaultWallet { username } => {
             let result = galoy_client.default_wallet(username)?;
-            println!("{:#?}", result);
-        }
-        Commands::Me => {
-            let result = galoy_client.me().context("can't get me")?;
-            println!("{:#?}", result);
-        }
-        Commands::SendIntraledger {
-            username,
-            amount,
-            memo,
-        } => {
-            let result = galoy_client
-                .intraleger_send(username, amount, memo)
-                .context("issue sending intraledger")?;
             println!("{:#?}", result);
         }
         Commands::RequestPhoneCode { phone } => {
@@ -120,9 +111,40 @@ fn main() -> anyhow::Result<()> {
                 .context("issue logging in")?;
             println!("{:#?}", result);
         }
-        Commands::Batch { filename, price } => {
+
+        Commands::Me => {
+            if jwt.is_none() {
+                bail!("need JWT");
+            }
+
+            let result = galoy_client.me().context("can't get me")?;
+            println!("{:#?}", result);
+        }
+        Commands::SendIntraledger {
+            username,
+            amount,
+            memo,
+        } => {
+            if jwt.is_none() {
+                bail!("need JWT");
+            }
+
             let result = galoy_client
-                .batch(filename, price)
+                .intraleger_send(username, amount, memo)
+                .context("issue sending intraledger")?;
+            println!("{:#?}", result);
+        }
+        Commands::Batch {
+            filename,
+            price,
+            force,
+        } => {
+            if jwt.is_none() {
+                bail!("need JWT");
+            }
+
+            let result = galoy_client
+                .batch(filename, price, force)
                 .context("issue batching payment");
             println!("{:#?}", result);
         }
