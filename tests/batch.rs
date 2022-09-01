@@ -14,7 +14,7 @@ fn batch_csv() {
     let mut batch = Batch::new(galoy_client, dec!(10_000));
 
     batch.add_csv(filename).unwrap();
-    assert_eq!(batch.len(), 1);
+    assert_eq!(batch.len(), 2);
 
     assert!(batch.populate_wallet_id().is_ok());
     assert!(batch.populate_sats().is_ok());

@@ -1,2 +1,3 @@
-username,usd
-userB,100
+username,usd,memo
+userB,5,
+userB,10,my memo
