@@ -81,7 +81,9 @@ fn intraledger_send() {
 
     let amount = dec!(2);
 
-    let result = galoy_client.intraleger_send(username, amount);
+    let memo = Some("test_integration".to_string());
+
+    let result = galoy_client.intraleger_send(username, amount, memo);
 
     assert!(result.is_ok())
 }

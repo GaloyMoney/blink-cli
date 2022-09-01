@@ -51,6 +51,7 @@ enum Commands {
         #[clap(value_parser)]
         username: String,
         amount: Decimal,
+        memo: Option<String>,
     },
     /// Request a code from a Phone number
     RequestPhoneCode {
@@ -97,9 +98,13 @@ fn main() -> anyhow::Result<()> {
             let result = galoy_client.me().context("can't get me")?;
             println!("{:#?}", result);
         }
-        Commands::SendIntraledger { username, amount } => {
+        Commands::SendIntraledger {
+            username,
+            amount,
+            memo,
+        } => {
             let result = galoy_client
-                .intraleger_send(username, amount)
+                .intraleger_send(username, amount, memo)
                 .context("issue sending intraledger")?;
             println!("{:#?}", result);
         }

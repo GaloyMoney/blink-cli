@@ -144,6 +144,7 @@ impl GaloyClient {
         &self,
         username: String,
         amount: Decimal,
+        memo: Option<String>,
     ) -> anyhow::Result<PaymentSendResult> {
         let me = self.me()?;
         let wallet_id = me.default_account.default_wallet_id;
@@ -152,7 +153,7 @@ impl GaloyClient {
 
         let input = IntraLedgerPaymentSendInput {
             amount,
-            memo: None,
+            memo,
             recipient_wallet_id,
             wallet_id,
         };

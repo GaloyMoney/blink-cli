@@ -14,7 +14,7 @@ fn batch_csv() {
     let mut batch = Batch::new(galoy_client, dec!(10_000));
 
     batch.add_csv(filename).unwrap();
-    assert_eq!(batch.len(), 1);
+    assert_eq!(batch.len(), 2);
 
     assert!(batch.populate_wallet_id().is_ok());
     assert!(batch.populate_sats().is_ok());
@@ -41,6 +41,7 @@ fn batch_cant_pay_self() {
     batch.add(PaymentInput {
         username: "userA".to_string(),
         usd: dec!(10),
+        memo: None,
     });
 
     assert!(batch.populate_wallet_id().is_ok());
@@ -68,6 +69,7 @@ fn batch_balance_too_low() {
     batch.add(PaymentInput {
         username: "userB".to_string(),
         usd: dec!(1_000_000_000),
+        memo: None,
     });
 
     assert!(batch.populate_wallet_id().is_ok());
@@ -95,10 +97,12 @@ fn execute_batch() {
     batch.add(PaymentInput {
         username: "userB".to_string(),
         usd: dec!(2),
+        memo: None,
     });
     batch.add(PaymentInput {
         username: "userB".to_string(),
         usd: dec!(5),
+        memo: Some("memo for second batch tx".to_string()),
     });
 
     assert!(batch.populate_wallet_id().is_ok());
