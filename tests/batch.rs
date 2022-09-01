@@ -4,12 +4,13 @@ use galoy_client::GaloyClient;
 use galoy_client::batch::PaymentInput;
 use rust_decimal_macros::dec;
 
+mod common;
+
 #[test]
 fn batch_csv() {
     let filename = "./tests/fixtures/example.csv".to_string();
 
-    let api = "http://localhost:4002/graphql".to_string();
-    let galoy_client = GaloyClient::new(api, None);
+    let galoy_client = common::unauth_client();
 
     let mut batch = Batch::new(galoy_client, dec!(10_000));
 
@@ -24,17 +25,7 @@ fn batch_csv() {
 
 #[test]
 fn batch_cant_pay_self() {
-    let api = "http://localhost:4002/graphql".to_string();
-    let galoy_client = GaloyClient::new(api.clone(), None);
-
-    let phone = "+16505554321".to_string();
-    let code = "321321".to_string();
-
-    let jwt = galoy_client
-        .user_login(phone, code)
-        .expect("request should succeed");
-
-    let galoy_client = GaloyClient::new(api, Some(jwt));
+    let galoy_client = common::auth_client();
 
     let mut batch = Batch::new(galoy_client, dec!(10_000));
 
@@ -52,17 +43,7 @@ fn batch_cant_pay_self() {
 
 #[test]
 fn batch_balance_too_low() {
-    let api = "http://localhost:4002/graphql".to_string();
-    let galoy_client = GaloyClient::new(api.clone(), None);
-
-    let phone = "+16505554321".to_string();
-    let code = "321321".to_string();
-
-    let jwt = galoy_client
-        .user_login(phone, code)
-        .expect("request should succeed");
-
-    let galoy_client = GaloyClient::new(api, Some(jwt));
+    let galoy_client = common::auth_client();
 
     let mut batch = Batch::new(galoy_client, dec!(10_000));
 
@@ -80,17 +61,7 @@ fn batch_balance_too_low() {
 
 #[test]
 fn execute_batch() {
-    let api = "http://localhost:4002/graphql".to_string();
-    let galoy_client = GaloyClient::new(api.clone(), None);
-
-    let phone = "+16505554321".to_string();
-    let code = "321321".to_string();
-
-    let jwt = galoy_client
-        .user_login(phone, code)
-        .expect("request should succeed");
-
-    let galoy_client = GaloyClient::new(api, Some(jwt));
+    let galoy_client = common::auth_client();
 
     let mut batch = Batch::new(galoy_client, dec!(10_000));
 
