@@ -58,7 +58,7 @@ enum Commands {
         phone: String,
     },
     /// get JWT of an account
-    UserLogin { phone: String, code: String },
+    Login { phone: String, code: String },
     /// execute a batch payment
     Batch { filename: String, price: Decimal },
 }
@@ -109,7 +109,7 @@ fn main() -> anyhow::Result<()> {
                 .context("issue getting code")?;
             println!("{:#?}", result);
         }
-        Commands::UserLogin { phone, code } => {
+        Commands::Login { phone, code } => {
             let result = galoy_client
                 .user_login(phone, code)
                 .context("issue logging in")?;
