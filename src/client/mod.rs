@@ -54,13 +54,17 @@ impl GaloyClient {
     }
 
     pub fn default_wallet(&self, username: String) -> anyhow::Result<String> {
-        let variables = query_default_wallet::Variables { username };
+        let variables = query_default_wallet::Variables {
+            username: username.clone(),
+        };
 
         let response_body =
             post_graphql::<QueryDefaultWallet, _>(&self.graphql_client, &self.api, variables)
                 .context("issue fetching response")?;
 
-        let response_data = response_body.data.context("Username doesn't exist")?;
+        let response_data = response_body
+            .data
+            .context(format!("Username {username} doesn't exist"))?;
 
         let recipient_wallet_id = response_data.account_default_wallet.id;
 
@@ -71,9 +75,9 @@ impl GaloyClient {
         let variables = query_me::Variables;
 
         let response_body = post_graphql::<QueryMe, _>(&self.graphql_client, &self.api, variables)
-            .context("issue fetching response")?;
+            .context("issue getting response")?;
 
-        let response_data = response_body.data.context("Empty fields")?; // TODO: check the error given is correct
+        let response_data = response_body.data.context("issue parsing response")?; // TODO: check the error given is correct
 
         let me = response_data.me.context("impossible to unwrap .me")?;
         let default_account = &me.id;

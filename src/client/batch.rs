@@ -74,8 +74,8 @@ impl Batch {
 
     pub fn populate_wallet_id(&mut self) -> anyhow::Result<()> {
         for payment in self.payments.iter_mut() {
-            let username = payment.username.to_string();
-            let query = &self.client.default_wallet(username.clone());
+            let username = payment.username.clone();
+            let query = &self.client.default_wallet(username);
             match query {
                 Ok(value) => payment.wallet_id = Some(value.clone()),
                 Err(error) => bail!("error query {:?}", error),
@@ -111,6 +111,10 @@ impl Batch {
         }
 
         Ok(())
+    }
+
+    pub fn check_limit(&self) -> anyhow::Result<()> {
+        todo!("Check limit. need API on the backend for it");
     }
 
     pub fn check_balance(&self) -> anyhow::Result<()> {

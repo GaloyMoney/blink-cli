@@ -23,7 +23,7 @@ fn default_wallet_for_username() {
     let api = "http://localhost:4002/graphql".to_string();
     // TODO: setup settings
 
-    let username = "wrong username".to_string();
+    let username = "doesnotexit".to_string();
 
     let galoy_client = GaloyClient::new(api, None);
     let query = galoy_client.default_wallet(username);
@@ -31,7 +31,7 @@ fn default_wallet_for_username() {
     assert_eq!(query.is_err(), true);
 
     if let Err(value) = query {
-        assert_eq!(value.to_string(), "Username doesn't exist");
+        assert_eq!(value.to_string(), "Username doesnotexit doesn't exist");
     } else {
         panic!("should error")
     }
