@@ -1,4 +1,4 @@
-use super::*;
+use galoy_client::GaloyClient;
 
 pub fn unauth_client() -> galoy_client::GaloyClient {
     let api = "http://localhost:4002/graphql".to_string();
