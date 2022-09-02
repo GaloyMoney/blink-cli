@@ -12,6 +12,8 @@ use batch::Batch;
 
 use rust_decimal::Decimal;
 
+use std::io;
+
 pub struct GaloyClient {
     graphql_client: Client,
     api: String,
@@ -179,8 +181,7 @@ impl GaloyClient {
         }
     }
 
-    // TODO: check if we can do self without &
-    pub fn batch(self, filename: String, price: Decimal) -> anyhow::Result<()> {
+    pub fn batch(self, filename: String, price: Decimal, force: bool) -> anyhow::Result<()> {
         let mut batch = Batch::new(self, price);
 
         batch.add_csv(filename).context("can't load file")?;
@@ -195,6 +196,20 @@ impl GaloyClient {
 
         println!("going to execute:");
         batch.show();
+
+        if !force {
+            println!("do you want to confirm? y/n");
+
+            let mut input = String::new();
+
+            io::stdin()
+                .read_line(&mut input)
+                .expect("error: unable to read user input");
+
+            if !(input.trim() == "y" || input.trim() == "yes") {
+                bail!("didn't confirm batch payment. exiting")
+            }
+        }
 
         batch.execute().context("can't make payment successfully")?;
 
