@@ -3,6 +3,7 @@
 
 use clap::{Parser, Subcommand};
 use log::{self, info, LevelFilter};
+use rpassword::prompt_password;
 use url::Url;
 
 use galoy_client::GaloyClient;
@@ -62,6 +63,8 @@ enum Commands {
     Login { phone: String, code: String },
     /// execute a batch payment
     Batch { filename: String, price: Decimal },
+    /// execute kratos login flow
+    KratosLogin { email: String },
 }
 
 fn main() -> anyhow::Result<()> {
@@ -125,6 +128,10 @@ fn main() -> anyhow::Result<()> {
                 .batch(filename, price)
                 .context("issue batching payment");
             println!("{:#?}", result);
+        }
+        Commands::KratosLogin { email } => {
+            let password = prompt_password("Enter your password: ").unwrap();
+            println!("{} {}", email, password);
         }
     };
 

@@ -295,6 +295,7 @@ dependencies = [
  "jsonwebtoken",
  "log",
  "reqwest",
+ "rpassword",
  "rust_decimal",
  "rust_decimal_macros",
  "serde",
@@ -866,6 +867,16 @@ dependencies = [
  "spin",
  "untrusted",
  "web-sys",
+ "winapi",
+]
+
+[[package]]
+name = "rpassword"
+version = "7.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "20c9f5d2a0c3e2ea729ab3706d22217177770654c3ef5056b68b69d07332d3f5"
+dependencies = [
+ "libc",
  "winapi",
 ]
 
