@@ -26,6 +26,14 @@ struct Cli {
     )]
     api: String,
 
+    #[clap(
+        long,
+        value_parser,
+        env = "GALOY_AUTH",
+        default_value = "http://localhost:4443/.kratos"
+    )]
+    auth: String,
+
     #[clap(short, long, value_parser, default_value_t = false)]
     debug: bool,
 
@@ -76,17 +84,19 @@ fn main() -> anyhow::Result<()> {
     }
 
     let api = cli.api;
-
     Url::parse(&api).context(format!("API: {api} is not valid"))?;
 
-    let jwt = cli.jwt;
+    let auth = cli.auth;
+    Url::parse(&auth).context(format!("AUTH: {auth} is not valid"))?;
 
+    let jwt = cli.jwt;
     if let Some(jwt) = &jwt {
         decode_header(jwt).context("jwt syntax issue")?;
     }
 
     info!("using api: {api} and jwt: {:?}", &jwt);
-    let galoy_client = GaloyClient::new(api, jwt);
+
+    let galoy_client = GaloyClient::new(api, auth, jwt);
 
     match cli.command {
         Commands::Getinfo {} => {
@@ -131,7 +141,7 @@ fn main() -> anyhow::Result<()> {
         }
         Commands::KratosLogin { email } => {
             let password = prompt_password("Enter your password: ").unwrap();
-            println!("{} {}", email, password);
+            galoy_client.kratos_login(email, password);
         }
     };
 

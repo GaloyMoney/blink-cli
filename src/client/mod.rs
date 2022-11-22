@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use anyhow::{bail, Context};
 use graphql_client::reqwest::post_graphql_blocking as post_graphql;
 use log::info;
@@ -11,14 +13,16 @@ pub mod batch;
 use batch::Batch;
 
 use rust_decimal::Decimal;
+use serde::Deserialize;
 
 pub struct GaloyClient {
     graphql_client: Client,
     api: String,
+    auth: String,
 }
 
 impl GaloyClient {
-    pub fn new(api: String, jwt: Option<String>) -> Self {
+    pub fn new(api: String, auth: String, jwt: Option<String>) -> Self {
         let mut client_builder = Client::builder();
 
         if let Some(jwt) = jwt {
@@ -36,6 +40,7 @@ impl GaloyClient {
         Self {
             graphql_client,
             api,
+            auth,
         }
     }
 
@@ -197,6 +202,35 @@ impl GaloyClient {
         batch.show();
 
         batch.execute().context("can't make payment successfully")?;
+
+        Ok(())
+    }
+
+    pub fn kratos_login(&self, email: String, password: String) -> anyhow::Result<()> {
+        #[derive(Deserialize)]
+        struct KratosLoginFlowInitResponse {
+            id: String,
+        }
+
+        let init_body: KratosLoginFlowInitResponse =
+            reqwest::blocking::get(format!("{}/self-service/login/api", self.auth))?.json()?;
+
+        let mut data = HashMap::new();
+        data.insert("method", "password");
+        data.insert("identifier", email.as_str());
+        data.insert("password", password.as_str());
+
+        let client = reqwest::blocking::Client::new();
+        let login_body = client
+            .post(format!(
+                "{}/self-service/login?flow={}",
+                self.auth, init_body.id
+            ))
+            .json(&data)
+            .send()?
+            .text()?;
+
+        println!("{:?}", login_body);
 
         Ok(())
     }
