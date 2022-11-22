@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="./gt.js"></script>
+</head>
+<body>
+  Hello test
+  <div id="captcha"></div>
+  <script>
+    const { id, challengeCode, newCaptcha, failbackMode } = JSON.parse(prompt());
+    const captchaHandler = (captchaObj) => {
+      const onSuccess = () => {
+        const result = captchaObj.getValidate()
+        console.log(result);
+      }
+
+      captchaObj.appendTo("#captcha")
+      captchaObj
+        .onReady(() => { captchaObj.verify() })
+        .onSuccess(onSuccess)
+        .onError((err) => {
+          console.log("[Captcha error]:", err)   
+      })
+    }
+    window.initGeetest(
+      {
+        gt: id,
+        challenge: challengeCode,
+        offline: failbackMode,
+        // eslint-disable-next-line camelcase
+        new_captcha: newCaptcha,
+
+        lang: "en",
+        product: "bind",
+      },
+      captchaHandler,
+    )
+  </script>
+</body>
+</html>

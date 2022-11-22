@@ -1,0 +1,14 @@
+mutation CaptchaCreateChallenge {
+  captchaCreateChallenge {
+    errors {
+      __typename
+      message
+    }
+    result {
+      id
+      challengeCode
+      newCaptcha
+      failbackMode
+    }
+  }
+}

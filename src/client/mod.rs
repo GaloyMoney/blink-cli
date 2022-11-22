@@ -90,33 +90,35 @@ impl GaloyClient {
         Ok(me)
     }
 
-    pub fn request_auth_code(&self, phone: String) -> anyhow::Result<bool> {
-        let input = UserRequestAuthCodeInput { phone };
+    pub fn request_phone_code(&self, phone: String) -> anyhow::Result<bool> {
+        let input = CaptchaCreateChallengePayload {};
 
-        let variables = user_request_auth_code::Variables { input };
+        // let variables = user_request_auth_code::Variables { input };
 
-        let response_body =
-            post_graphql::<UserRequestAuthCode, _>(&self.graphql_client, &self.api, variables)
-                .context("issue fetching response")?;
+        // let response_body =
+        //     post_graphql::<UserRequestAuthCode, _>(&self.graphql_client, &self.api, variables)
+        //         .context("issue fetching response")?;
 
-        let response_data = response_body.data.context("Query failed or is empty")?; // TODO: understand when this can fail here
+        // let response_data = response_body.data.context("Query failed or is empty")?; // TODO: understand when this can fail here
 
-        let UserRequestAuthCodeUserRequestAuthCode { success, errors } =
-            response_data.user_request_auth_code;
+        // let UserRequestAuthCodeUserRequestAuthCode { success, errors } =
+        //     response_data.user_request_auth_code;
 
-        match success {
-            Some(true) => Ok(true),
-            _ if !errors.is_empty() => {
-                println!("{:?}", errors);
-                bail!("request failed (graphql errors)")
-            }
-            Some(false) => {
-                bail!("request failed (success is false)")
-            }
-            _ => {
-                bail!("request failed (unknown)");
-            }
-        }
+        // match success {
+        //     Some(true) => Ok(true),
+        //     _ if !errors.is_empty() => {
+        //         println!("{:?}", errors);
+        //         bail!("request failed (graphql errors)")
+        //     }
+        //     Some(false) => {
+        //         bail!("request failed (success is false)")
+        //     }
+        //     _ => {
+        //         bail!("request failed (unknown)");
+        //     }
+        // }
+
+        Ok(true)
     }
 
     pub fn user_login(&self, phone: String, code: String) -> anyhow::Result<String> {

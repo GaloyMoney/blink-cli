@@ -110,7 +110,7 @@ fn main() -> anyhow::Result<()> {
         }
         Commands::RequestPhoneCode { phone } => {
             let result = galoy_client
-                .request_auth_code(phone)
+                .request_phone_code(phone)
                 .context("issue getting code")?;
             println!("{:#?}", result);
         }

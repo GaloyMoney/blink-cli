@@ -71,3 +71,23 @@ pub use self::user_login::UserLoginUserLogin;
 pub(super) struct UserRequestAuthCode;
 pub use self::user_request_auth_code::UserRequestAuthCodeInput;
 pub use self::user_request_auth_code::UserRequestAuthCodeUserRequestAuthCode;
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "src/client/graphql/schema.graphql",
+    query_path = "src/client/graphql/mutations/captcha_create_challenge.graphql",
+    response_derives = "Debug, Serialize"
+)]
+pub(super) struct CaptchaCreateChallenge;
+pub use self::captcha_create_challenge::CaptchaCreateChallengeCaptchaCreateChallenge;
+pub use self::captcha_create_challenge::CaptchaCreateChallengeCaptchaCreateChallengeResult;
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "src/client/graphql/schema.graphql",
+    query_path = "src/client/graphql/mutations/captcha_request_auth_code.graphql",
+    response_derives = "Debug, Serialize"
+)]
+pub(super) struct CaptchaRequestAuthCode;
+pub use self::captcha_request_auth_code::CaptchaRequestAuthCodeCaptchaRequestAuthCode;
+pub use self::captcha_request_auth_code::CaptchaRequestAuthCodeInput;

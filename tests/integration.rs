@@ -47,7 +47,7 @@ fn login() {
     let code = "321321".to_string();
 
     let result = galoy_client
-        .request_auth_code(phone.clone())
+        .request_phone_code(phone.clone())
         .expect("request should succeed");
     assert!(result);
 
