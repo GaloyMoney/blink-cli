@@ -20,6 +20,9 @@ type SignedAmount = Decimal;
     response_derives = "Debug, Serialize"
 )]
 pub(super) struct QueryDefaultWallet;
+use crate::error::CliError;
+
+use self::captcha_create_challenge::ResponseData;
 pub use self::query_default_wallet::QueryDefaultWalletAccountDefaultWallet;
 
 #[derive(GraphQLQuery)]
@@ -81,6 +84,37 @@ pub use self::user_request_auth_code::UserRequestAuthCodeUserRequestAuthCode;
 pub(super) struct CaptchaCreateChallenge;
 pub use self::captcha_create_challenge::CaptchaCreateChallengeCaptchaCreateChallenge;
 pub use self::captcha_create_challenge::CaptchaCreateChallengeCaptchaCreateChallengeResult;
+
+pub struct CaptchaChallenge {
+    pub id: String,
+    pub challenge_code: String,
+    pub new_captcha: bool,
+    pub failback_mode: bool,
+}
+
+impl TryFrom<ResponseData> for CaptchaChallenge {
+    type Error = CliError;
+
+    fn try_from(response: ResponseData) -> Result<Self, Self::Error> {
+        let result = response.captcha_create_challenge.result;
+        let challenge = result.ok_or_else(|| {
+            CliError::CaptchaInnerError("Empty captcha create challenge".to_string())
+        })?;
+
+        let (id, challenge_code, new_captcha, failback_mode) = (
+            challenge.id,
+            challenge.challenge_code,
+            challenge.new_captcha,
+            challenge.failback_mode,
+        );
+        Ok(CaptchaChallenge {
+            id,
+            challenge_code,
+            new_captcha,
+            failback_mode,
+        })
+    }
+}
 
 #[derive(GraphQLQuery)]
 #[graphql(

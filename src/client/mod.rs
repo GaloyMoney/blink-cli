@@ -7,6 +7,8 @@ mod queries;
 
 use queries::*;
 
+pub mod error;
+pub use error::*;
 pub mod batch;
 use batch::Batch;
 
@@ -90,8 +92,8 @@ impl GaloyClient {
         Ok(me)
     }
 
-    pub fn request_phone_code(&self, phone: String) -> anyhow::Result<bool> {
-        let input = CaptchaCreateChallengePayload {};
+    pub fn request_phone_code(&self, _phone: String) -> anyhow::Result<bool> {
+        // let input = CaptchaCreateChallengePayload {};
 
         // let variables = user_request_auth_code::Variables { input };
 
@@ -140,6 +142,17 @@ impl GaloyClient {
             println!("{:?}", response_data.user_login.errors);
             bail!("request failed (graphql errors)")
         }
+    }
+
+    pub fn alt_user_login(&self) -> Result<CaptchaChallenge, CliError> {
+        // 1. spawn a server, (axum?)
+        // 2. create captcha mutation
+        let captcha_challenge = self.create_captcha_challenge()?;
+        Ok(captcha_challenge)
+        // 3. user gets url to solve captcha
+        // 4. solved captcha redirects to spawned server in 1
+        // 5. cli progresses to captcha request auth code
+        // 6. user receives one-time password if 5 above succeeds
     }
 
     pub fn intraleger_send(
@@ -201,5 +214,22 @@ impl GaloyClient {
         batch.execute().context("can't make payment successfully")?;
 
         Ok(())
+    }
+
+    fn create_captcha_challenge(&self) -> Result<CaptchaChallenge, CliError> {
+        let variables = captcha_create_challenge::Variables;
+        let response =
+            post_graphql::<CaptchaCreateChallenge, _>(&self.graphql_client, &self.api, variables)?;
+        if response.errors.is_some() {
+            if let Some(error) = response.errors {
+                return Err(CliError::CaptchaTopLevelError(error));
+            }
+        }
+        let response = response.data.ok_or_else(|| {
+            CliError::CaptchaInnerError("Empty captcha response data".to_string())
+        })?;
+        let captcha_challenge_result = CaptchaChallenge::try_from(response)?;
+
+        Ok(captcha_challenge_result)
     }
 }

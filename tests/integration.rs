@@ -71,3 +71,17 @@ fn intraledger_send() {
 
     assert!(result.is_ok())
 }
+
+/// WIP test. To be updated as other login features are implemented
+#[test]
+fn alternative_captcha_login() -> anyhow::Result<()> {
+    let galoy_client = common::unauth_client();
+    let captcha = galoy_client.alt_user_login()?;
+
+    assert!(captcha.failback_mode == false);
+    assert!(captcha.new_captcha == true);
+    assert_eq!(captcha.id.len(), 32);
+    assert_eq!(captcha.challenge_code.len(), 32);
+
+    Ok(())
+}
