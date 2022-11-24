@@ -1,18 +1,21 @@
 use anyhow::{bail, Context};
 use graphql_client::reqwest::post_graphql_blocking as post_graphql;
-use log::info;
 use reqwest::blocking::Client;
 
-mod queries;
+use log::info;
+use rust_decimal::Decimal;
+use std::net::TcpListener;
 
-use queries::*;
+pub mod queries;
+pub use queries::*;
 
 pub mod error;
 pub use error::*;
-pub mod batch;
-use batch::Batch;
 
-use rust_decimal::Decimal;
+pub mod batch;
+pub use batch::Batch;
+
+pub mod server;
 
 pub struct GaloyClient {
     graphql_client: Client,
@@ -92,35 +95,21 @@ impl GaloyClient {
         Ok(me)
     }
 
-    pub fn request_phone_code(&self, _phone: String) -> anyhow::Result<bool> {
-        // let input = CaptchaCreateChallengePayload {};
+    pub fn request_phone_code(&self, _phone: String) -> std::io::Result<()> {
+        let captcha_challenge = self
+            .create_captcha_challenge()
+            .expect("Failed to get captcha");
 
-        // let variables = user_request_auth_code::Variables { input };
+        println!("Starting Actix Web Server...");
 
-        // let response_body =
-        //     post_graphql::<UserRequestAuthCode, _>(&self.graphql_client, &self.api, variables)
-        //         .context("issue fetching response")?;
+        let listener = TcpListener::bind("127.0.0.1:0")?;
+        let port = listener.local_addr().unwrap().port();
+        println!("Visit http://127.0.0.1:{}/healthz", port);
 
-        // let response_data = response_body.data.context("Query failed or is empty")?; // TODO: understand when this can fail here
-
-        // let UserRequestAuthCodeUserRequestAuthCode { success, errors } =
-        //     response_data.user_request_auth_code;
-
-        // match success {
-        //     Some(true) => Ok(true),
-        //     _ if !errors.is_empty() => {
-        //         println!("{:?}", errors);
-        //         bail!("request failed (graphql errors)")
-        //     }
-        //     Some(false) => {
-        //         bail!("request failed (success is false)")
-        //     }
-        //     _ => {
-        //         bail!("request failed (unknown)");
-        //     }
-        // }
-
-        Ok(true)
+        let rt = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()?;
+        rt.block_on(server::run(listener, captcha_challenge)?)
     }
 
     pub fn user_login(&self, phone: String, code: String) -> anyhow::Result<String> {
@@ -142,17 +131,6 @@ impl GaloyClient {
             println!("{:?}", response_data.user_login.errors);
             bail!("request failed (graphql errors)")
         }
-    }
-
-    pub fn alt_user_login(&self) -> Result<CaptchaChallenge, CliError> {
-        // 1. spawn a server, (axum?)
-        // 2. create captcha mutation
-        let captcha_challenge = self.create_captcha_challenge()?;
-        Ok(captcha_challenge)
-        // 3. user gets url to solve captcha
-        // 4. solved captcha redirects to spawned server in 1
-        // 5. cli progresses to captcha request auth code
-        // 6. user receives one-time password if 5 above succeeds
     }
 
     pub fn intraleger_send(

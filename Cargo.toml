@@ -24,3 +24,5 @@ csv = "1.1.6"
 rust_decimal = "1.26.1"
 rust_decimal_macros = "1.20"
 thiserror = "1.0.37"
+actix-web = "4.2.1"
+tokio = { version = "1.22.0", features = ["macros", "rt-multi-thread"] }
