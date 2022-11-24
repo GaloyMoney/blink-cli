@@ -96,15 +96,18 @@ impl GaloyClient {
     }
 
     pub fn request_phone_code(&self, _phone: String) -> std::io::Result<()> {
+        println!("Fetching Captcha Challenge...");
+
         let captcha_challenge = self
             .create_captcha_challenge()
             .expect("Failed to get captcha");
 
-        println!("Starting Actix Web Server...");
-
         let listener = TcpListener::bind("127.0.0.1:0")?;
         let port = listener.local_addr().unwrap().port();
-        println!("Visit http://127.0.0.1:{}/healthz", port);
+        println!(
+            "Visit http://127.0.0.1:{}/login and solve the Captcha",
+            port
+        );
 
         let rt = tokio::runtime::Builder::new_current_thread()
             .enable_all()

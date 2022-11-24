@@ -5,13 +5,22 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
-  <script src="./gt.js"></script>
+  <script src="/static/gt.js"></script>
 </head>
 <body>
-  Hello test
+  <h1>id: {{id}}</h1>
+  <h1>new_captcha: {{new_captcha}}</h1>
+  <h1>failback_mode: {{failback_mode}}</h1>
+  <h1>challenge_code: {{challenge_code}}</h1>
   <div id="captcha"></div>
   <script>
-    const { id, challengeCode, newCaptcha, failbackMode } = JSON.parse(prompt());
+    const { id, challengeCode, newCaptcha, failbackMode } = JSON.parse(`{
+      "id": "{{id}}",
+      "newCaptcha": {{new_captcha}},
+      "failbackMode": {{failback_mode}},
+      "challengeCode": "{{challenge_code}}"
+    }`);
+
     const captchaHandler = (captchaObj) => {
       const onSuccess = () => {
         const result = captchaObj.getValidate()
@@ -26,6 +35,7 @@
           console.log("[Captcha error]:", err)   
       })
     }
+
     window.initGeetest(
       {
         gt: id,
