@@ -1,5 +1,6 @@
 use actix_files as fs;
 use actix_web::{dev::Server, web, App, HttpResponse, HttpServer, Responder};
+use serde::{Deserialize, Serialize};
 use tera::{Context, Tera};
 
 use std::net::TcpListener;
@@ -18,6 +19,18 @@ async fn login(cc: web::Data<CaptchaChallenge>, tera: web::Data<Tera>) -> impl R
     HttpResponse::Ok().body(rendered)
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+struct GeetestResponse {
+    geetest_challenge: String,
+    geetest_seccode: String,
+    geetest_validate: String,
+}
+
+async fn solve(r: web::Json<GeetestResponse>) -> impl Responder {
+    println!("{:?}", r);
+    HttpResponse::Ok()
+}
+
 pub fn run(listener: TcpListener, cc: CaptchaChallenge) -> Result<Server, std::io::Error> {
     let cc_appdata = web::Data::new(cc);
     let tera_appdata =
@@ -26,6 +39,7 @@ pub fn run(listener: TcpListener, cc: CaptchaChallenge) -> Result<Server, std::i
         App::new()
             .service(fs::Files::new("/static", "src/public/").show_files_listing())
             .route("/login", web::get().to(login))
+            .route("/solve", web::post().to(solve))
             .app_data(cc_appdata.clone())
             .app_data(tera_appdata.clone())
     })

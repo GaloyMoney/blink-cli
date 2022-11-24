@@ -8,10 +8,10 @@
   <script src="/static/gt.js"></script>
 </head>
 <body>
-  <h1>id: {{id}}</h1>
-  <h1>new_captcha: {{new_captcha}}</h1>
-  <h1>failback_mode: {{failback_mode}}</h1>
-  <h1>challenge_code: {{challenge_code}}</h1>
+  <h1>Galoy CLI Captcha Solver</h1>
+  <p>Please solve the Captcha that will appear from Geetest!</p>
+  <h2 id="solved" style="display: none;">The Captcha is solved, return back to the CLI. 
+    You can close this browser window too.</h2>
   <div id="captcha"></div>
   <script>
     const { id, challengeCode, newCaptcha, failbackMode } = JSON.parse(`{
@@ -25,6 +25,15 @@
       const onSuccess = () => {
         const result = captchaObj.getValidate()
         console.log(result);
+
+        fetch("/solve", {
+          method: "POST", 
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify(result),
+        }).finally(res => {
+          console.log("Captcha Submitted!")
+          document.querySelector("#solved").style.display = "block";
+        })
       }
 
       captchaObj.appendTo("#captcha")
