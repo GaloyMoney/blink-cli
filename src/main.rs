@@ -109,10 +109,9 @@ fn main() -> anyhow::Result<()> {
             println!("{:#?}", result);
         }
         Commands::RequestPhoneCode { phone } => {
-            let result = galoy_client
+            galoy_client
                 .request_phone_code(phone)
-                .context("issue getting code")?;
-            println!("{:#?}", result);
+                .expect("issue getting code");
         }
         Commands::Login { phone, code } => {
             let result = galoy_client
