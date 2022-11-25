@@ -20,10 +20,14 @@ type SignedAmount = Decimal;
     response_derives = "Debug, Serialize"
 )]
 pub(super) struct QueryDefaultWallet;
-use crate::error::CliError;
+// use crate::error::CliError;
+
+use crate::message_only_error;
+use crate::GaloyCliError;
 
 use self::captcha_create_challenge::ResponseData;
 pub use self::query_default_wallet::QueryDefaultWalletAccountDefaultWallet;
+pub type DefaultWallet = QueryDefaultWalletAccountDefaultWallet;
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -42,6 +46,7 @@ pub use self::query_globals::QueryGlobalsGlobals;
 )]
 pub(super) struct QueryMe;
 pub use self::query_me::QueryMeMe;
+pub type Me = QueryMeMe;
 
 // mutations
 
@@ -51,7 +56,7 @@ pub use self::query_me::QueryMeMe;
     query_path = "src/client/graphql/mutations/intraledger_send.graphql",
     response_derives = "Debug, Serialize"
 )]
-pub(super) struct IntraLedgerPaymentSend;
+pub struct IntraLedgerPaymentSend;
 pub use self::intra_ledger_payment_send::IntraLedgerPaymentSendInput;
 pub use self::intra_ledger_payment_send::PaymentSendResult;
 
@@ -93,12 +98,14 @@ pub struct CaptchaChallenge {
 }
 
 impl TryFrom<ResponseData> for CaptchaChallenge {
-    type Error = CliError;
+    type Error = GaloyCliError;
 
     fn try_from(response: ResponseData) -> Result<Self, Self::Error> {
         let result = response.captcha_create_challenge.result;
         let challenge = result.ok_or_else(|| {
-            CliError::CaptchaInnerError("Empty captcha create challenge".to_string())
+            GaloyCliError::GraphQl(message_only_error(
+                "Empty captcha create challenge".to_string(),
+            ))
         })?;
 
         let (id, challenge_code, new_captcha, failback_mode) = (
