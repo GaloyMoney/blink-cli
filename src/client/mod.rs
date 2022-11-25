@@ -97,7 +97,7 @@ impl GaloyClient {
 
     pub fn request_phone_code(&self, phone: String, nocaptcha: bool) -> std::io::Result<()> {
         match nocaptcha {
-            true => {
+            false => {
                 println!("Fetching Captcha Challenge...");
 
                 let cc = self
@@ -117,7 +117,7 @@ impl GaloyClient {
                 rt.block_on(server::run(listener, cc, phone, self.api.clone())?)
             }
 
-            false => {
+            true => {
                 let input = UserRequestAuthCodeInput { phone };
 
                 let variables = user_request_auth_code::Variables { input };
