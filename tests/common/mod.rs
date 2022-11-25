@@ -1,12 +1,12 @@
 use super::*;
 
 pub fn unauth_client() -> galoy_client::GaloyClient {
-    let api = "http://localhost:4002/graphql".to_string();
+    let api = "https://api.staging.galoy.io/graphql".to_string();
     GaloyClient::new(api, None)
 }
 
 pub fn auth_client() -> galoy_client::GaloyClient {
-    let api = "http://localhost:4002/graphql".to_string();
+    let api = "https://api.staging.galoy.io/graphql".to_string();
 
     let galoy_client = unauth_client();
 

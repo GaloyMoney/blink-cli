@@ -5,9 +5,7 @@ use clap::{Parser, Subcommand};
 use log::{self, info, LevelFilter};
 use url::Url;
 
-use galoy_client::GaloyClient;
-
-use anyhow::Context;
+use galoy_client::{GaloyCliError, GaloyClient};
 
 use jsonwebtoken::decode_header;
 
@@ -64,7 +62,7 @@ enum Commands {
     Batch { filename: String, price: Decimal },
 }
 
-fn main() -> anyhow::Result<()> {
+fn main() -> Result<(), GaloyCliError> {
     log::set_max_level(LevelFilter::Warn);
 
     let cli = Cli::parse();
@@ -74,12 +72,12 @@ fn main() -> anyhow::Result<()> {
 
     let api = cli.api;
 
-    Url::parse(&api).context(format!("API: {api} is not valid"))?;
+    Url::parse(&api)?;
 
     let jwt = cli.jwt;
 
     if let Some(jwt) = &jwt {
-        decode_header(jwt).context("jwt syntax issue")?;
+        decode_header(jwt)?;
     }
 
     info!("using api: {api} and jwt: {:?}", &jwt);
@@ -95,7 +93,7 @@ fn main() -> anyhow::Result<()> {
             println!("{:#?}", result);
         }
         Commands::Me => {
-            let result = galoy_client.me().context("can't get me")?;
+            let result = galoy_client.me()?;
             println!("{:#?}", result);
         }
         Commands::SendIntraledger {
@@ -103,27 +101,19 @@ fn main() -> anyhow::Result<()> {
             amount,
             memo,
         } => {
-            let result = galoy_client
-                .intraleger_send(username, amount, memo)
-                .context("issue sending intraledger")?;
+            let result = galoy_client.intraleger_send(username, amount, memo)?;
             println!("{:#?}", result);
         }
         Commands::RequestPhoneCode { phone } => {
-            let result = galoy_client
-                .request_auth_code(phone)
-                .context("issue getting code")?;
+            let result = galoy_client.request_auth_code(phone)?;
             println!("{:#?}", result);
         }
         Commands::Login { phone, code } => {
-            let result = galoy_client
-                .user_login(phone, code)
-                .context("issue logging in")?;
+            let result = galoy_client.user_login(phone, code)?;
             println!("{:#?}", result);
         }
         Commands::Batch { filename, price } => {
-            let result = galoy_client
-                .batch(filename, price)
-                .context("issue batching payment");
+            let result = galoy_client.batch(filename, price);
             println!("{:#?}", result);
         }
     };

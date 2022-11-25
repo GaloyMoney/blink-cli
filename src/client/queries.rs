@@ -21,6 +21,7 @@ type SignedAmount = Decimal;
 )]
 pub(super) struct QueryDefaultWallet;
 pub use self::query_default_wallet::QueryDefaultWalletAccountDefaultWallet;
+pub type DefaultWallet = QueryDefaultWalletAccountDefaultWallet;
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -39,6 +40,7 @@ pub use self::query_globals::QueryGlobalsGlobals;
 )]
 pub(super) struct QueryMe;
 pub use self::query_me::QueryMeMe;
+pub type Me = QueryMeMe;
 
 // mutations
 
@@ -48,7 +50,7 @@ pub use self::query_me::QueryMeMe;
     query_path = "src/client/graphql/mutations/intraledger_send.graphql",
     response_derives = "Debug, Serialize"
 )]
-pub(super) struct IntraLedgerPaymentSend;
+pub struct IntraLedgerPaymentSend;
 pub use self::intra_ledger_payment_send::IntraLedgerPaymentSendInput;
 pub use self::intra_ledger_payment_send::PaymentSendResult;
 
