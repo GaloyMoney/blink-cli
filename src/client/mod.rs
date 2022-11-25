@@ -95,24 +95,60 @@ impl GaloyClient {
         Ok(me)
     }
 
-    pub fn request_phone_code(&self, phone: String) -> std::io::Result<()> {
-        println!("Fetching Captcha Challenge...");
+    pub fn request_phone_code(&self, phone: String, nocaptcha: bool) -> std::io::Result<()> {
+        match nocaptcha {
+            true => {
+                println!("Fetching Captcha Challenge...");
 
-        let cc = self
-            .create_captcha_challenge()
-            .expect("Failed to get captcha");
+                let cc = self
+                    .create_captcha_challenge()
+                    .expect("Failed to get captcha");
 
-        let listener = TcpListener::bind("127.0.0.1:0")?;
-        let port = listener.local_addr().unwrap().port();
-        println!(
-            "Visit http://127.0.0.1:{}/login and solve the Captcha",
-            port
-        );
+                let listener = TcpListener::bind("127.0.0.1:0")?;
+                let port = listener.local_addr().unwrap().port();
+                println!(
+                    "Visit http://127.0.0.1:{}/login and solve the Captcha",
+                    port
+                );
 
-        let rt = tokio::runtime::Builder::new_current_thread()
-            .enable_all()
-            .build()?;
-        rt.block_on(server::run(listener, cc, phone, self.api.clone())?)
+                let rt = tokio::runtime::Builder::new_current_thread()
+                    .enable_all()
+                    .build()?;
+                rt.block_on(server::run(listener, cc, phone, self.api.clone())?)
+            }
+
+            false => {
+                let input = UserRequestAuthCodeInput { phone };
+
+                let variables = user_request_auth_code::Variables { input };
+                let response_body = post_graphql::<UserRequestAuthCode, _>(
+                    &self.graphql_client,
+                    &self.api,
+                    variables,
+                )
+                .expect("issue fetching response");
+
+                let response_data = response_body.data.expect("Query failed or is empty"); // TODO: understand when this can fail here
+                let UserRequestAuthCodeUserRequestAuthCode { success, errors } =
+                    response_data.user_request_auth_code;
+
+                match success {
+                    Some(true) => {}
+                    _ if !errors.is_empty() => {
+                        println!("{:?}", errors);
+                        log::error!("request failed (graphql errors)");
+                    }
+                    Some(false) => {
+                        log::error!("request failed (success is false)");
+                    }
+                    _ => {
+                        log::error!("request failed (unknown)");
+                    }
+                }
+
+                Ok(())
+            }
+        }
     }
 
     pub fn user_login(&self, phone: String, code: String) -> anyhow::Result<String> {

@@ -57,6 +57,9 @@ enum Commands {
     RequestPhoneCode {
         #[clap(value_parser)]
         phone: String,
+
+        #[clap(long, action)]
+        nocaptcha: bool,
     },
     /// get JWT of an account
     Login { phone: String, code: String },
@@ -108,9 +111,9 @@ fn main() -> anyhow::Result<()> {
                 .context("issue sending intraledger")?;
             println!("{:#?}", result);
         }
-        Commands::RequestPhoneCode { phone } => {
+        Commands::RequestPhoneCode { phone, nocaptcha } => {
             galoy_client
-                .request_phone_code(phone)
+                .request_phone_code(phone, nocaptcha)
                 .expect("issue getting code");
         }
         Commands::Login { phone, code } => {
