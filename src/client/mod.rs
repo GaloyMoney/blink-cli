@@ -95,10 +95,10 @@ impl GaloyClient {
         Ok(me)
     }
 
-    pub fn request_phone_code(&self, _phone: String) -> std::io::Result<()> {
+    pub fn request_phone_code(&self, phone: String) -> std::io::Result<()> {
         println!("Fetching Captcha Challenge...");
 
-        let captcha_challenge = self
+        let cc = self
             .create_captcha_challenge()
             .expect("Failed to get captcha");
 
@@ -112,7 +112,7 @@ impl GaloyClient {
         let rt = tokio::runtime::Builder::new_current_thread()
             .enable_all()
             .build()?;
-        rt.block_on(server::run(listener, captcha_challenge)?)
+        rt.block_on(server::run(listener, cc, phone, self.api.clone())?)
     }
 
     pub fn user_login(&self, phone: String, code: String) -> anyhow::Result<String> {
