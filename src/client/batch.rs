@@ -1,5 +1,5 @@
+use comfy_table::{Row, Table};
 use serde::Deserialize;
-
 use std::fs::File;
 
 use crate::{BatchError, GaloyCliError};
@@ -175,6 +175,10 @@ impl Batch {
     pub fn execute(&mut self) -> Result<(), GaloyCliError> {
         self.check_self_payment()?;
         self.check_balance()?;
+
+        let mut table = Table::new();
+        let header = Row::from(vec!["Username", "Amount (Sats)", "Amount (USD)"]);
+        table.set_header(header);
 
         for Payment {
             username,
