@@ -1,5 +1,5 @@
-use actix_files as fs;
 use actix_web::{dev::Server, web, App, HttpResponse, HttpServer, Responder};
+use actix_web_static_files::ResourceFiles;
 use serde::{Deserialize, Serialize};
 use tera::{Context, Tera};
 
@@ -9,6 +9,8 @@ use reqwest::Client;
 use std::net::TcpListener;
 
 use crate::{queries::*, CaptchaChallenge};
+
+include!(concat!(env!("OUT_DIR"), "/generated.rs"));
 
 struct AppData {
     cc: CaptchaChallenge,
@@ -83,8 +85,9 @@ pub fn run(
     });
 
     let server = HttpServer::new(move || {
+        let generated = generate();
         App::new()
-            .service(fs::Files::new("/static", "src/public/").show_files_listing())
+            .service(ResourceFiles::new("/static", generated))
             .route("/login", web::get().to(login))
             .route("/solve", web::post().to(solve))
             .app_data(appdata.clone())
