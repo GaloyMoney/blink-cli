@@ -98,12 +98,6 @@ impl GaloyClient {
     pub fn request_phone_code(&self, phone: String, nocaptcha: bool) -> std::io::Result<()> {
         match nocaptcha {
             false => {
-                println!("Fetching Captcha Challenge...");
-
-                let cc = self
-                    .create_captcha_challenge()
-                    .expect("Failed to get captcha");
-
                 let listener = TcpListener::bind("127.0.0.1:0")?;
                 let port = listener.local_addr().unwrap().port();
                 println!(
@@ -114,7 +108,7 @@ impl GaloyClient {
                 let rt = tokio::runtime::Builder::new_current_thread()
                     .enable_all()
                     .build()?;
-                rt.block_on(server::run(listener, cc, phone, self.api.clone())?)
+                rt.block_on(server::run(listener, phone, self.api.clone())?)
             }
 
             true => {
@@ -233,7 +227,7 @@ impl GaloyClient {
         Ok(())
     }
 
-    fn create_captcha_challenge(&self) -> Result<CaptchaChallenge, CliError> {
+    pub fn create_captcha_challenge(&self) -> Result<CaptchaChallenge, CliError> {
         let variables = captcha_create_challenge::Variables;
         let response =
             post_graphql::<CaptchaCreateChallenge, _>(&self.graphql_client, &self.api, variables)?;

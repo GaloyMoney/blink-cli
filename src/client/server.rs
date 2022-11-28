@@ -13,19 +13,29 @@ use crate::{queries::*, CaptchaChallenge};
 include!(concat!(env!("OUT_DIR"), "/generated.rs"));
 
 struct AppData {
-    cc: CaptchaChallenge,
     tera: Tera,
     phone: String,
     api: String,
 }
 
 async fn login(appdata: web::Data<AppData>) -> impl Responder {
+    println!("Fetching Captcha Challenge...");
+    let client = Client::builder().build().expect("Can't build client");
+    let variables = captcha_create_challenge::Variables;
+    let response =
+        post_graphql::<CaptchaCreateChallenge, _>(&client, appdata.api.clone(), variables)
+            .await
+            .expect("Couldn't create Captcha");
+    let response = response.data.expect("Captcha Data is missing");
+    let captcha_challenge_result =
+        CaptchaChallenge::try_from(response).expect("Couldn't parse Captcha Response Body");
+
     let mut ctx = Context::new();
 
-    ctx.insert("id", &appdata.cc.id);
-    ctx.insert("new_captcha", &appdata.cc.new_captcha);
-    ctx.insert("failback_mode", &appdata.cc.failback_mode);
-    ctx.insert("challenge_code", &appdata.cc.challenge_code);
+    ctx.insert("id", &captcha_challenge_result.id);
+    ctx.insert("new_captcha", &captcha_challenge_result.new_captcha);
+    ctx.insert("failback_mode", &captcha_challenge_result.failback_mode);
+    ctx.insert("challenge_code", &captcha_challenge_result.challenge_code);
 
     let rendered = appdata.tera.render("login.html", &ctx).unwrap();
     HttpResponse::Ok().body(rendered)
@@ -69,20 +79,10 @@ async fn solve(r: web::Json<GeetestResponse>, appdata: web::Data<AppData>) -> im
     HttpResponse::Ok()
 }
 
-pub fn run(
-    listener: TcpListener,
-    cc: CaptchaChallenge,
-    phone: String,
-    api: String,
-) -> Result<Server, std::io::Error> {
+pub fn run(listener: TcpListener, phone: String, api: String) -> Result<Server, std::io::Error> {
     let tera = Tera::new(concat!(env!("CARGO_MANIFEST_DIR"), "/src/public/**/*")).unwrap();
 
-    let appdata = web::Data::new(AppData {
-        cc,
-        tera,
-        phone,
-        api,
-    });
+    let appdata = web::Data::new(AppData { tera, phone, api });
 
     let server = HttpServer::new(move || {
         let generated = generate();
