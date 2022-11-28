@@ -18,7 +18,7 @@ fn batch_csv() -> anyhow::Result<()> {
     assert_eq!(batch.len(), 2);
 
     assert!(batch.populate_wallet_id().is_ok());
-    // assert!(batch.populate_sats().is_ok());
+    assert!(batch.populate_sats().is_ok());
 
     batch.show();
 
@@ -38,7 +38,7 @@ fn batch_cant_pay_self() -> anyhow::Result<()> {
     });
 
     assert!(batch.populate_wallet_id().is_ok());
-    // assert!(batch.populate_sats().is_ok());
+    assert!(batch.populate_sats().is_ok());
     assert!(batch.check_balance().is_ok());
     assert!(batch.check_self_payment().is_err());
 
@@ -58,7 +58,7 @@ fn batch_balance_too_low() -> anyhow::Result<()> {
     });
 
     assert!(batch.populate_wallet_id().is_ok());
-    // assert!(batch.populate_sats().is_ok());
+    assert!(batch.populate_sats().is_ok());
     assert!(batch.check_balance().is_err());
     assert!(batch.check_self_payment().is_ok());
 
@@ -83,7 +83,7 @@ fn execute_batch() -> anyhow::Result<()> {
     });
 
     assert!(batch.populate_wallet_id().is_ok());
-    // assert!(batch.populate_sats().is_ok());
+    assert!(batch.populate_sats().is_ok());
     assert!(batch.check_balance().is_ok());
     assert!(batch.check_self_payment().is_ok());
 
