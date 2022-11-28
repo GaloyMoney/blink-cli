@@ -28,7 +28,6 @@ thiserror = "1.0.37"
 actix-web = "4.2.1"
 tokio = { version = "1.22.0", features = ["macros", "rt-multi-thread"] }
 tera = "1.17.1"
-actix-files = "0.6.2"
 actix-web-static-files = "4.0.0"
 static-files = "0.2.3"
 
