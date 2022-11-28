@@ -1,3 +1,4 @@
+use common::GaloyConfig;
 use galoy_client::batch::Batch;
 use galoy_client::GaloyClient;
 
@@ -5,6 +6,13 @@ use galoy_client::batch::PaymentInput;
 use rust_decimal_macros::dec;
 
 mod common;
+
+fn load_client_config() -> GaloyConfig {
+    let phone = std::env::var("PHONE_NUMBER").expect("Missing phone number");
+    let code = std::env::var("AUTH_CODE").expect("Missing auth code");
+
+    GaloyConfig { phone, code }
+}
 
 #[test]
 fn batch_csv() -> anyhow::Result<()> {
@@ -18,7 +26,7 @@ fn batch_csv() -> anyhow::Result<()> {
     assert_eq!(batch.len(), 2);
 
     assert!(batch.populate_wallet_id().is_ok());
-    // assert!(batch.populate_sats().is_ok());
+    assert!(batch.populate_sats().is_ok());
 
     batch.show();
 
@@ -27,7 +35,8 @@ fn batch_csv() -> anyhow::Result<()> {
 
 #[test]
 fn batch_cant_pay_self() -> anyhow::Result<()> {
-    let galoy_client = common::auth_client();
+    let config = load_client_config();
+    let galoy_client = common::auth_client(config);
 
     let mut batch = Batch::new(galoy_client, dec!(10_000))?;
 
@@ -38,7 +47,7 @@ fn batch_cant_pay_self() -> anyhow::Result<()> {
     });
 
     assert!(batch.populate_wallet_id().is_ok());
-    // assert!(batch.populate_sats().is_ok());
+    assert!(batch.populate_sats().is_ok());
     assert!(batch.check_balance().is_ok());
     assert!(batch.check_self_payment().is_err());
 
@@ -47,7 +56,8 @@ fn batch_cant_pay_self() -> anyhow::Result<()> {
 
 #[test]
 fn batch_balance_too_low() -> anyhow::Result<()> {
-    let galoy_client = common::auth_client();
+    let config = load_client_config();
+    let galoy_client = common::auth_client(config);
 
     let mut batch = Batch::new(galoy_client, dec!(10_000))?;
 
@@ -58,7 +68,7 @@ fn batch_balance_too_low() -> anyhow::Result<()> {
     });
 
     assert!(batch.populate_wallet_id().is_ok());
-    // assert!(batch.populate_sats().is_ok());
+    assert!(batch.populate_sats().is_ok());
     assert!(batch.check_balance().is_err());
     assert!(batch.check_self_payment().is_ok());
 
@@ -67,7 +77,8 @@ fn batch_balance_too_low() -> anyhow::Result<()> {
 
 #[test]
 fn execute_batch() -> anyhow::Result<()> {
-    let galoy_client = common::auth_client();
+    let config = load_client_config();
+    let galoy_client = common::auth_client(config);
 
     let mut batch = Batch::new(galoy_client, dec!(10_000))?;
 
@@ -83,7 +94,7 @@ fn execute_batch() -> anyhow::Result<()> {
     });
 
     assert!(batch.populate_wallet_id().is_ok());
-    // assert!(batch.populate_sats().is_ok());
+    assert!(batch.populate_sats().is_ok());
     assert!(batch.check_balance().is_ok());
     assert!(batch.check_self_payment().is_ok());
 

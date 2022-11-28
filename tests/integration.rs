@@ -1,8 +1,15 @@
+use crate::common::GaloyConfig;
 use galoy_client::GaloyClient;
-
 use rust_decimal_macros::dec;
 
 mod common;
+
+fn load_client_config() -> GaloyConfig {
+    let phone = std::env::var("PHONE_NUMBER").expect("Missing phone number");
+    let code = std::env::var("AUTH_CODE").expect("Missing auth code");
+
+    GaloyConfig { phone, code }
+}
 
 #[test]
 fn globals() {
@@ -61,7 +68,8 @@ fn login() -> anyhow::Result<()> {
 
 #[test]
 fn intraledger_send() {
-    let galoy_client = common::auth_client();
+    let config = load_client_config();
+    let galoy_client = common::auth_client(config);
 
     let username = "userB".to_string();
 

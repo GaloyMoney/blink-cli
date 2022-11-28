@@ -95,11 +95,13 @@ impl Batch {
         Ok(())
     }
 
-    pub fn populate_sats(&mut self) {
+    pub fn populate_sats(&mut self) -> Result<(), GaloyCliError> {
         for payment in self.payments.iter_mut() {
             let payment_btc: Decimal = payment.usd / self.price;
             payment.sats = Some(payment_btc * dec!(100_000_000));
         }
+
+        Ok(())
     }
 
     pub fn check_self_payment(&self) -> Result<(), GaloyCliError> {
@@ -177,7 +179,7 @@ impl Batch {
         self.check_balance()?;
 
         let mut table = Table::new();
-        let header = Row::from(vec!["Username", "Amount (Sats)", "Amount (USD)"]);
+        let header = Row::from(vec!["Username", "Amount (Sats)", "Amount (USD)", "Result"]);
         table.set_header(header);
 
         for Payment {
@@ -197,12 +199,16 @@ impl Batch {
                 .client
                 .intraleger_send(username.clone(), amount, memo)?;
 
-            println!(
-                "payment to {username} of sats {amount}, usd {usd}: {:?}",
-                res
-            );
+            let row = Row::from(vec![
+                username,
+                amount.to_string(),
+                usd.to_string(),
+                format!("{:?}", res),
+            ]);
+            table.add_row(row);
         }
 
+        println!("{table}");
         Ok(())
     }
 }

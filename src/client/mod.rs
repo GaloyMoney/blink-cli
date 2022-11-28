@@ -213,7 +213,7 @@ impl GaloyClient {
 
         batch.populate_wallet_id()?;
 
-        batch.populate_sats();
+        batch.populate_sats()?;
 
         println!("going to execute:");
         batch.show();
