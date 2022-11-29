@@ -1,16 +1,21 @@
 use anyhow::{bail, Context};
 use graphql_client::reqwest::post_graphql_blocking as post_graphql;
-use log::info;
 use reqwest::blocking::Client;
 
-mod queries;
+use log::info;
+use rust_decimal::Decimal;
+use std::net::TcpListener;
 
-use queries::*;
+pub mod queries;
+pub use queries::*;
+
+pub mod error;
+pub use error::*;
 
 pub mod batch;
-use batch::Batch;
+pub use batch::Batch;
 
-use rust_decimal::Decimal;
+pub mod server;
 
 pub struct GaloyClient {
     graphql_client: Client,
@@ -90,31 +95,52 @@ impl GaloyClient {
         Ok(me)
     }
 
-    pub fn request_auth_code(&self, phone: String) -> anyhow::Result<bool> {
-        let input = UserRequestAuthCodeInput { phone };
+    pub fn request_phone_code(&self, phone: String, nocaptcha: bool) -> std::io::Result<()> {
+        match nocaptcha {
+            false => {
+                let listener = TcpListener::bind("127.0.0.1:0")?;
+                let port = listener.local_addr().unwrap().port();
+                println!(
+                    "Visit http://127.0.0.1:{}/login and solve the Captcha",
+                    port
+                );
 
-        let variables = user_request_auth_code::Variables { input };
-
-        let response_body =
-            post_graphql::<UserRequestAuthCode, _>(&self.graphql_client, &self.api, variables)
-                .context("issue fetching response")?;
-
-        let response_data = response_body.data.context("Query failed or is empty")?; // TODO: understand when this can fail here
-
-        let UserRequestAuthCodeUserRequestAuthCode { success, errors } =
-            response_data.user_request_auth_code;
-
-        match success {
-            Some(true) => Ok(true),
-            _ if !errors.is_empty() => {
-                println!("{:?}", errors);
-                bail!("request failed (graphql errors)")
+                let rt = tokio::runtime::Builder::new_current_thread()
+                    .enable_all()
+                    .build()?;
+                rt.block_on(server::run(listener, phone, self.api.clone())?)
             }
-            Some(false) => {
-                bail!("request failed (success is false)")
-            }
-            _ => {
-                bail!("request failed (unknown)");
+
+            true => {
+                let input = UserRequestAuthCodeInput { phone };
+
+                let variables = user_request_auth_code::Variables { input };
+                let response_body = post_graphql::<UserRequestAuthCode, _>(
+                    &self.graphql_client,
+                    &self.api,
+                    variables,
+                )
+                .expect("issue fetching response");
+
+                let response_data = response_body.data.expect("Query failed or is empty"); // TODO: understand when this can fail here
+                let UserRequestAuthCodeUserRequestAuthCode { success, errors } =
+                    response_data.user_request_auth_code;
+
+                match success {
+                    Some(true) => {}
+                    _ if !errors.is_empty() => {
+                        println!("{:?}", errors);
+                        log::error!("request failed (graphql errors)");
+                    }
+                    Some(false) => {
+                        log::error!("request failed (success is false)");
+                    }
+                    _ => {
+                        log::error!("request failed (unknown)");
+                    }
+                }
+
+                Ok(())
             }
         }
     }
@@ -199,5 +225,22 @@ impl GaloyClient {
         batch.execute().context("can't make payment successfully")?;
 
         Ok(())
+    }
+
+    pub fn create_captcha_challenge(&self) -> Result<CaptchaChallenge, CliError> {
+        let variables = captcha_create_challenge::Variables;
+        let response =
+            post_graphql::<CaptchaCreateChallenge, _>(&self.graphql_client, &self.api, variables)?;
+        if response.errors.is_some() {
+            if let Some(error) = response.errors {
+                return Err(CliError::CaptchaTopLevelError(error));
+            }
+        }
+        let response = response.data.ok_or_else(|| {
+            CliError::CaptchaInnerError("Empty captcha response data".to_string())
+        })?;
+        let captcha_challenge_result = CaptchaChallenge::try_from(response)?;
+
+        Ok(captcha_challenge_result)
     }
 }
