@@ -1,13 +1,12 @@
-use serde::Deserialize;
-
 use std::fs::File;
 
-use crate::{BatchError, GaloyCliError};
-
-use super::*;
-
+use comfy_table::{Row, Table};
 use rust_decimal::Decimal;
 use rust_decimal_macros::dec;
+use serde::Deserialize;
+
+use super::*;
+use crate::{BatchError, GaloyCliError};
 
 #[derive(Debug, Deserialize)]
 pub struct PaymentInput {
@@ -171,12 +170,44 @@ impl Batch {
     }
 
     pub fn show(&self) {
-        println!("{:#?}", &self.payments)
+        let mut table = Table::new();
+        let header = Row::from(vec![
+            "Username",
+            "Amount (USD)",
+            "Amount (Sats)",
+            "Wallet_Id",
+            "Memo",
+        ]);
+        table.set_header(header);
+
+        for Payment {
+            username,
+            usd,
+            sats,
+            wallet_id,
+            memo,
+        } in self.payments.iter()
+        {
+            let row = Row::from(vec![
+                username.clone(),
+                usd.to_string(),
+                format!("{:?}", sats),
+                format!("{:?}", wallet_id),
+                format!("{:?}", memo),
+            ]);
+            table.add_row(row);
+        }
+
+        println!("{table}")
     }
 
     pub fn execute(&mut self) -> Result<(), GaloyCliError> {
         self.check_self_payment()?;
         self.check_balance()?;
+
+        let mut table = Table::new();
+        let header = Row::from(vec!["Username", "Amount (Sats)", "Amount (USD)", "Result"]);
+        table.set_header(header);
 
         for Payment {
             username,
@@ -195,12 +226,16 @@ impl Batch {
                 .client
                 .intraleger_send(username.clone(), amount, memo)?;
 
-            println!(
-                "payment to {username} of sats {amount}, usd {usd}: {:?}",
-                res
-            );
+            let row = Row::from(vec![
+                username,
+                amount.to_string(),
+                usd.to_string(),
+                format!("{:?}", res),
+            ]);
+            table.add_row(row);
         }
 
+        println!("{table}");
         Ok(())
     }
 }

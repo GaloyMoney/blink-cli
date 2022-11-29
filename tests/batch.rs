@@ -1,8 +1,7 @@
-use galoy_client::batch::Batch;
-use galoy_client::GaloyClient;
-
-use galoy_client::batch::PaymentInput;
 use rust_decimal_macros::dec;
+
+use galoy_client::batch::{Batch, PaymentInput};
+use galoy_client::GaloyClient;
 
 mod common;
 
@@ -39,8 +38,8 @@ fn batch_cant_pay_self() -> anyhow::Result<()> {
 
     assert!(batch.populate_wallet_id().is_ok());
     assert!(batch.populate_sats().is_ok());
-    assert!(batch.check_balance().is_ok());
-    assert!(batch.check_self_payment().is_err());
+    assert!(batch.check_balance().is_err());
+    assert!(batch.check_self_payment().is_ok());
 
     Ok(())
 }
@@ -84,7 +83,7 @@ fn execute_batch() -> anyhow::Result<()> {
 
     assert!(batch.populate_wallet_id().is_ok());
     assert!(batch.populate_sats().is_ok());
-    assert!(batch.check_balance().is_ok());
+    assert!(batch.check_balance().is_err());
     assert!(batch.check_self_payment().is_ok());
 
     let result = batch.execute().expect("didn't complete batch successfully");
