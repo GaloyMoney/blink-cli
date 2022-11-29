@@ -46,10 +46,10 @@ fn login() {
     let phone = "+16505554321".to_string();
     let code = "321321".to_string();
 
-    let result = galoy_client
-        .request_phone_code(phone.clone())
+    // Assuming backend has UserRequestAuthCode mutation
+    galoy_client
+        .request_phone_code(phone.clone(), true)
         .expect("request should succeed");
-    assert!(result);
 
     let result = galoy_client
         .user_login(phone, code)
@@ -76,7 +76,7 @@ fn intraledger_send() {
 #[test]
 fn alternative_captcha_login() -> anyhow::Result<()> {
     let galoy_client = common::unauth_client();
-    let captcha = galoy_client.alt_user_login()?;
+    let captcha = galoy_client.create_captcha_challenge()?;
 
     assert!(captcha.failback_mode == false);
     assert!(captcha.new_captcha == true);
