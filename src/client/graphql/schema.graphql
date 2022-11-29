@@ -37,7 +37,7 @@ type AccountUpdateDefaultWalletIdPayload {
 }
 
 """
-An JWT-formatted authentication token
+An Opaque Bearer token
 """
 scalar AuthToken
 
@@ -57,6 +57,11 @@ type BTCWallet implements Wallet {
   """
   balance: SignedAmount!
   id: ID!
+
+  """
+  An unconfirmed incoming onchain balance.
+  """
+  pendingIncomingBalance: SignedAmount!
 
   """
   A list of BTC transactions associated with this wallet.
@@ -197,6 +202,7 @@ input DeviceNotificationTokenCreateInput {
 }
 
 interface Error {
+  code: String
   message: String!
   path: [String]
 }
@@ -219,10 +225,21 @@ type Globals {
   lightningAddressDomainAliases: [String!]!
 
   """
+  Which network (mainnet, testnet, regtest, signet) this instance is running on.
+  """
+  network: Network!
+
+  """
   A list of public keys for the running lightning nodes.
   This can be used to know if an invoice belongs to one of our nodes.
   """
   nodesIds: [String!]!
+}
+
+type GraphQLApplicationError implements Error {
+  code: String
+  message: String!
+  path: [String]
 }
 
 """
@@ -243,19 +260,6 @@ type InitiationViaLn {
 
 type InitiationViaOnChain {
   address: OnChainAddress!
-}
-
-type InputError implements Error {
-  code: InputErrorCode!
-  message: String!
-  path: [String]
-}
-
-enum InputErrorCode {
-  INVALID_INPUT
-  VALUE_NOT_ALLOWED
-  VALUE_TOO_LONG
-  VALUE_TOO_SHORT
 }
 
 input IntraLedgerPaymentSendInput {
@@ -660,9 +664,6 @@ type Mutation {
   onChainAddressCurrent(input: OnChainAddressCurrentInput!): OnChainAddressPayload!
   onChainPaymentSend(input: OnChainPaymentSendInput!): PaymentSendPayload!
   onChainPaymentSendAll(input: OnChainPaymentSendAllInput!): PaymentSendPayload!
-  twoFADelete(input: TwoFADeleteInput!): SuccessPayload!
-  twoFAGenerate: TwoFAGeneratePayload!
-  twoFASave(input: TwoFASaveInput!): SuccessPayload!
   userContactUpdateAlias(
     input: UserContactUpdateAliasInput!
   ): UserContactUpdateAliasPayload! @deprecated(reason: "will be moved to AccountContact")
@@ -682,6 +683,13 @@ type MyUpdatesPayload {
   errors: [Error!]!
   me: User
   update: UserUpdate
+}
+
+enum Network {
+  mainnet
+  regtest
+  signet
+  testnet
 }
 
 """
@@ -763,21 +771,6 @@ type PageInfo {
   startCursor: String
 }
 
-type PaymentError implements Error {
-  code: PaymentErrorCode!
-  message: String!
-  path: [String]
-}
-
-enum PaymentErrorCode {
-  ACCOUNT_LOCKED
-  INSUFFICIENT_BALANCE
-  INVOICE_PAID
-  LIMIT_EXCEEDED
-  NO_LIQUIDITY
-  NO_ROUTE
-}
-
 scalar PaymentHash
 
 type PaymentSendPayload {
@@ -852,6 +845,9 @@ type Query {
   btcPriceList(range: PriceGraphRange!): [PricePoint]
   businessMapMarkers: [MapMarker]
   globals: Globals
+  lnInvoicePaymentStatus(
+    input: LnInvoicePaymentStatusInput!
+  ): LnInvoicePaymentStatusPayload!
   me: User
   mobileVersions: [MobileVersions]
   onChainTxFee(
@@ -1010,25 +1006,6 @@ type TransactionEdge {
   node: Transaction!
 }
 
-input TwoFADeleteInput {
-  token: String!
-}
-
-type TwoFAGeneratePayload {
-  errors: [Error!]!
-  twoFASecret: TwoFASecret
-}
-
-input TwoFASaveInput {
-  secret: String!
-  token: String!
-}
-
-type TwoFASecret {
-  secret: String!
-  uri: String!
-}
-
 enum TxDirection {
   RECEIVE
   SEND
@@ -1056,6 +1033,11 @@ type UsdWallet implements Wallet {
   accountId: ID!
   balance: SignedAmount!
   id: ID!
+
+  """
+  An unconfirmed incoming onchain balance.
+  """
+  pendingIncomingBalance: SignedAmount!
   transactions(
     """
     Returns the items in the list that come after the specified cursor.
@@ -1138,7 +1120,6 @@ type User {
   List the quiz questions the user may have completed.
   """
   quizQuestions: [UserQuizQuestion!]! @deprecated(reason: "will be moved to Accounts")
-  twoFAEnabled: Boolean
 
   """
   Optional immutable user friendly identifier.
@@ -1251,6 +1232,7 @@ interface Wallet {
   accountId: ID!
   balance: SignedAmount!
   id: ID!
+  pendingIncomingBalance: SignedAmount!
 
   """
   Transactions are ordered anti-chronologically,

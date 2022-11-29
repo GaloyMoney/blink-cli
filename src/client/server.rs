@@ -8,7 +8,7 @@ use reqwest::Client;
 
 use std::net::TcpListener;
 
-use crate::{queries::*, CaptchaChallenge};
+use crate::{queries::*, CaptchaChallenge, GaloyCliError};
 
 include!(concat!(env!("OUT_DIR"), "/generated.rs"));
 
@@ -79,7 +79,7 @@ async fn solve(r: web::Json<GeetestResponse>, appdata: web::Data<AppData>) -> im
     HttpResponse::Ok()
 }
 
-pub fn run(listener: TcpListener, phone: String, api: String) -> Result<Server, std::io::Error> {
+pub fn run(listener: TcpListener, phone: String, api: String) -> Result<Server, GaloyCliError> {
     let tera = Tera::new(concat!(env!("CARGO_MANIFEST_DIR"), "/src/public/**/*")).unwrap();
 
     let appdata = web::Data::new(AppData { tera, phone, api });

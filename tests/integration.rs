@@ -23,24 +23,25 @@ fn default_wallet_for_username() {
 
     let username = "doesnotexit".to_string();
 
-    let query = galoy_client.default_wallet(username);
+    let query = galoy_client.default_wallet(username.clone());
 
     assert_eq!(query.is_err(), true);
 
     if let Err(value) = query {
-        assert_eq!(value.to_string(), "Username doesnotexit doesn't exist");
+        assert!(value
+            .to_string()
+            .contains(&format!("Account does not exist for username {}", username)))
     } else {
         panic!("should error")
     }
 
-    let username = "userA".to_string();
+    let username = "test".to_string();
     let query = galoy_client.default_wallet(username);
-
     assert_eq!(query.is_err(), false)
 }
 
 #[test]
-fn login() {
+fn login() -> anyhow::Result<()> {
     let galoy_client = common::unauth_client();
 
     let phone = "+16505554321".to_string();
@@ -55,6 +56,8 @@ fn login() {
         .user_login(phone, code)
         .expect("request should succeed");
     assert_eq!(result[..2], "ey".to_string());
+
+    Ok(())
 }
 
 #[test]

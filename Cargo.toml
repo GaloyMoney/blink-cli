@@ -14,8 +14,7 @@ fail-on-warnings = []
 [dependencies]
 serde = { version = "1.0.148", features = ["derive"] }
 serde_json = "1.0.64"
-anyhow = "1.0.66"
-reqwest = { version = "0.11.13", features = ["json", "blocking"] }
+reqwest = { version = "0.11.11", features = ["json", "blocking"] }
 graphql_client = { version = "0.11.0", features = ["reqwest-blocking", "reqwest"] }
 clap     = { version =  "4.0", features = ["derive", "env"] }
 url = { version = "2.3.0", features = ["serde"] }
@@ -30,6 +29,11 @@ tokio = { version = "1.22.0", features = ["macros", "rt-multi-thread"] }
 tera = "1.17.1"
 actix-web-static-files = "4.0.0"
 static-files = "0.2.3"
+comfy-table = "6.1.3"
 
 [build-dependencies]
 static-files = "0.2.3"
+thiserror = "1.0.37"
+
+[dev-dependencies]
+anyhow = "1.0.63"

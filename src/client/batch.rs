@@ -1,11 +1,12 @@
-use serde::Deserialize;
-
 use std::fs::File;
 
-use super::*;
-
+use comfy_table::{Row, Table};
 use rust_decimal::Decimal;
 use rust_decimal_macros::dec;
+use serde::Deserialize;
+
+use super::*;
+use crate::{BatchError, GaloyCliError};
 
 #[derive(Debug, Deserialize)]
 pub struct PaymentInput {
@@ -43,20 +44,27 @@ pub struct Batch {
 }
 
 impl Batch {
-    pub fn new(client: GaloyClient, price: Decimal) -> Self {
+    pub fn new(client: GaloyClient, price: Decimal) -> Result<Self, GaloyCliError> {
+        if price == Decimal::ZERO {
+            return Err(GaloyCliError::Batching {
+                message: "Price cannot be zero. Division by 0 downstream".to_string(),
+                kind: crate::BatchError::DivisionByZero,
+            });
+        }
+
         let payments: Vec<Payment> = vec![];
-        Self {
+        Ok(Self {
             payments,
             client,
             price,
-        }
+        })
     }
 
     pub fn add(&mut self, input: PaymentInput) {
         self.payments.push(input.into());
     }
 
-    pub fn add_csv(&mut self, filename: String) -> anyhow::Result<()> {
+    pub fn add_csv(&mut self, filename: String) -> Result<(), GaloyCliError> {
         let file = File::open(filename)?;
         let mut rdr = csv::Reader::from_reader(file);
         for result in rdr.deserialize() {
@@ -75,20 +83,18 @@ impl Batch {
         self.payments.is_empty()
     }
 
-    pub fn populate_wallet_id(&mut self) -> anyhow::Result<()> {
+    pub fn populate_wallet_id(&mut self) -> Result<(), GaloyCliError> {
         for payment in self.payments.iter_mut() {
             let username = payment.username.clone();
-            let query = &self.client.default_wallet(username);
-            match query {
-                Ok(value) => payment.wallet_id = Some(value.clone()),
-                Err(error) => bail!("error query {:?}", error),
-            }
+            let query = &self.client.default_wallet(username)?;
+
+            payment.wallet_id = Some(query.clone());
         }
 
         Ok(())
     }
 
-    pub fn populate_sats(&mut self) -> anyhow::Result<()> {
+    pub fn populate_sats(&mut self) -> Result<(), GaloyCliError> {
         for payment in self.payments.iter_mut() {
             let payment_btc: Decimal = payment.usd / self.price;
             payment.sats = Some(payment_btc * dec!(100_000_000));
@@ -97,40 +103,45 @@ impl Batch {
         Ok(())
     }
 
-    pub fn check_self_payment(&self) -> anyhow::Result<()> {
+    pub fn check_self_payment(&self) -> Result<(), GaloyCliError> {
         let me = self.client.me()?;
 
-        #[allow(deprecated)]
-        let me_username = match me.username {
-            Some(value) => value,
-            None => bail!("no username has been set"),
-        };
+        // TODO: username is deprecated, switch to handle when ready
+        #[allow(warnings)]
+        let me_username = me.username.ok_or_else(|| {
+            GaloyCliError::GraphQl(message_only_error(
+                "Empty `username`. Value not set".to_string(),
+            ))
+        })?;
 
         for payment in self.payments.iter() {
             if me_username == payment.username {
                 println!("{:#?}", (me_username, &payment.username));
-                bail!("can't pay to self")
+                return Err(GaloyCliError::Batching {
+                    kind: BatchError::SelfPayment,
+                    message: "Cannot pay to self".to_string(),
+                });
             }
         }
 
         Ok(())
     }
 
-    pub fn check_limit(&self) -> anyhow::Result<()> {
+    pub fn check_limit(&self) -> Result<(), GaloyCliError> {
         todo!("Check limit. need API on the backend for it");
     }
 
-    pub fn check_balance(&self) -> anyhow::Result<()> {
+    pub fn check_balance(&self) -> Result<(), GaloyCliError> {
         let me = self.client.me()?;
         let me_wallet_id = me.default_account.default_wallet_id;
 
         let mut total_sats = dec!(0);
 
         for payment in self.payments.iter() {
-            let sats = match payment.sats {
-                Some(value) => value,
-                None => bail!("sats needs to be populated first"),
-            };
+            let sats = payment.sats.ok_or_else(|| GaloyCliError::Batching {
+                message: "Sats needs to be populated first".to_string(),
+                kind: BatchError::Empty,
+            })?;
             total_sats += sats;
         }
 
@@ -140,28 +151,63 @@ impl Batch {
             .iter()
             .find(|wallet| wallet.id == me_wallet_id);
 
-        let balance_sats = match me_default_wallet {
-            Some(value) => value.balance,
-            None => bail!("no balance"),
-        };
-        if total_sats > balance_sats {
-            bail!(
-                "not enough balance, got {}, need {}",
-                balance_sats,
-                total_sats
-            )
+        let balance_sats = me_default_wallet.ok_or_else(|| GaloyCliError::Batching {
+            message: "No balance".to_string(),
+            kind: BatchError::NoBalance,
+        })?;
+
+        if total_sats > balance_sats.balance {
+            return Err(GaloyCliError::Batching {
+                message: format!(
+                    "Not enough balance, got {}, need {}",
+                    balance_sats.balance, total_sats
+                ),
+                kind: BatchError::InsufficientBalance,
+            });
         }
 
         Ok(())
     }
 
     pub fn show(&self) {
-        println!("{:#?}", &self.payments)
+        let mut table = Table::new();
+        let header = Row::from(vec![
+            "Username",
+            "Amount (USD)",
+            "Amount (Sats)",
+            "Wallet_Id",
+            "Memo",
+        ]);
+        table.set_header(header);
+
+        for Payment {
+            username,
+            usd,
+            sats,
+            wallet_id,
+            memo,
+        } in self.payments.iter()
+        {
+            let row = Row::from(vec![
+                username.clone(),
+                usd.to_string(),
+                format!("{:?}", sats),
+                format!("{:?}", wallet_id),
+                format!("{:?}", memo),
+            ]);
+            table.add_row(row);
+        }
+
+        println!("{table}")
     }
 
-    pub fn execute(&mut self) -> anyhow::Result<()> {
+    pub fn execute(&mut self) -> Result<(), GaloyCliError> {
         self.check_self_payment()?;
         self.check_balance()?;
+
+        let mut table = Table::new();
+        let header = Row::from(vec!["Username", "Amount (Sats)", "Amount (USD)", "Result"]);
+        table.set_header(header);
 
         for Payment {
             username,
@@ -171,21 +217,25 @@ impl Batch {
             ..
         } in self.payments.drain(..)
         {
-            let amount = match sats {
-                Some(value) => value,
-                None => bail!("need sats amount"),
-            };
+            let amount = sats.ok_or_else(|| GaloyCliError::Batching {
+                message: "Need sats amount".to_string(),
+                kind: BatchError::Empty,
+            })?;
+
             let res = &self
                 .client
-                .intraleger_send(username.clone(), amount, memo)
-                .context("issue sending intraledger")?;
+                .intraleger_send(username.clone(), amount, memo)?;
 
-            println!(
-                "payment to {username} of sats {amount}, usd {usd}: {:?}",
-                res
-            );
+            let row = Row::from(vec![
+                username,
+                amount.to_string(),
+                usd.to_string(),
+                format!("{:?}", res),
+            ]);
+            table.add_row(row);
         }
 
+        println!("{table}");
         Ok(())
     }
 }
