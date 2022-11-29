@@ -18,6 +18,8 @@ pub enum GaloyCliError {
     Url(#[from] url::ParseError),
     #[error("JWT: {0:?}")]
     Jwt(#[from] jsonwebtoken::errors::Error),
+    #[error("Authorization Code Status: {0}")]
+    Authorization(bool),
 }
 
 #[derive(Debug, Error)]

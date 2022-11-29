@@ -7,12 +7,10 @@ use std::net::TcpListener;
 
 pub mod batch;
 pub mod convert;
-pub mod error;
 pub mod queries;
 
 pub use batch::Batch;
 pub use convert::*;
-pub use error::*;
 pub use queries::*;
 
 pub mod server;
@@ -123,12 +121,12 @@ impl GaloyClient {
         Ok(me)
     }
 
-    pub fn request_phone_code(&self, phone: String, nocaptcha: bool) -> std::io::Result<()> {
+    pub fn request_phone_code(&self, phone: String, nocaptcha: bool) -> Result<(), GaloyCliError> {
         match nocaptcha {
             false => {
                 let listener = TcpListener::bind("127.0.0.1:0")?;
-                let port = listener.local_addr().unwrap().port();
-                println!(
+                let port = listener.local_addr()?.port();
+                info!(
                     "Visit http://127.0.0.1:{}/login and solve the Captcha",
                     port
                 );
@@ -136,51 +134,41 @@ impl GaloyClient {
                 let rt = tokio::runtime::Builder::new_current_thread()
                     .enable_all()
                     .build()?;
-                rt.block_on(server::run(listener, phone, self.api.clone())?)
+                let res = rt.block_on(server::run(listener, phone, self.api.clone())?)?;
+
+                Ok(res)
             }
 
             true => {
                 let input = UserRequestAuthCodeInput { phone };
-
                 let variables = user_request_auth_code::Variables { input };
+
                 let response_body = post_graphql::<UserRequestAuthCode, _>(
                     &self.graphql_client,
                     &self.api,
                     variables,
-                )
-                .expect("issue fetching response");
+                )?;
 
-                let response_data = response_body.data.expect("Query failed or is empty"); // TODO: understand when this can fail here
-                let UserRequestAuthCodeUserRequestAuthCode { success, errors } =
-                    response_data.user_request_auth_code;
-
-                match success {
-                    Some(true) => {}
-                    _ if !errors.is_empty() => {
-                        println!("{:?}", errors);
-                        log::error!("request failed (graphql errors)");
-                    }
-                    Some(false) => {
-                        log::error!("request failed (success is false)");
-                    }
-                    _ => {
-                        log::error!("request failed (unknown)");
+                if response_body.errors.is_some() {
+                    if let Some(errors) = response_body.errors {
+                        return Err(GaloyCliError::GraphQl(errors));
                     }
                 }
 
-                Ok(())
+                let response_data = response_body.data.ok_or_else(|| {
+                    GaloyCliError::GraphQl(message_only_error(
+                        "Empty `userRequestAuthCode` in response data".to_string(),
+                    ))
+                })?;
+
+                let auth_code_status = AuthCodeStatus::try_from(response_data)?;
+                if auth_code_status {
+                    Ok(())
+                } else {
+                    Err(GaloyCliError::Authorization(auth_code_status))
+                }
             }
         }
-
-        // let response_data = response_body.data.ok_or_else(|| {
-        //     GaloyCliError::GraphQl(message_only_error(
-        //         "Empty `userRequestAuthCode` in response data".to_string(),
-        //     ))
-        // })?;
-
-        // let auth_code_status = AuthCodeStatus::try_from(response_data)?;
-
-        // Ok(auth_code_status)
     }
 
     pub fn user_login(&self, phone: String, code: String) -> Result<String, GaloyCliError> {
@@ -247,7 +235,6 @@ impl GaloyClient {
         Ok(status)
     }
 
-    // TODO: check if we can do self without &
     pub fn batch(self, filename: String, price: Decimal) -> Result<(), GaloyCliError> {
         let mut batch = Batch::new(self, price)?;
 
@@ -255,7 +242,7 @@ impl GaloyClient {
 
         batch.populate_wallet_id()?;
 
-        batch.populate_sats();
+        batch.populate_sats()?;
 
         println!("going to execute:");
         batch.show();

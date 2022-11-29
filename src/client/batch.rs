@@ -95,17 +95,19 @@ impl Batch {
         Ok(())
     }
 
-    pub fn populate_sats(&mut self) {
+    pub fn populate_sats(&mut self) -> Result<(), GaloyCliError> {
         for payment in self.payments.iter_mut() {
             let payment_btc: Decimal = payment.usd / self.price;
             payment.sats = Some(payment_btc * dec!(100_000_000));
         }
+
+        Ok(())
     }
 
     pub fn check_self_payment(&self) -> Result<(), GaloyCliError> {
         let me = self.client.me()?;
 
-        // TODO: username is deprecated, switch to handle
+        // TODO: username is deprecated, switch to handle when ready
         #[allow(warnings)]
         let me_username = me.username.ok_or_else(|| {
             GaloyCliError::GraphQl(message_only_error(
