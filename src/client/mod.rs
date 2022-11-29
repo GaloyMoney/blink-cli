@@ -134,9 +134,7 @@ impl GaloyClient {
                 let rt = tokio::runtime::Builder::new_current_thread()
                     .enable_all()
                     .build()?;
-                let res = rt.block_on(server::run(listener, phone, self.api.clone())?)?;
-
-                Ok(res)
+                Ok(rt.block_on(server::run(listener, phone, self.api.clone())?)?)
             }
 
             true => {
