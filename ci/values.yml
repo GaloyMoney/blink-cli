@@ -1,5 +1,8 @@
+#@data/values
+---
+
 git_uri: git@github.com:GaloyMoney/galoy-cli.git
-git_branch: main
+git_branch: intro-ci
 
 github_private_key: ((github.private_key))
 github_token: ((github.api_token))
