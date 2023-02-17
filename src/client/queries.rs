@@ -10,8 +10,19 @@ type Phone = String;
 type AuthToken = String;
 type OneTimeAuthCode = String;
 type SignedAmount = Decimal;
+type Timestamp = i128;
+type SafeInt = i128;
 
 // queries
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "src/client/graphql/schema.graphql",
+    query_path = "src/client/graphql/queries/btc_price_list.graphql",
+    response_derives = "Debug, Serialize"
+)]
+pub(super) struct QueryBTCPriceList;
+use self::captcha_create_challenge::ResponseData;
+pub use self::query_btc_price_list::QueryBtcPriceListBtcPriceList;
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -22,7 +33,6 @@ type SignedAmount = Decimal;
 pub(super) struct QueryDefaultWallet;
 use crate::error::CliError;
 
-use self::captcha_create_challenge::ResponseData;
 pub use self::query_default_wallet::QueryDefaultWalletAccountDefaultWallet;
 
 #[derive(GraphQLQuery)]

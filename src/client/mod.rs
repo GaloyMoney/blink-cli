@@ -43,7 +43,26 @@ impl GaloyClient {
             api,
         }
     }
-
+    pub fn btc_price_list(
+        &self,
+        range: String,
+    ) -> anyhow::Result<Vec<Option<QueryBtcPriceListBtcPriceList>>> {
+        let price_graph_range = match range.as_str() {
+            "ONE_DAY" => query_btc_price_list::PriceGraphRange::ONE_DAY,
+            "FIVE_YEARS" => query_btc_price_list::PriceGraphRange::FIVE_YEARS,
+            "ONE_WEEK" => query_btc_price_list::PriceGraphRange::ONE_WEEK,
+            "ONE_MONTH" => query_btc_price_list::PriceGraphRange::ONE_MONTH,
+            "ONE_YEAR" => query_btc_price_list::PriceGraphRange::ONE_YEAR,
+            &_ => query_btc_price_list::PriceGraphRange::ONE_DAY
+        };
+        let variables = query_btc_price_list::Variables {range: price_graph_range};
+        let response_body =
+            post_graphql::<QueryBTCPriceList, _>(&self.graphql_client, &self.api, variables)
+                .context("issue fetching response")?;
+        let response_data = response_body.data.context("bad response from server")?;
+        let result = response_data.btc_price_list.context("empty response")?;
+        Ok(result)
+    }
     pub fn globals(&self) -> anyhow::Result<QueryGlobalsGlobals> {
         let variables = query_globals::Variables;
 
