@@ -53,9 +53,11 @@ impl GaloyClient {
             "ONE_WEEK" => query_btc_price_list::PriceGraphRange::ONE_WEEK,
             "ONE_MONTH" => query_btc_price_list::PriceGraphRange::ONE_MONTH,
             "ONE_YEAR" => query_btc_price_list::PriceGraphRange::ONE_YEAR,
-            &_ => query_btc_price_list::PriceGraphRange::ONE_DAY
+            &_ => query_btc_price_list::PriceGraphRange::ONE_DAY,
         };
-        let variables = query_btc_price_list::Variables {range: price_graph_range};
+        let variables = query_btc_price_list::Variables {
+            range: price_graph_range,
+        };
         let response_body =
             post_graphql::<QueryBTCPriceList, _>(&self.graphql_client, &self.api, variables)
                 .context("issue fetching response")?;

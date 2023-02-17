@@ -38,11 +38,10 @@ struct Cli {
 #[derive(Subcommand, Debug)]
 enum Commands {
     /// Get BTC Price list
-    BTCPriceList{
-        #[clap(value_parser , default_value = "ONE_DAY")]
-        range: String
-
-    }, 
+    BTCPriceList {
+        #[clap(value_parser, default_value = "ONE_DAY")]
+        range: String,
+    },
     /// Get globals value from the instance
     Getinfo {},
     /// Get WalletId for an account
@@ -95,13 +94,13 @@ fn main() -> anyhow::Result<()> {
     let galoy_client = GaloyClient::new(api, jwt);
 
     match cli.command {
-        Commands::BTCPriceList {range}=> {
+        Commands::BTCPriceList { range } => {
             let price_list = galoy_client.btc_price_list(range)?;
             let mut result = vec![];
-            for price in price_list{
+            for price in price_list {
                 match price {
                     Some(x) => result.push(x),
-                    None => ()
+                    None => (),
                 };
             }
             println!("{:#?}", result);
