@@ -96,14 +96,9 @@ fn main() -> anyhow::Result<()> {
     match cli.command {
         Commands::BTCPriceList { range } => {
             let price_list = galoy_client.btc_price_list(range)?;
-            let mut result = vec![];
-            for price in price_list {
-                match price {
-                    Some(x) => result.push(x),
-                    None => (),
-                };
+            for price in price_list.into_iter().flatten() {
+                println!("{:?}", price);
             }
-            println!("{:#?}", result);
         }
         Commands::Getinfo {} => {
             let result = galoy_client.globals()?;
