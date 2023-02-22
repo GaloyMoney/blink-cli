@@ -23,7 +23,7 @@ log = "0.4.17"
 jsonwebtoken = "8"
 csv = "1.1.6"
 rust_decimal = "1.27.0"
-rust_decimal_macros = "1.20"
+rust_decimal_macros = "1.27"
 thiserror = "1.0.37"
 actix-web = "4.2.1"
 tokio = { version = "1.25.0", features = ["macros", "rt-multi-thread"] }
