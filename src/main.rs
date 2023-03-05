@@ -9,8 +9,6 @@ use galoy_client::GaloyClient;
 
 use anyhow::Context;
 
-use jsonwebtoken::decode_header;
-
 use rust_decimal::Decimal;
 
 #[derive(Parser, Debug)]
@@ -80,10 +78,6 @@ fn main() -> anyhow::Result<()> {
     Url::parse(&api).context(format!("API: {api} is not valid"))?;
 
     let jwt = cli.jwt;
-
-    if let Some(jwt) = &jwt {
-        decode_header(jwt).context("jwt syntax issue")?;
-    }
 
     info!("using api: {api} and jwt: {:?}", &jwt);
     let galoy_client = GaloyClient::new(api, jwt);
