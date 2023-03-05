@@ -20,12 +20,12 @@ You can also test if the "GALOY CLI CAPTCHA SERVER" is running or not by running
 To use the Galoy CLI, you need to run it with the desired command and options. 
 
 ### Commands:
-getinfo:            Get global values from the instance.
-default-wallet:     Get WalletId for an account.
-me:                 Execute Me query.
-send-intraledger:   Do an intraledger transaction.
-request-phone-code: Request a code from a Phone number.
-login:              Get JWT of an account.
+getinfo:            Get global values from the instance. <br/>
+default-wallet:     Get WalletId for an account. <br/>
+me:                 Execute Me query. <br/>
+send-intraledger:   Do an intraledger transaction. <br/>
+request-phone-code: Request a code from a Phone number. <br/>
+login:              Get JWT of an account. <br/>
 batch:              Execute a batch payment.
 
 To see the available options for each command, run galoy-client <COMMAND> --help.
@@ -34,10 +34,10 @@ To see the available options for each command, run galoy-client <COMMAND> --help
 ### Options
 The available options for the Galoy CLI are:
 
--a, --api <API>:   Set the API URL (default: http://localhost:4002/graphql)
--d, --debug:       Enable debug mode
--j, --jwt <JWT>:   Set the JWT for authorization
--h, --help:        Display help information
+-a, --api <API>:   Set the API URL (default: http://localhost:4002/graphql) <br/>
+-d, --debug:       Enable debug mode<br/>
+-j, --jwt <JWT>:   Set the JWT for authorization<br/>
+-h, --help:        Display help information <br/>
 -V, --version:     Display version information
 
 
