@@ -20,7 +20,7 @@ You can also test if the "GALOY CLI CAPTCHA SERVER" is running or not by running
 To use the Galoy CLI, you need to run it with the desired command and options. 
 
 ### Commands:
-getinfo: &nbsp; &nbsp; &nbsp;         Get global values from the instance. <br/>
+getinfo:&#9; &#9; &#9;Get global values from the instance. <br/>
 default-wallet:     Get WalletId for an account. <br/>
 me:                 Execute Me query. <br/>
 send-intraledger:   Do an intraledger transaction. <br/>
