@@ -21,7 +21,7 @@ clap     = { version =  "4.0", features = ["derive", "env"] }
 url = { version = "2.3.1", features = ["serde"] }
 log = "0.4.17"
 jsonwebtoken = "8"
-csv = "1.1.6"
+csv = "1.2.1"
 rust_decimal = "1.27.0"
 rust_decimal_macros = "1.20"
 thiserror = "1.0.37"
