@@ -26,8 +26,8 @@ struct Cli {
     #[clap(short, long, value_parser, default_value_t = false)]
     debug: bool,
 
-    #[clap(short, long, value_parser, env = "GALOY_JWT", hide_env_values = true)]
-    jwt: Option<String>,
+    #[clap(short, long, value_parser, env = "GALOY_TOKEN", hide_env_values = true)]
+    token: Option<String>,
 
     #[clap(subcommand)]
     command: Commands,
@@ -59,7 +59,7 @@ enum Commands {
         #[clap(long, action)]
         nocaptcha: bool,
     },
-    /// get JWT of an account
+    /// get token of an account
     Login { phone: String, code: String },
     /// execute a batch payment
     Batch { filename: String, price: Decimal },
@@ -77,10 +77,10 @@ fn main() -> anyhow::Result<()> {
 
     Url::parse(&api).context(format!("API: {api} is not valid"))?;
 
-    let jwt = cli.jwt;
+    let token = cli.token;
 
-    info!("using api: {api} and jwt: {:?}", &jwt);
-    let galoy_client = GaloyClient::new(api, jwt);
+    info!("using api: {api} and token: {:?}", &token);
+    let galoy_client = GaloyClient::new(api, token);
 
     match cli.command {
         Commands::Getinfo {} => {
