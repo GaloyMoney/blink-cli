@@ -4,7 +4,7 @@ Galoy CLI is a Rust-based CLI client that can interact with the Galoy backend us
 ## Installation
 To install Galoy CLI locally and set up a local environment:
 
-1. Clone the repository using git clone `https://github.com/GaloyMoney/galoy-cli.git`.
+1. Clone the /galoy-cli repository using git clone `https://github.com/GaloyMoney/galoy-cli.git`.
 2. Install Rust in your local machine and run `cargo build` to build all binary and library targets of the selected packages.
 3. Run `cargo run` command to run all tests of the Galoy CLI repository and see the usage, commands, and options available to interact.
 4. Interact with the CLI yourself to become familiar with it.
@@ -31,7 +31,7 @@ The available options for the Galoy CLI are:
 
 -a, --api <API>:   Set the API URL (default: http://localhost:4002/graphql) <br/>
 -d, --debug:       Enable debug mode<br/>
--j, --jwt <JWT>:   Set the JWT for authorization<br/>
+-t, --token <TOKEN>  [env: GALOY_token] <br/>
 -h, --help:        Display help information <br/>
 -V, --version:     Display version information
 
