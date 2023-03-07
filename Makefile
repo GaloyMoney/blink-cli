@@ -11,3 +11,6 @@ check-code:
 	cargo fmt --check --all
 	cargo clippy --all-features
 	cargo audit
+
+test:
+	cargo test -- --nocapture
