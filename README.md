@@ -1,6 +1,9 @@
 # Galoy CLI
 Galoy CLI is a Rust-based CLI client that can interact with the Galoy backend using GraphQL queries and mutations.
 
+# Rust Installation And Cargo Commands
+Go through the installation guide at `https://www.rust-lang.org/learn/get-started`.
+
 ## Installation
 To install Galoy CLI locally and set up a local environment:
 
