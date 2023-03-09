@@ -8,8 +8,10 @@ mod common;
 
 #[test]
 fn batch_csv() {
+    /*
+    Client is unauthorised, so we expect a error when calling a 'post_graphql' query
+    */
     let filename = "./tests/fixtures/example.csv".to_string();
-
     let galoy_client = common::unauth_client();
 
     let mut batch = Batch::new(galoy_client, dec!(10_000));
@@ -17,7 +19,7 @@ fn batch_csv() {
     batch.add_csv(filename).unwrap();
     assert_eq!(batch.len(), 2);
 
-    assert!(batch.populate_wallet_id().is_ok());
+    assert!(batch.populate_wallet_id().is_err());
     assert!(batch.populate_sats().is_ok());
 
     batch.show();
