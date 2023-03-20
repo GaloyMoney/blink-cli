@@ -14,7 +14,7 @@ fail-on-warnings = []
 [dependencies]
 serde = { version = "1.0.148", features = ["derive"] }
 serde_json = "1.0.89"
-anyhow = "1.0.66"
+anyhow = "1.0.70"
 reqwest = { version = "0.11.13", features = ["json", "blocking"] }
 graphql_client = { version = "0.11.0", features = ["reqwest-blocking", "reqwest"] }
 clap     = { version =  "4.0", features = ["derive", "env"] }
