@@ -5,7 +5,7 @@ use clap::{Parser, Subcommand};
 use log::{self, info, LevelFilter};
 use url::Url;
 
-use galoy_client::GaloyClient;
+use galoy_cli::GaloyClient;
 
 use anyhow::Context;
 

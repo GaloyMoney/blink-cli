@@ -1,14 +1,10 @@
 [package]
-name = "galoy-client"
+name = "galoy-cli"
 version = "0.1.0"
 edition = "2021"
-build = "src/build.rs"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [features]
 
-# This feature is to enforce clippy warnings as errors
 fail-on-warnings = []
 
 [dependencies]
