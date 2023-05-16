@@ -1,7 +1,7 @@
-use galoy_client::batch::Batch;
-use galoy_client::GaloyClient;
+use galoy_cli::batch::Batch;
+use galoy_cli::GaloyClient;
 
-use galoy_client::batch::PaymentInput;
+use galoy_cli::batch::PaymentInput;
 use rust_decimal_macros::dec;
 
 mod common;
@@ -10,9 +10,9 @@ mod common;
 fn batch_csv() {
     let filename = "./tests/fixtures/example.csv".to_string();
 
-    let galoy_client = common::unauth_client();
+    let galoy_cli = common::unauth_client();
 
-    let mut batch = Batch::new(galoy_client, dec!(10_000));
+    let mut batch = Batch::new(galoy_cli, dec!(10_000));
 
     batch.add_csv(filename).unwrap();
     assert_eq!(batch.len(), 2);
@@ -25,9 +25,9 @@ fn batch_csv() {
 
 #[test]
 fn batch_cant_pay_self() {
-    let galoy_client = common::auth_client();
+    let galoy_cli = common::auth_client();
 
-    let mut batch = Batch::new(galoy_client, dec!(10_000));
+    let mut batch = Batch::new(galoy_cli, dec!(10_000));
 
     batch.add(PaymentInput {
         username: "userA".to_string(),
@@ -43,9 +43,9 @@ fn batch_cant_pay_self() {
 
 #[test]
 fn batch_balance_too_low() {
-    let galoy_client = common::auth_client();
+    let galoy_cli = common::auth_client();
 
-    let mut batch = Batch::new(galoy_client, dec!(10_000));
+    let mut batch = Batch::new(galoy_cli, dec!(10_000));
 
     batch.add(PaymentInput {
         username: "userB".to_string(),
@@ -61,9 +61,9 @@ fn batch_balance_too_low() {
 
 #[test]
 fn execute_batch() {
-    let galoy_client = common::auth_client();
+    let galoy_cli = common::auth_client();
 
-    let mut batch = Batch::new(galoy_client, dec!(10_000));
+    let mut batch = Batch::new(galoy_cli, dec!(10_000));
 
     batch.add(PaymentInput {
         username: "userB".to_string(),
