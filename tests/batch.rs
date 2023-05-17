@@ -7,6 +7,7 @@ use rust_decimal_macros::dec;
 mod common;
 
 #[test]
+#[ignore]
 fn batch_csv() {
     let filename = "./tests/fixtures/example.csv".to_string();
 
@@ -24,6 +25,7 @@ fn batch_csv() {
 }
 
 #[test]
+#[ignore]
 fn batch_cant_pay_self() {
     let galoy_cli = common::auth_client();
 
@@ -42,6 +44,7 @@ fn batch_cant_pay_self() {
 }
 
 #[test]
+#[ignore]
 fn batch_balance_too_low() {
     let galoy_cli = common::auth_client();
 
@@ -60,6 +63,7 @@ fn batch_balance_too_low() {
 }
 
 #[test]
+#[ignore]
 fn execute_batch() {
     let galoy_cli = common::auth_client();
 

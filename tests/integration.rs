@@ -49,7 +49,7 @@ fn login() {
     let result = galoy_cli
         .user_login(phone, code)
         .expect("request should succeed");
-    assert_eq!(result[..2], "ey".to_string());
+    assert_eq!(result[..3], "ory".to_string());
 }
 
 #[test]
