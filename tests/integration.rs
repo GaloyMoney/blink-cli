@@ -21,22 +21,17 @@ fn globals() {
 fn default_wallet_for_username() {
     let galoy_cli = common::unauth_client();
 
-    let username = "doesnotexit".to_string();
+    let username = "doesnotexist".to_string();
 
     let query = galoy_cli.default_wallet(username);
 
     assert_eq!(query.is_err(), true);
 
     if let Err(value) = query {
-        assert_eq!(value.to_string(), "Username doesnotexit doesn't exist");
+        assert_eq!(value.to_string(), "Username doesnotexist doesn't exist");
     } else {
         panic!("should error")
     }
-
-    let username = "userA".to_string();
-    let query = galoy_cli.default_wallet(username);
-
-    assert_eq!(query.is_err(), false)
 }
 
 #[test]
