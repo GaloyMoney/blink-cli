@@ -12,7 +12,7 @@ serde = { version = "1.0.148", features = ["derive"] }
 serde_json = "1.0.89"
 anyhow = "1.0.66"
 reqwest = { version = "0.11.13", features = ["json", "blocking"] }
-graphql_client = { version = "0.11.0", features = ["reqwest-blocking", "reqwest"] }
+graphql_client = { version = "0.12.0", features = ["reqwest-blocking", "reqwest"] }
 clap     = { version =  "4.0", features = ["derive", "env"] }
 url = { version = "2.3.1", features = ["serde"] }
 log = "0.4.17"
