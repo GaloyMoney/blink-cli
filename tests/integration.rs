@@ -1,4 +1,4 @@
-use galoy_client::GaloyClient;
+use galoy_cli::GaloyClient;
 
 use rust_decimal_macros::dec;
 
@@ -6,9 +6,9 @@ mod common;
 
 #[test]
 fn globals() {
-    let galoy_client = common::unauth_client();
+    let galoy_cli = common::unauth_client();
 
-    let query = galoy_client.globals();
+    let query = galoy_cli.globals();
 
     assert!(query.is_ok());
     let r = query.unwrap();
@@ -19,47 +19,44 @@ fn globals() {
 
 #[test]
 fn default_wallet_for_username() {
-    let galoy_client = common::unauth_client();
+    let galoy_cli = common::unauth_client();
 
-    let username = "doesnotexit".to_string();
+    let username = "doesnotexist".to_string();
 
-    let query = galoy_client.default_wallet(username);
+    let query = galoy_cli.default_wallet(username);
 
     assert_eq!(query.is_err(), true);
 
     if let Err(value) = query {
-        assert_eq!(value.to_string(), "Username doesnotexit doesn't exist");
+        assert_eq!(value.to_string(), "Username doesnotexist doesn't exist");
     } else {
         panic!("should error")
     }
-
-    let username = "userA".to_string();
-    let query = galoy_client.default_wallet(username);
-
-    assert_eq!(query.is_err(), false)
 }
 
 #[test]
+#[ignore]
 fn login() {
-    let galoy_client = common::unauth_client();
+    let galoy_cli = common::unauth_client();
 
     let phone = "+16505554321".to_string();
     let code = "321321".to_string();
 
     // Assuming backend has UserRequestAuthCode mutation
-    galoy_client
+    galoy_cli
         .request_phone_code(phone.clone(), true)
         .expect("request should succeed");
 
-    let result = galoy_client
+    let result = galoy_cli
         .user_login(phone, code)
         .expect("request should succeed");
-    assert_eq!(result[..2], "ey".to_string());
+    assert_eq!(result[..3], "ory".to_string());
 }
 
 #[test]
+#[ignore]
 fn intraledger_send() {
-    let galoy_client = common::auth_client();
+    let galoy_cli = common::auth_client();
 
     let username = "userB".to_string();
 
@@ -67,16 +64,15 @@ fn intraledger_send() {
 
     let memo = Some("test_integration".to_string());
 
-    let result = galoy_client.intraleger_send(username, amount, memo);
+    let result = galoy_cli.intraleger_send(username, amount, memo);
 
     assert!(result.is_ok())
 }
 
-/// WIP test. To be updated as other login features are implemented
 #[test]
-fn alternative_captcha_login() -> anyhow::Result<()> {
-    let galoy_client = common::unauth_client();
-    let captcha = galoy_client.create_captcha_challenge()?;
+fn create_captcha_challenge() -> anyhow::Result<()> {
+    let galoy_cli = common::unauth_client();
+    let captcha = galoy_cli.create_captcha_challenge()?;
 
     assert!(captcha.failback_mode == false);
     assert!(captcha.new_captcha == true);

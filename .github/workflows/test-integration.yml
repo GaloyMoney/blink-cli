@@ -1,0 +1,30 @@
+name: "Integration Tests"
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  integration:
+    name: Integration Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install nextest
+        uses: baptiste0928/cargo-install@v2
+        with:
+          crate: cargo-nextest
+      - name: Setup cache for cargo
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+      - name: Run integration tests
+        env:
+          GALOY_API: https://api.staging.galoy.io/graphql"
+        run: make test-in-ci
