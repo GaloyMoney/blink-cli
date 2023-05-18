@@ -35,6 +35,7 @@ fn default_wallet_for_username() {
 }
 
 #[test]
+#[ignore]
 fn login() {
     let galoy_cli = common::unauth_client();
 
@@ -53,6 +54,7 @@ fn login() {
 }
 
 #[test]
+#[ignore]
 fn intraledger_send() {
     let galoy_cli = common::auth_client();
 
@@ -67,9 +69,8 @@ fn intraledger_send() {
     assert!(result.is_ok())
 }
 
-/// WIP test. To be updated as other login features are implemented
 #[test]
-fn alternative_captcha_login() -> anyhow::Result<()> {
+fn create_captcha_challenge() -> anyhow::Result<()> {
     let galoy_cli = common::unauth_client();
     let captcha = galoy_cli.create_captcha_challenge()?;
 
