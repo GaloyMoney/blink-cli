@@ -30,7 +30,7 @@ struct Cli {
     #[clap(short, long, value_parser, default_value_t = false)]
     debug: bool,
 
-    #[clap(short, long, value_parser, env = "GALOY_JWT", hide_env_values = true)]
+    #[clap(short, long, value_parser, default_value = "None")]
     jwt: Option<String>,
 
     #[clap(subcommand)]
@@ -81,7 +81,14 @@ fn main() -> anyhow::Result<()> {
 
     Url::parse(&api).context(format!("API: {api} is not valid"))?;
 
-    let jwt = cli.jwt;
+    let mut jwt = cli.jwt;
+    let home_dir = dirs::home_dir().expect("failed to get home directory");
+    let token_file = home_dir.join(".galoy-cli/GALOY_JWT");
+
+    if token_file.exists() {
+        jwt = Some(fs::read_to_string(&token_file)
+            .with_context(|| format!("failed to read token from file '{}'", token_file.display()))?);
+    }
 
     info!("using api: {api} and jwt: {:?}", &jwt);
     let galoy_client = GaloyClient::new(api, jwt);
