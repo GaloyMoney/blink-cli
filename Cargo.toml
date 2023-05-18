@@ -1,14 +1,10 @@
 [package]
-name = "galoy-client"
+name = "galoy-cli"
 version = "0.1.0"
 edition = "2021"
-build = "src/build.rs"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [features]
 
-# This feature is to enforce clippy warnings as errors
 fail-on-warnings = []
 
 [dependencies]
@@ -20,7 +16,6 @@ graphql_client = { version = "0.11.0", features = ["reqwest-blocking", "reqwest"
 clap     = { version =  "4.0", features = ["derive", "env"] }
 url = { version = "2.3.1", features = ["serde"] }
 log = "0.4.17"
-jsonwebtoken = "8"
 csv = "1.1.6"
 rust_decimal = "1.27.0"
 rust_decimal_macros = "1.20"
