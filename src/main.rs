@@ -11,7 +11,6 @@ use anyhow::Context;
 
 use rust_decimal::Decimal;
 
-use dirs;
 use std::fs::{self, File};
 use std::io::Write;
 
