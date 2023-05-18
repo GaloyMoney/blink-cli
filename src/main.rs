@@ -157,7 +157,7 @@ fn save_token(token_file: &PathBuf, token: &str) -> Result<(), anyhow::Error> {
         )
     })?;
 
-    let mut file = File::create(&token_file)
+    let mut file = File::create(token_file)
         .with_context(|| format!("failed to create file '{}'", token_file.display()))?;
 
     file.write_all(token.as_bytes())
