@@ -82,7 +82,7 @@ fn main() -> anyhow::Result<()> {
 
     let mut jwt = cli.jwt;
     let home_dir = dirs::home_dir().expect("failed to get home directory");
-    let token_file = home_dir.join(".galoy-cli/GALOY_JWT");
+    let token_file = home_dir.join(".galoy-cli/GALOY_TOKEN");
 
     if token_file.exists() {
         jwt = Some(fs::read_to_string(&token_file).with_context(|| {
@@ -133,7 +133,7 @@ fn main() -> anyhow::Result<()> {
                 format!("failed to create directory '{}'", galoy_cli_dir.display())
             })?;
 
-            let token_file = galoy_cli_dir.join("GALOY_JWT");
+            let token_file = galoy_cli_dir.join("GALOY_TOKEN");
 
             let mut file = File::create(&token_file)
                 .with_context(|| format!("failed to create file '{}'", token_file.display()))?;
