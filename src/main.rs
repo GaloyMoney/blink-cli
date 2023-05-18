@@ -86,8 +86,9 @@ fn main() -> anyhow::Result<()> {
     let token_file = home_dir.join(".galoy-cli/GALOY_JWT");
 
     if token_file.exists() {
-        jwt = Some(fs::read_to_string(&token_file)
-            .with_context(|| format!("failed to read token from file '{}'", token_file.display()))?);
+        jwt = Some(fs::read_to_string(&token_file).with_context(|| {
+            format!("failed to read token from file '{}'", token_file.display())
+        })?);
     }
 
     info!("using api: {api} and jwt: {:?}", &jwt);
@@ -128,20 +129,20 @@ fn main() -> anyhow::Result<()> {
 
             let home_dir = dirs::home_dir().expect("failed to get home directory");
             let galoy_cli_dir = home_dir.join(".galoy-cli");
-            
-            fs::create_dir_all(&galoy_cli_dir)
-                .with_context(|| format!("failed to create directory '{}'", galoy_cli_dir.display()))?;
-            
+
+            fs::create_dir_all(&galoy_cli_dir).with_context(|| {
+                format!("failed to create directory '{}'", galoy_cli_dir.display())
+            })?;
+
             let token_file = galoy_cli_dir.join("GALOY_JWT");
-            
+
             let mut file = File::create(&token_file)
                 .with_context(|| format!("failed to create file '{}'", token_file.display()))?;
-            
+
             file.write_all(result.as_bytes())
                 .with_context(|| format!("failed to write to file '{}'", token_file.display()))?;
-            
+
             println!("Token saved to {}", token_file.display());
-                
 
             println!("{:#?}", result);
         }
