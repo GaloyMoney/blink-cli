@@ -34,7 +34,7 @@ struct Cli {
     debug: bool,
 
     #[clap(short, long, value_parser, default_value = "None")]
-    jwt: Option<String>,
+    token: Option<String>,
 
     #[clap(subcommand)]
     command: Commands,
@@ -84,17 +84,17 @@ fn main() -> anyhow::Result<()> {
 
     Url::parse(&api).context(format!("API: {api} is not valid"))?;
 
-    let mut jwt = cli.jwt;
+    let mut token: Option<String> = cli.token;
     let token_file = get_token_file_path()?;
 
     if token_file.exists() {
-        jwt = Some(fs::read_to_string(&token_file).with_context(|| {
+        token = Some(fs::read_to_string(&token_file).with_context(|| {
             format!("failed to read token from file '{}'", token_file.display())
         })?);
     }
 
-    info!("using api: {api} and jwt: {:?}", &jwt);
-    let galoy_cli = GaloyClient::new(api, jwt);
+    info!("using api: {api} and token: {:?}", &token);
+    let galoy_cli = GaloyClient::new(api, token);
 
     match cli.command {
         Commands::Getinfo {} => {

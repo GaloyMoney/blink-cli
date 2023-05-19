@@ -23,14 +23,14 @@ pub struct GaloyClient {
 }
 
 impl GaloyClient {
-    pub fn new(api: String, jwt: Option<String>) -> Self {
+    pub fn new(api: String, token: Option<String>) -> Self {
         let mut client_builder = Client::builder();
 
-        if let Some(jwt) = jwt {
+        if let Some(token) = token {
             client_builder = client_builder.default_headers(
                 std::iter::once((
                     reqwest::header::AUTHORIZATION,
-                    reqwest::header::HeaderValue::from_str(&format!("Bearer {}", jwt)).unwrap(),
+                    reqwest::header::HeaderValue::from_str(&format!("Bearer {}", token)).unwrap(),
                 ))
                 .collect(),
             )
