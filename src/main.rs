@@ -66,7 +66,7 @@ enum Commands {
         #[clap(long, action)]
         nocaptcha: bool,
     },
-    /// get JWT of an account
+    /// get auth token of an account
     Login { phone: String, code: String },
     /// execute a batch payment
     Batch { filename: String, price: Decimal },
