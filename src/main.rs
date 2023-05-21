@@ -65,6 +65,8 @@ enum Commands {
     },
     /// get auth token of an account
     Login { phone: String, code: String },
+    /// logout the current user by deleting token file
+    Logout,
     /// execute a batch payment
     Batch { filename: String, price: Decimal },
 }
@@ -127,6 +129,15 @@ fn main() -> anyhow::Result<()> {
                 .context("issue logging in")?;
             token::save_token(&token_file, &result)?;
             println!("{:#?}", result);
+        }
+        Commands::Logout => {
+            if token_file.exists() {
+                fs::remove_file(&token_file).with_context(|| {
+                    format!("failed to delete token file '{}'", token_file.display())
+                })?;
+            } else {
+                println!("User not logged in");
+            }
         }
         Commands::Batch { filename, price } => {
             let result = galoy_cli
