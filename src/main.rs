@@ -135,6 +135,7 @@ fn main() -> anyhow::Result<()> {
                 fs::remove_file(&token_file).with_context(|| {
                     format!("failed to delete token file '{}'", token_file.display())
                 })?;
+                println!("Logged out successfully!");
             } else {
                 println!("User not logged in");
             }
