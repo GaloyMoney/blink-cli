@@ -30,7 +30,7 @@ struct Cli {
     #[clap(short, long, value_parser, default_value_t = false)]
     debug: bool,
 
-    #[clap(short, long, value_parser, default_value = "None")]
+    #[clap(short, long, value_parser)]
     token: Option<String>,
 
     #[clap(subcommand)]
