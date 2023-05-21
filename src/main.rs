@@ -11,12 +11,9 @@ use anyhow::Context;
 
 use rust_decimal::Decimal;
 
-use std::fs::{self, File};
-use std::io::Write;
-use std::path::PathBuf;
-
+use std::fs::{self};
 mod constants;
-use constants::{TOKEN_FILE_NAME, TOKEN_FOLDER_NAME};
+mod token;
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -85,7 +82,7 @@ fn main() -> anyhow::Result<()> {
     Url::parse(&api).context(format!("API: {api} is not valid"))?;
 
     let mut token: Option<String> = cli.token;
-    let token_file = get_token_file_path()?;
+    let token_file = token::get_token_file_path()?;
 
     if token_file.exists() {
         token = Some(fs::read_to_string(&token_file).with_context(|| {
@@ -128,7 +125,7 @@ fn main() -> anyhow::Result<()> {
             let result = galoy_cli
                 .user_login(phone, code)
                 .context("issue logging in")?;
-            save_token(&token_file, &result)?;
+            token::save_token(&token_file, &result)?;
             println!("{:#?}", result);
         }
         Commands::Batch { filename, price } => {
@@ -139,30 +136,5 @@ fn main() -> anyhow::Result<()> {
         }
     };
 
-    Ok(())
-}
-
-//TODO: move these util functions to a separate file
-fn get_token_file_path() -> Result<PathBuf, anyhow::Error> {
-    let home_dir = dirs::home_dir().context("failed to get home directory")?;
-    let token_dir = home_dir.join(TOKEN_FOLDER_NAME);
-    Ok(token_dir.join(TOKEN_FILE_NAME))
-}
-
-fn save_token(token_file: &PathBuf, token: &str) -> Result<(), anyhow::Error> {
-    fs::create_dir_all(token_file.parent().unwrap()).with_context(|| {
-        format!(
-            "failed to create directory '{}'",
-            token_file.parent().unwrap().display()
-        )
-    })?;
-
-    let mut file = File::create(token_file)
-        .with_context(|| format!("failed to create file '{}'", token_file.display()))?;
-
-    file.write_all(token.as_bytes())
-        .with_context(|| format!("failed to write to file '{}'", token_file.display()))?;
-
-    println!("Token saved to {}", token_file.display());
     Ok(())
 }
