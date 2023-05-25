@@ -128,7 +128,6 @@ fn main() -> anyhow::Result<()> {
                 .user_login(phone, code)
                 .context("issue logging in")?;
             token::save_token(&token_file, &result)?;
-            println!("{:#?}", result);
         }
         Commands::Logout => {
             token::remove_token(&token_file).expect("Failed to remove token");

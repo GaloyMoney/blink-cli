@@ -24,7 +24,7 @@ pub fn save_token(token_file: &PathBuf, token: &str) -> Result<(), anyhow::Error
 
     file.write_all(token.as_bytes())
         .with_context(|| format!("failed to write to file '{}'", token_file.display()))?;
-
+    println!("User logged in successfully!");
     info!("Token saved to {}", token_file.display());
     Ok(())
 }
