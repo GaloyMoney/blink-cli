@@ -131,14 +131,7 @@ fn main() -> anyhow::Result<()> {
             println!("{:#?}", result);
         }
         Commands::Logout => {
-            if token_file.exists() {
-                fs::remove_file(&token_file).with_context(|| {
-                    format!("failed to delete token file '{}'", token_file.display())
-                })?;
-                println!("Logged out successfully!");
-            } else {
-                println!("User not logged in");
-            }
+            token::remove_token(&token_file).expect("Failed to remove token");
         }
         Commands::Batch { filename, price } => {
             let result = galoy_cli

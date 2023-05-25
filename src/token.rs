@@ -27,3 +27,15 @@ pub fn save_token(token_file: &PathBuf, token: &str) -> Result<(), anyhow::Error
     println!("Token saved to {}", token_file.display());
     Ok(())
 }
+
+pub fn remove_token(token_file: &PathBuf) -> Result<(), anyhow::Error> {
+    if token_file.exists() {
+        fs::remove_file(token_file)
+            .with_context(|| format!("failed to delete token file '{}'", token_file.display()))?;
+        println!("Logged out successfully!");
+        Ok(())
+    } else {
+        println!("User not logged in");
+        Err(anyhow::anyhow!("Token file does not exist"))
+    }
+}
