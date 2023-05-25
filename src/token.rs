@@ -1,5 +1,6 @@
 use super::constants::{TOKEN_FILE_NAME, TOKEN_FOLDER_NAME};
 use anyhow::Context;
+use log::info;
 use std::fs::{self, File};
 use std::io::Write;
 use std::path::PathBuf;
