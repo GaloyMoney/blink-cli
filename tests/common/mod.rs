@@ -13,9 +13,9 @@ pub fn auth_client() -> galoy_cli::GaloyClient {
     let phone = "+16505554321".to_string();
     let code = "321321".to_string();
 
-    let jwt = galoy_cli
+    let token = galoy_cli
         .user_login(phone, code)
         .expect("request should succeed");
 
-    GaloyClient::new(api, Some(jwt))
+    GaloyClient::new(api, Some(token))
 }

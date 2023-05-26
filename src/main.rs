@@ -11,6 +11,10 @@ use anyhow::Context;
 
 use rust_decimal::Decimal;
 
+use std::fs::{self};
+mod constants;
+mod token;
+
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 struct Cli {
@@ -26,8 +30,8 @@ struct Cli {
     #[clap(short, long, value_parser, default_value_t = false)]
     debug: bool,
 
-    #[clap(short, long, value_parser, env = "GALOY_JWT", hide_env_values = true)]
-    jwt: Option<String>,
+    #[clap(short, long, value_parser)]
+    token: Option<String>,
 
     #[clap(subcommand)]
     command: Commands,
@@ -59,8 +63,10 @@ enum Commands {
         #[clap(long, action)]
         nocaptcha: bool,
     },
-    /// get JWT of an account
+    /// get auth token of an account
     Login { phone: String, code: String },
+    /// logout the current user by deleting token file
+    Logout,
     /// execute a batch payment
     Batch { filename: String, price: Decimal },
 }
@@ -77,10 +83,17 @@ fn main() -> anyhow::Result<()> {
 
     Url::parse(&api).context(format!("API: {api} is not valid"))?;
 
-    let jwt = cli.jwt;
+    let mut token: Option<String> = cli.token;
+    let token_file = token::get_token_file_path()?;
 
-    info!("using api: {api} and jwt: {:?}", &jwt);
-    let galoy_cli = GaloyClient::new(api, jwt);
+    if token_file.exists() {
+        token = Some(fs::read_to_string(&token_file).with_context(|| {
+            format!("failed to read token from file '{}'", token_file.display())
+        })?);
+    }
+
+    info!("using api: {api} and token: {:?}", &token);
+    let galoy_cli = GaloyClient::new(api, token);
 
     match cli.command {
         Commands::Getinfo {} => {
@@ -114,7 +127,10 @@ fn main() -> anyhow::Result<()> {
             let result = galoy_cli
                 .user_login(phone, code)
                 .context("issue logging in")?;
-            println!("{:#?}", result);
+            token::save_token(&token_file, &result)?;
+        }
+        Commands::Logout => {
+            token::remove_token(&token_file).expect("Failed to remove token");
         }
         Commands::Batch { filename, price } => {
             let result = galoy_cli
