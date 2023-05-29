@@ -17,8 +17,6 @@ pub use batch::Batch;
 
 pub mod server;
 
-// use client::queries::user_request_auth_code::{PhoneCodeChannelType, UserRequestAuthCodeInput};
-
 pub struct GaloyClient {
     graphql_client: Client,
     api: String,
@@ -181,8 +179,6 @@ impl GaloyClient {
         let wallet_id = me.default_account.default_wallet_id;
 
         let recipient_wallet_id = self.default_wallet(username)?;
-        
-
         let input = IntraLedgerPaymentSendInput {
             amount,
             memo,
