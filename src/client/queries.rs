@@ -72,6 +72,7 @@ pub use self::user_login::UserLoginUserLogin;
     response_derives = "Debug, Serialize"
 )]
 pub(super) struct UserRequestAuthCode;
+pub use self::user_request_auth_code::PhoneCodeChannelType;
 pub use self::user_request_auth_code::UserRequestAuthCodeInput;
 pub use self::user_request_auth_code::UserRequestAuthCodeUserRequestAuthCode;
 

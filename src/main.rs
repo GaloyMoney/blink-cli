@@ -23,7 +23,7 @@ struct Cli {
         long,
         value_parser,
         env = "GALOY_API",
-        default_value = "http://localhost:4002/graphql"
+        default_value = "https://api.staging.galoy.io/graphql"
     )]
     api: String,
 
