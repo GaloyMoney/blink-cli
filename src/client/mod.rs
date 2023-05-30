@@ -112,7 +112,10 @@ impl GaloyClient {
             }
 
             true => {
-                let input = UserRequestAuthCodeInput { phone };
+                let input = UserRequestAuthCodeInput {
+                    phone,
+                    channel: Some(PhoneCodeChannelType::SMS),
+                };
 
                 let variables = user_request_auth_code::Variables { input };
                 let response_body = post_graphql::<UserRequestAuthCode, _>(
@@ -176,7 +179,6 @@ impl GaloyClient {
         let wallet_id = me.default_account.default_wallet_id;
 
         let recipient_wallet_id = self.default_wallet(username)?;
-
         let input = IntraLedgerPaymentSendInput {
             amount,
             memo,

@@ -58,6 +58,7 @@ async fn solve(r: web::Json<GeetestResponse>, appdata: web::Data<AppData>) -> im
         phone: appdata.phone.clone(),
         sec_code: r.geetest_seccode.clone(),
         validation_code: r.geetest_validate.clone(),
+        channel: None,
     };
     let variables = captcha_request_auth_code::Variables { input };
 
