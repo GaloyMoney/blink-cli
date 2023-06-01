@@ -79,8 +79,8 @@ enum Commands {
 
 #[derive(Debug, Clone, clap::ValueEnum, PartialEq, Eq)]
 enum Wallet {
-    BTC,
-    USD,
+    Btc,
+    Usd,
 }
 
 fn main() -> anyhow::Result<()> {
@@ -127,22 +127,22 @@ fn main() -> anyhow::Result<()> {
             sats,
             memo,
         } => {
-            if (wallet == Wallet::BTC && sats.is_none())
-                || (wallet == Wallet::USD && cents.is_none())
+            if (wallet == Wallet::Btc && sats.is_none())
+                || (wallet == Wallet::Usd && cents.is_none())
             {
                 eprintln!("Appropriate amount (sats/cents) not provided");
                 std::process::exit(1);
             }
 
             match wallet {
-                Wallet::BTC => {
+                Wallet::Btc => {
                     let sats = sats.expect("Can't unwrap sats");
                     let result = galoy_cli
                         .intraleger_send(username, sats, memo)
                         .context("issue sending intraledger")?;
                     println!("{:?}", result);
                 }
-                Wallet::USD => {
+                Wallet::Usd => {
                     let cents = cents.expect("Can't unwrap cents");
                     let result = galoy_cli
                         .intraleger_usd_send(username, cents, memo)
