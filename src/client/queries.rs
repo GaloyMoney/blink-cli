@@ -5,6 +5,7 @@ use rust_decimal::Decimal;
 type Username = String;
 type WalletId = String;
 type SatAmount = Decimal;
+type CentAmount = Decimal;
 type Memo = String;
 type Phone = String;
 type AuthToken = String;
@@ -54,6 +55,16 @@ pub use self::query_me::QueryMeMe;
 pub(super) struct IntraLedgerPaymentSend;
 pub use self::intra_ledger_payment_send::IntraLedgerPaymentSendInput;
 pub use self::intra_ledger_payment_send::PaymentSendResult;
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "src/client/graphql/schema.graphql",
+    query_path = "src/client/graphql/mutations/intraledger_usd_send.graphql",
+    response_derives = "Debug, Serialize"
+)]
+pub(super) struct IntraLedgerUsdPaymentSend;
+pub use self::intra_ledger_usd_payment_send::IntraLedgerUsdPaymentSendInput;
+pub use self::intra_ledger_usd_payment_send::PaymentSendResult as UsdPaymentSendResult;
 
 #[derive(GraphQLQuery)]
 #[graphql(

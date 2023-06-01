@@ -15,7 +15,7 @@ use std::fs::{self};
 mod constants;
 mod token;
 
-#[derive(Parser, Debug)]
+#[derive(Parser)]
 #[clap(author, version, about, long_about = None)]
 struct Cli {
     #[clap(
@@ -37,24 +37,10 @@ struct Cli {
     command: Commands,
 }
 
-#[derive(Subcommand, Debug)]
+#[derive(Subcommand)]
 enum Commands {
     /// Get globals value from the instance
     Getinfo {},
-    /// Get WalletId for an account
-    DefaultWallet {
-        #[clap(value_parser)]
-        username: String,
-    },
-    /// Execute Me query
-    Me,
-    /// Do an intraledger transaction
-    SendIntraledger {
-        #[clap(value_parser)]
-        username: String,
-        amount: Decimal,
-        memo: Option<String>,
-    },
     /// Request a code from a Phone number
     RequestPhoneCode {
         #[clap(value_parser)]
@@ -67,8 +53,34 @@ enum Commands {
     Login { phone: String, code: String },
     /// logout the current user by deleting token file
     Logout,
+    /// Get WalletId for an account
+    DefaultWallet {
+        #[clap(value_parser)]
+        username: String,
+    },
+    /// Execute Me query
+    Me,
+    /// Execute a Payment
+    Pay {
+        #[clap(short, long)]
+        username: String,
+        #[clap(short, long, value_parser)]
+        wallet: Wallet,
+        #[clap(short, long)]
+        cents: Option<Decimal>,
+        #[clap(short, long)]
+        sats: Option<Decimal>,
+        #[clap(short, long)]
+        memo: Option<String>,
+    },
     /// execute a batch payment
     Batch { filename: String, price: Decimal },
+}
+
+#[derive(Debug, Clone, clap::ValueEnum, PartialEq, Eq)]
+enum Wallet {
+    BTC,
+    USD,
 }
 
 fn main() -> anyhow::Result<()> {
@@ -108,15 +120,36 @@ fn main() -> anyhow::Result<()> {
             let result = galoy_cli.me().context("can't get me")?;
             println!("{:#?}", result);
         }
-        Commands::SendIntraledger {
+        Commands::Pay {
             username,
-            amount,
+            wallet,
+            cents,
+            sats,
             memo,
         } => {
-            let result = galoy_cli
-                .intraleger_send(username, amount, memo)
-                .context("issue sending intraledger")?;
-            println!("{:#?}", result);
+            if (wallet == Wallet::BTC && sats.is_none())
+                || (wallet == Wallet::USD && cents.is_none())
+            {
+                eprintln!("Appropriate amount (sats/cents) not provided");
+                std::process::exit(1);
+            }
+
+            match wallet {
+                Wallet::BTC => {
+                    let sats = sats.expect("Can't unwrap sats");
+                    let result = galoy_cli
+                        .intraleger_send(username, sats, memo)
+                        .context("issue sending intraledger")?;
+                    println!("{:?}", result);
+                }
+                Wallet::USD => {
+                    let cents = cents.expect("Can't unwrap cents");
+                    let result = galoy_cli
+                        .intraleger_usd_send(username, cents, memo)
+                        .context("issue sending intraledger usd")?;
+                    println!("{:?}", result);
+                }
+            }
         }
         Commands::RequestPhoneCode { phone, nocaptcha } => {
             galoy_cli
