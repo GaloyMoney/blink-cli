@@ -15,6 +15,8 @@ pub use error::*;
 pub mod batch;
 pub use batch::Batch;
 
+use self::query_me::WalletCurrency;
+
 pub mod server;
 
 pub struct GaloyClient {
@@ -176,14 +178,21 @@ impl GaloyClient {
         memo: Option<String>,
     ) -> anyhow::Result<PaymentSendResult> {
         let me = self.me()?;
-        let wallet_id = me.default_account.default_wallet_id;
+        let btc_wallet_id = me
+            .default_account
+            .wallets
+            .iter()
+            .find(|wallet| wallet.wallet_currency == WalletCurrency::BTC)
+            .map(|wallet| &wallet.id)
+            .expect("Can't get BTC wallet")
+            .to_owned();
 
         let recipient_wallet_id = self.default_wallet(username)?;
         let input = IntraLedgerPaymentSendInput {
             amount,
             memo,
             recipient_wallet_id,
-            wallet_id,
+            wallet_id: btc_wallet_id,
         };
 
         let variables = intra_ledger_payment_send::Variables { input };
@@ -202,6 +211,58 @@ impl GaloyClient {
         };
 
         match response_data.intra_ledger_payment_send.status {
+            Some(status) => Ok(status),
+            None => bail!("failed payment (empty response)"),
+        }
+    }
+
+    pub fn intraleger_usd_send(
+        &self,
+        username: String,
+        amount: Decimal,
+        memo: Option<String>,
+    ) -> anyhow::Result<UsdPaymentSendResult> {
+        let me = self.me()?;
+        let usd_wallet_id = me
+            .default_account
+            .wallets
+            .iter()
+            .find(|wallet| wallet.wallet_currency == WalletCurrency::USD)
+            .map(|wallet| &wallet.id)
+            .expect("Can't get USD wallet")
+            .to_owned();
+
+        let recipient_wallet_id = self.default_wallet(username)?;
+        let input = IntraLedgerUsdPaymentSendInput {
+            amount,
+            memo,
+            recipient_wallet_id,
+            wallet_id: usd_wallet_id,
+        };
+
+        let variables = intra_ledger_usd_payment_send::Variables { input };
+
+        let response_body = post_graphql::<IntraLedgerUsdPaymentSend, _>(
+            &self.graphql_client,
+            &self.api,
+            variables,
+        )
+        .context("issue fetching response")?;
+
+        let response_data = response_body.data.context("Query failed or is empty")?; // TODO: understand when this can fail here
+
+        if !response_data
+            .intra_ledger_usd_payment_send
+            .errors
+            .is_empty()
+        {
+            bail!(format!(
+                "payment error: {:?}",
+                response_data.intra_ledger_usd_payment_send.errors
+            ))
+        };
+
+        match response_data.intra_ledger_usd_payment_send.status {
             Some(status) => Ok(status),
             None => bail!("failed payment (empty response)"),
         }
