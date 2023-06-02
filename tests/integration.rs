@@ -16,22 +16,19 @@ fn globals() {
     println!("{:?}", r);
     assert_eq!(r.nodes_ids.len(), 2)
 }
-
 #[test]
 fn default_wallet_for_username() {
     let galoy_cli = common::unauth_client();
 
-    let username = "doesnotexist".to_string();
+    let username = "test".to_string();
 
-    let query = galoy_cli.default_wallet(username);
+    let query_result = galoy_cli.default_wallet(username);
 
-    assert_eq!(query.is_err(), true);
+    assert!(query_result.is_ok(), "Query failed unexpectedly");
 
-    if let Err(value) = query {
-        assert_eq!(value.to_string(), "Username doesnotexist doesn't exist");
-    } else {
-        panic!("should error")
-    }
+    // default wallet id of username "test" is "b5f11112-4fdf-41c4-91df-6e75bcc6f8fe".
+    let wallet_id = query_result.unwrap();
+    assert_eq!(wallet_id, "b5f11112-4fdf-41c4-91df-6e75bcc6f8fe");
 }
 
 #[test]
