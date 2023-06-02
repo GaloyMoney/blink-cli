@@ -26,7 +26,7 @@ jobs:
             ${{ runner.os }}-cargo-
       - name: Run e2e
         env:
-          GALOY_API: https://api.staging.galoy.io/graphql"
+          GALOY_API: https://api.staging.galoy.io/graphql
           USER_A_PHONE: ${{ secrets.USER_A_PHONE }}
           USER_A_CODE: ${{ secrets.USER_A_CODE }}
           USER_B_PHONE: ${{ secrets.USER_B_PHONE }}
