@@ -7,7 +7,6 @@ setup_file() {
 }
 
 @test "galoy-cli: login saves token to home directory" {
-  echo "galoy_cli_cmd login ${USER_A_PHONE} ${USER_A_CODE}"
   galoy_cli_cmd login ${USER_A_PHONE} ${USER_A_CODE}
   if [[ ! -f ~/.galoy-cli/GALOY_TOKEN ]]; then echo "Token wasn't created"; exit 1; fi
 }
