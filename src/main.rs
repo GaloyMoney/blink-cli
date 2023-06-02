@@ -127,10 +127,13 @@ fn main() -> anyhow::Result<()> {
             sats,
             memo,
         } => {
-            if (wallet == Wallet::Btc && sats.is_none())
-                || (wallet == Wallet::Usd && cents.is_none())
-            {
-                eprintln!("Appropriate amount (sats/cents) not provided");
+            if wallet == Wallet::Btc && sats.is_none() {
+                eprintln!("For btc wallet, use --sats to specify amount");
+                std::process::exit(1);
+            }
+
+            if wallet == Wallet::Usd && cents.is_none() {
+                eprintln!("For usd wallet, use --cents to specify amount");
                 std::process::exit(1);
             }
 
