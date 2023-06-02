@@ -118,7 +118,10 @@ fn main() -> anyhow::Result<()> {
         }
         Commands::Me => {
             let result = galoy_cli.me().context("can't get me")?;
-            println!("{:#?}", result);
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&result).expect("Can't serialize json")
+            );
         }
         Commands::Pay {
             username,

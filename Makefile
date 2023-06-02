@@ -1,6 +1,3 @@
-build:
-	cargo build
-
 watch:
 	RUST_BACKTRACE=full cargo watch -s 'cargo test -- --nocapture'
 
@@ -14,3 +11,9 @@ check-code:
 	cargo fmt --check --all
 	cargo clippy --all-features
 	cargo audit
+
+build:
+	cargo build --locked
+
+e2e: build
+	bats -t tests/e2e
