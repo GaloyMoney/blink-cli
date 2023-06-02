@@ -12,7 +12,8 @@ setup_file() {
 }
 
 @test "galoy-cli: can query me" {
-  galoy_cli_cmd me
+  phone=$(galoy_cli_cmd me | jq -r ".phone")
+  [ "$phone" = "${USER_A_PHONE}" ] || exit 1
 }
 
 @test "galoy-cli: logout deletes token from home directory" {
