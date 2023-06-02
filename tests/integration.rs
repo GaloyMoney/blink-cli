@@ -53,9 +53,10 @@ fn login() {
 #[test]
 #[ignore]
 fn intraledger_send() {
-    let galoy_cli = common::auth_client();
+    //This test would not work without auth_client
+    let galoy_cli = common::unauth_client();
 
-    let username = "userB".to_string();
+    let username = "test".to_string();
 
     let amount = dec!(2);
 
