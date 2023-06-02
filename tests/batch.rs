@@ -27,7 +27,7 @@ fn batch_csv() {
 #[test]
 #[ignore]
 fn batch_cant_pay_self() {
-    let galoy_cli = common::auth_client();
+    let galoy_cli = common::unauth_client();
 
     let mut batch = Batch::new(galoy_cli, dec!(10_000));
 
@@ -46,7 +46,7 @@ fn batch_cant_pay_self() {
 #[test]
 #[ignore]
 fn batch_balance_too_low() {
-    let galoy_cli = common::auth_client();
+    let galoy_cli = common::unauth_client();
 
     let mut batch = Batch::new(galoy_cli, dec!(10_000));
 
@@ -65,7 +65,7 @@ fn batch_balance_too_low() {
 #[test]
 #[ignore]
 fn execute_batch() {
-    let galoy_cli = common::auth_client();
+    let galoy_cli = common::unauth_client();
 
     let mut batch = Batch::new(galoy_cli, dec!(10_000));
 
