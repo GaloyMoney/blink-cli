@@ -268,6 +268,26 @@ impl GaloyClient {
         }
     }
 
+    pub fn set_username(&self, username: String) -> Result<(), &'static str> {
+        let input = UserUpdateUsernameInput {
+            username: username.clone(),
+        };
+
+        let variables = user_update_username::Variables { input };
+
+        let response_body =
+            post_graphql::<UserUpdateUsername, _>(&self.graphql_client, &self.api, variables)
+                .map_err(|_| "issue fetching response")?;
+
+        let response_data = response_body.data.ok_or("Query failed or is empty")?;
+
+        if !response_data.user_update_username.errors.is_empty() {
+            return Err("Update username error");
+        }
+
+        Ok(())
+    }
+
     // TODO: check if we can do self without &
     pub fn batch(self, filename: String, price: Decimal) -> anyhow::Result<()> {
         let mut batch = Batch::new(self, price);
