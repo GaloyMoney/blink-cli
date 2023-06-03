@@ -90,6 +90,15 @@ pub use self::user_request_auth_code::UserRequestAuthCodeUserRequestAuthCode;
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "src/client/graphql/schema.graphql",
+    query_path = "src/client/graphql/mutations/set_username.graphql",
+    response_derives = "Debug, Serialize"
+)]
+pub(super) struct UserUpdateUsername;
+pub use self::user_update_username::UserUpdateUsernameInput;
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "src/client/graphql/schema.graphql",
     query_path = "src/client/graphql/mutations/captcha_create_challenge.graphql",
     response_derives = "Debug, Serialize"
 )]
