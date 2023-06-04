@@ -269,9 +269,7 @@ impl GaloyClient {
     }
 
     pub fn set_username(&self, username: String) -> Result<(), &'static str> {
-        let input = UserUpdateUsernameInput {
-            username: username.clone(),
-        };
+        let input = UserUpdateUsernameInput { username };
 
         let variables = user_update_username::Variables { input };
 
