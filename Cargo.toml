@@ -14,7 +14,7 @@ anyhow = "1.0.66"
 reqwest = { version = "0.11.18", features = ["json", "blocking"] }
 graphql_client = { version = "0.13.0", features = ["reqwest-blocking", "reqwest"] }
 clap     = { version =  "4.3", features = ["derive", "env"] }
-url = { version = "2.3.1", features = ["serde"] }
+url = { version = "2.4.0", features = ["serde"] }
 log = "0.4.18"
 csv = "1.2.2"
 rust_decimal = "1.27.0"
