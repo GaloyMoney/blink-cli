@@ -12,3 +12,20 @@ galoy_cli_cmd() {
 galoy_cli_setup() {
   rm ~/.galoy-cli/GALOY_TOKEN || true
 }
+
+login_user() {
+  local user=$1
+
+  if [[ "$user" == "A" ]]; then
+    galoy_cli_cmd login ${USER_A_PHONE} ${USER_A_CODE}
+  elif [[ "$user" == "B" ]]; then
+    galoy_cli_cmd login ${USER_B_PHONE} ${USER_B_CODE}
+  else
+    echo "Invalid user: $user"
+    exit 1
+  fi
+}
+
+logout_user() {
+  galoy_cli_cmd logout
+}

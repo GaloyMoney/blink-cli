@@ -7,7 +7,7 @@ setup_file() {
 }
 
 @test "galoy-cli: login saves token to home directory" {
-  galoy_cli_cmd login ${USER_A_PHONE} ${USER_A_CODE}
+  login_user A
   if [[ ! -f ~/.galoy-cli/GALOY_TOKEN ]]; then echo "Token wasn't created"; exit 1; fi
 }
 
@@ -17,6 +17,6 @@ setup_file() {
 }
 
 @test "galoy-cli: logout deletes token from home directory" {
-  galoy_cli_cmd logout
+  logout_user
   if [[ -f ~/.galoy-cli/GALOY_TOKEN ]]; then echo "Token wasn't deleted"; exit 1; fi
 }
