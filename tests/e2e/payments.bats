@@ -23,6 +23,7 @@ setup_file() {
   final_balance_B=$(get_balance "BTC")
   logout_user
 
+  #TODO: handle case when default wallet of B is USD
   [ "$final_balance_B" -eq "$(($initial_balance_B + 100))" ] || exit 1
   [ "$final_balance_A" -eq "$(($initial_balance_A - 100))" ] || exit 1
 }
@@ -44,6 +45,7 @@ setup_file() {
   final_balance_B=$(get_balance)
   logout_user
 
+  #TODO: handle case when default wallet of B is BTC
   [ "$final_balance_B" -eq "$(($initial_balance_B + 1))" ] || exit 1
   [ "$final_balance_A" -eq "$(($initial_balance_A - 1))" ] || exit 1
 }
