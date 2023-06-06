@@ -26,3 +26,24 @@ setup_file() {
   [ "$final_balance_B" -eq "$(($initial_balance_B + 100))" ] || exit 1
   [ "$final_balance_A" -eq "$(($initial_balance_A - 100))" ] || exit 1
 }
+
+@test "pay-usd: cents deducted from sender's wallet and received by recipient" {
+  login_user B
+  initial_balance_B=$(get_balance)
+  logout_user
+
+  login_user A
+  initial_balance_A=$(get_balance "USD")
+  
+  galoy_cli_cmd pay --username ${USER_B_USERNAME} --wallet usd --cents 1
+
+  final_balance_A=$(get_balance "USD")
+  logout_user
+
+  login_user B
+  final_balance_B=$(get_balance)
+  logout_user
+
+  [ "$final_balance_B" -eq "$(($initial_balance_B + 1))" ] || exit 1
+  [ "$final_balance_A" -eq "$(($initial_balance_A - 1))" ] || exit 1
+}
