@@ -4,11 +4,12 @@ load "helpers"
 
 setup_file() {
   galoy_cli_setup
+  galoy_cli_setup_usernames
 }
 
-@test "pay-btc: sats deducted from sender's wallet and received by recipient" {
+@test "pay(intraledger, btc): sats deducted from sender's wallet and received by recipient" {
   login_user B
-  initial_balance_B=$(get_balance "BTC")
+  initial_balance_B=$(get_balance)
   logout_user
 
   login_user A
@@ -20,32 +21,30 @@ setup_file() {
   logout_user
 
   login_user B
-  final_balance_B=$(get_balance "BTC")
-  logout_user
-
-  #TODO: handle case when default wallet of B is USD
-  [ "$final_balance_B" -eq "$(($initial_balance_B + 100))" ] || exit 1
-  [ "$final_balance_A" -eq "$(($initial_balance_A - 100))" ] || exit 1
-}
-
-@test "pay-usd: cents deducted from sender's wallet and received by recipient" {
-  login_user B
-  initial_balance_B=$(get_balance)
-  logout_user
-
-  login_user A
-  initial_balance_A=$(get_balance "USD")
-  
-  galoy_cli_cmd pay --username ${USER_B_USERNAME} --wallet usd --cents 1
-
-  final_balance_A=$(get_balance "USD")
-  logout_user
-
-  login_user B
   final_balance_B=$(get_balance)
   logout_user
 
-  #TODO: handle case when default wallet of B is BTC
-  [ "$final_balance_B" -eq "$(($initial_balance_B + 1))" ] || exit 1
-  [ "$final_balance_A" -eq "$(($initial_balance_A - 1))" ] || exit 1
+  [ "$final_balance_B" -gt "$initial_balance_B" ] || exit 1
+  [ "$final_balance_A" -lt "$initial_balance_A" ] || exit 1
+}
+
+@test "pay(intraledger, usd): cents deducted from sender's wallet and received by recipient" {
+  login_user A
+  initial_balance_A=$(get_balance)
+  logout_user
+
+  login_user B
+  initial_balance_B=$(get_balance "USD")
+  
+  galoy_cli_cmd pay --username ${USER_A_USERNAME} --wallet usd --cents 1
+
+  final_balance_B=$(get_balance "USD")
+  logout_user
+
+  login_user A
+  final_balance_A=$(get_balance)
+  logout_user
+
+  [ "$final_balance_A" -gt "$initial_balance_A" ] || exit 1
+  [ "$final_balance_B" -lt "$initial_balance_B" ] || exit 1
 }

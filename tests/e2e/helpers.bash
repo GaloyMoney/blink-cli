@@ -13,6 +13,16 @@ galoy_cli_setup() {
   rm ~/.galoy-cli/GALOY_TOKEN || true
 }
 
+galoy_cli_setup_usernames() {
+  login_user A
+  galoy_cli_cmd set-username --username ${USER_A_USERNAME} || true
+  logout_user
+
+  login_user B
+  galoy_cli_cmd set-username --username ${USER_B_USERNAME} || true
+  logout_user
+}
+
 login_user() {
   local user=$1
 
