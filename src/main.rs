@@ -53,6 +53,11 @@ enum Commands {
     Login { phone: String, code: String },
     /// logout the current user by deleting token file
     Logout,
+    /// Set a username for a new account
+    SetUsername {
+        #[clap(short, long)]
+        username: String,
+    },
     /// Get WalletId for an account
     DefaultWallet {
         #[clap(value_parser)]
@@ -171,6 +176,10 @@ fn main() -> anyhow::Result<()> {
         Commands::Logout => {
             token::remove_token(&token_file).expect("Failed to remove token");
         }
+        Commands::SetUsername { username } => match galoy_cli.set_username(username) {
+            Ok(_) => println!("Username has been successfully set!"),
+            Err(err) => println!("Error occurred while setting username: {}", err),
+        },
         Commands::Batch { filename, price } => {
             let result = galoy_cli
                 .batch(filename, price)
