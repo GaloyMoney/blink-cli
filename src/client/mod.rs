@@ -17,6 +17,8 @@ pub use batch::Batch;
 
 use self::query_me::WalletCurrency;
 
+use crate::types::Wallet;
+
 pub mod server;
 
 pub struct GaloyClient {
@@ -95,6 +97,57 @@ impl GaloyClient {
         );
 
         Ok(me)
+    }
+
+    pub fn fetch_balance(&self, wallet: Option<Wallet>) -> anyhow::Result<String> {
+        let me = self.me()?;
+
+        let default_wallet_id = me.default_account.default_wallet_id;
+
+        let wallets = &me.default_account.wallets;
+        let mut wallet_balances = String::new();
+
+        for wallet_info in wallets {
+            match &wallet {
+                Some(Wallet::Usd) if wallet_info.wallet_currency == WalletCurrency::USD => {
+                    return Ok(format!("USD wallet: {} cents", wallet_info.balance));
+                }
+                Some(Wallet::Btc) if wallet_info.wallet_currency == WalletCurrency::BTC => {
+                    return Ok(format!("BTC wallet: {} sats", wallet_info.balance));
+                }
+                None => {
+                    if wallet_info.wallet_currency == WalletCurrency::USD {
+                        wallet_balances += &format!(
+                            "USD wallet{}: {} cents\n",
+                            if wallet_info.id == default_wallet_id {
+                                " (default)"
+                            } else {
+                                ""
+                            },
+                            wallet_info.balance
+                        );
+                    }
+                    if wallet_info.wallet_currency == WalletCurrency::BTC {
+                        wallet_balances += &format!(
+                            "BTC wallet{}: {} sats\n",
+                            if wallet_info.id == default_wallet_id {
+                                " (default)"
+                            } else {
+                                ""
+                            },
+                            wallet_info.balance
+                        );
+                    }
+                }
+                _ => {}
+            }
+        }
+
+        if wallet_balances.is_empty() {
+            Err(anyhow::anyhow!("No matching wallet found"))
+        } else {
+            Ok(wallet_balances)
+        }
     }
 
     pub fn request_phone_code(&self, phone: String, nocaptcha: bool) -> std::io::Result<()> {
