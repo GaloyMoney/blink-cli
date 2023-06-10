@@ -15,6 +15,8 @@ use std::fs::{self};
 mod constants;
 mod token;
 
+use galoy_cli::types::*;
+
 #[derive(Parser)]
 #[clap(author, version, about, long_about = None)]
 struct Cli {
@@ -80,12 +82,6 @@ enum Commands {
     },
     /// execute a batch payment
     Batch { filename: String, price: Decimal },
-}
-
-#[derive(Debug, Clone, clap::ValueEnum, PartialEq, Eq)]
-enum Wallet {
-    Btc,
-    Usd,
 }
 
 fn main() -> anyhow::Result<()> {
