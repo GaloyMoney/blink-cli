@@ -41,7 +41,7 @@ pub use self::query_globals::QueryGlobalsGlobals;
     query_path = "src/client/graphql/queries/me.graphql",
     response_derives = "Debug, Serialize, PartialEq"
 )]
-pub(super) struct QueryMe;
+pub struct QueryMe;
 pub use self::query_me::QueryMeMe;
 
 // mutations

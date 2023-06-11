@@ -73,6 +73,8 @@ enum Commands {
         btc: bool,
         #[clap(long)]
         usd: bool,
+        #[clap(long, use_value_delimiter = true)]
+        wallet_ids: Vec<String>,
     },
     /// Execute a Payment
     Pay {
@@ -131,7 +133,11 @@ fn main() -> anyhow::Result<()> {
                 serde_json::to_string_pretty(&result).expect("Can't serialize json")
             );
         }
-        Commands::Balance { btc, usd } => {
+        Commands::Balance {
+            btc,
+            usd,
+            wallet_ids,
+        } => {
             let wallet_type = match (btc, usd) {
                 (true, true) | (false, false) => None,
                 (true, false) => Some(Wallet::Btc),
@@ -139,7 +145,7 @@ fn main() -> anyhow::Result<()> {
             };
 
             let balance = galoy_cli
-                .fetch_balance(wallet_type)
+                .fetch_balance(wallet_type, wallet_ids)
                 .context("can't fetch balance")?;
             println!("{}", balance);
         }

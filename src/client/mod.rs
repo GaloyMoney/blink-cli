@@ -17,7 +17,8 @@ pub use batch::Batch;
 
 use self::query_me::WalletCurrency;
 
-use crate::types::Wallet;
+use crate::types::*;
+use crate::utils::*;
 
 pub mod server;
 
@@ -99,54 +100,58 @@ impl GaloyClient {
         Ok(me)
     }
 
-    pub fn fetch_balance(&self, wallet: Option<Wallet>) -> anyhow::Result<String> {
+    pub fn fetch_balance(
+        &self,
+        wallet: Option<Wallet>,
+        wallet_ids: Vec<String>,
+    ) -> anyhow::Result<String> {
         let me = self.me()?;
 
         let default_wallet_id = me.default_account.default_wallet_id;
-
         let wallets = &me.default_account.wallets;
+
+        let wallet_ids_set: std::collections::HashSet<_> = wallet_ids.iter().collect();
+
         let mut wallet_balances = String::new();
 
         for wallet_info in wallets {
-            match &wallet {
-                Some(Wallet::Usd) if wallet_info.wallet_currency == WalletCurrency::USD => {
-                    return Ok(format!("USD wallet: {} cents", wallet_info.balance));
+            if wallet_ids_set.contains(&wallet_info.id)
+                || match (&wallet, &wallet_info.wallet_currency) {
+                    (Some(w), wc) if wallet_to_currency(w) == *wc => true,
+                    (None, _) if wallet_ids_set.is_empty() => true,
+                    _ => false,
                 }
-                Some(Wallet::Btc) if wallet_info.wallet_currency == WalletCurrency::BTC => {
-                    return Ok(format!("BTC wallet: {} sats", wallet_info.balance));
-                }
-                None => {
+            {
+                let currency = match wallet_info.wallet_currency {
+                    WalletCurrency::USD => "cents",
+                    WalletCurrency::BTC => "sats",
+                    _ => "unknown",
+                };
+
+                wallet_balances += &format!(
+                    "{}{}: {} {}\n",
                     if wallet_info.wallet_currency == WalletCurrency::USD {
-                        wallet_balances += &format!(
-                            "USD wallet{}: {} cents\n",
-                            if wallet_info.id == default_wallet_id {
-                                " (default)"
-                            } else {
-                                ""
-                            },
-                            wallet_info.balance
-                        );
-                    }
-                    if wallet_info.wallet_currency == WalletCurrency::BTC {
-                        wallet_balances += &format!(
-                            "BTC wallet{}: {} sats\n",
-                            if wallet_info.id == default_wallet_id {
-                                " (default)"
-                            } else {
-                                ""
-                            },
-                            wallet_info.balance
-                        );
-                    }
-                }
-                _ => {}
+                        "USD wallet"
+                    } else if wallet_info.wallet_currency == WalletCurrency::BTC {
+                        "BTC wallet"
+                    } else {
+                        &wallet_info.id
+                    },
+                    if wallet_info.id == default_wallet_id {
+                        " (default)"
+                    } else {
+                        ""
+                    },
+                    wallet_info.balance,
+                    currency,
+                );
             }
         }
 
         if wallet_balances.is_empty() {
             Err(anyhow::anyhow!("No matching wallet found"))
         } else {
-            Ok(wallet_balances)
+            Ok(wallet_balances.trim().to_string())
         }
     }
 
