@@ -4,7 +4,7 @@ use reqwest::blocking::Client;
 
 use log::info;
 use rust_decimal::Decimal;
-use std::net::TcpListener;
+use std::{collections::HashSet, net::TcpListener};
 
 pub mod queries;
 pub use queries::*;
@@ -113,54 +113,39 @@ impl GaloyClient {
         &self,
         wallet_type: Option<Wallet>,
         wallet_ids: Vec<String>,
-    ) -> anyhow::Result<String> {
+    ) -> anyhow::Result<Vec<WalletBalance>> {
         let me = self.me()?;
-
         let default_wallet_id = me.default_account.default_wallet_id;
         let wallets = &me.default_account.wallets;
 
-        let wallet_ids_set: std::collections::HashSet<_> = wallet_ids.iter().collect();
+        let wallet_ids_set: HashSet<_> = wallet_ids.into_iter().collect();
 
-        let mut wallet_balances = String::new();
+        let balances: Vec<_> = wallets
+            .iter()
+            .filter(|wallet_info| {
+                wallet_ids_set.contains(&wallet_info.id)
+                    || wallet_type.as_ref().map_or(wallet_ids_set.is_empty(), |w| {
+                        *w == Wallet::from(&wallet_info.wallet_currency)
+                    })
+            })
+            .map(|wallet_info| WalletBalance {
+                currency: format!("{:?}", Wallet::from(&wallet_info.wallet_currency)),
+                balance: wallet_info.balance,
+                id: if wallet_info.wallet_currency == WalletCurrency::USD
+                    || wallet_info.wallet_currency == WalletCurrency::BTC
+                {
+                    None
+                } else {
+                    Some(wallet_info.id.clone())
+                },
+                default: wallet_info.id == default_wallet_id,
+            })
+            .collect();
 
-        for wallet_info in wallets {
-            if wallet_ids_set.contains(&wallet_info.id)
-                || match (&wallet_type, &wallet_info.wallet_currency) {
-                    (Some(w), wc) if *w == Wallet::from(wc) => true,
-                    (None, _) if wallet_ids_set.is_empty() => true,
-                    _ => false,
-                }
-            {
-                let currency = match wallet_info.wallet_currency {
-                    WalletCurrency::USD => "cents",
-                    WalletCurrency::BTC => "sats",
-                    _ => "unknown",
-                };
-
-                wallet_balances += &format!(
-                    "{}{}: {} {}\n",
-                    if wallet_info.wallet_currency == WalletCurrency::USD {
-                        "USD wallet"
-                    } else if wallet_info.wallet_currency == WalletCurrency::BTC {
-                        "BTC wallet"
-                    } else {
-                        &wallet_info.id
-                    },
-                    if wallet_info.id == default_wallet_id {
-                        " (default)"
-                    } else {
-                        ""
-                    },
-                    wallet_info.balance,
-                    currency,
-                );
-            }
-        }
-
-        if wallet_balances.is_empty() {
+        if balances.is_empty() {
             Err(anyhow::anyhow!("No matching wallet found"))
         } else {
-            Ok(wallet_balances.trim().to_string())
+            Ok(balances)
         }
     }
 

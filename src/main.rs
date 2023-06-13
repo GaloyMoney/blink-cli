@@ -144,10 +144,12 @@ fn main() -> anyhow::Result<()> {
                 (false, true) => Some(Wallet::Usd),
             };
 
-            let balance = galoy_cli
+            let balances = galoy_cli
                 .fetch_balance(wallet_type, wallet_ids)
                 .context("can't fetch balance")?;
-            println!("{}", balance);
+            let balances_json =
+                serde_json::to_string_pretty(&balances).context("Can't serialize json")?;
+            println!("{}", balances_json);
         }
         Commands::Pay {
             username,
