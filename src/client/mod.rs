@@ -111,7 +111,7 @@ impl GaloyClient {
 
     pub fn fetch_balance(
         &self,
-        wallet: Option<Wallet>,
+        wallet_type: Option<Wallet>,
         wallet_ids: Vec<String>,
     ) -> anyhow::Result<String> {
         let me = self.me()?;
@@ -125,7 +125,7 @@ impl GaloyClient {
 
         for wallet_info in wallets {
             if wallet_ids_set.contains(&wallet_info.id)
-                || match (&wallet, &wallet_info.wallet_currency) {
+                || match (&wallet_type, &wallet_info.wallet_currency) {
                     (Some(w), wc) if *w == Wallet::from(wc) => true,
                     (None, _) if wallet_ids_set.is_empty() => true,
                     _ => false,
