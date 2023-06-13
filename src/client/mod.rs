@@ -15,12 +15,21 @@ pub use error::*;
 pub mod batch;
 pub use batch::Batch;
 
-use self::query_me::WalletCurrency;
+pub use self::query_me::WalletCurrency;
 
 use crate::types::*;
-use crate::utils::*;
 
 pub mod server;
+
+impl From<&WalletCurrency> for Wallet {
+    fn from(currency: &WalletCurrency) -> Self {
+        match currency {
+            WalletCurrency::USD => Wallet::Usd,
+            WalletCurrency::BTC => Wallet::Btc,
+            _ => panic!("Unsupported currency"),
+        }
+    }
+}
 
 pub struct GaloyClient {
     graphql_client: Client,
@@ -117,7 +126,7 @@ impl GaloyClient {
         for wallet_info in wallets {
             if wallet_ids_set.contains(&wallet_info.id)
                 || match (&wallet, &wallet_info.wallet_currency) {
-                    (Some(w), wc) if wallet_to_currency(w) == *wc => true,
+                    (Some(w), wc) if *w == Wallet::from(wc) => true,
                     (None, _) if wallet_ids_set.is_empty() => true,
                     _ => false,
                 }
