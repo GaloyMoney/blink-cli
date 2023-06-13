@@ -15,6 +15,8 @@ use std::fs::{self};
 mod constants;
 mod token;
 
+use galoy_cli::types::*;
+
 #[derive(Parser)]
 #[clap(author, version, about, long_about = None)]
 struct Cli {
@@ -65,6 +67,15 @@ enum Commands {
     },
     /// Execute Me query
     Me,
+    /// Fetch the balance of a wallet
+    Balance {
+        #[clap(long)]
+        btc: bool,
+        #[clap(long)]
+        usd: bool,
+        #[clap(long, use_value_delimiter = true)]
+        wallet_ids: Vec<String>,
+    },
     /// Execute a Payment
     Pay {
         #[clap(short, long)]
@@ -80,12 +91,6 @@ enum Commands {
     },
     /// execute a batch payment
     Batch { filename: String, price: Decimal },
-}
-
-#[derive(Debug, Clone, clap::ValueEnum, PartialEq, Eq)]
-enum Wallet {
-    Btc,
-    Usd,
 }
 
 fn main() -> anyhow::Result<()> {
@@ -127,6 +132,24 @@ fn main() -> anyhow::Result<()> {
                 "{}",
                 serde_json::to_string_pretty(&result).expect("Can't serialize json")
             );
+        }
+        Commands::Balance {
+            btc,
+            usd,
+            wallet_ids,
+        } => {
+            let wallet_type = match (btc, usd) {
+                (true, true) | (false, false) => None,
+                (true, false) => Some(Wallet::Btc),
+                (false, true) => Some(Wallet::Usd),
+            };
+
+            let balances = galoy_cli
+                .fetch_balance(wallet_type, wallet_ids)
+                .context("can't fetch balance")?;
+            let balances_json =
+                serde_json::to_string_pretty(&balances).context("Can't serialize json")?;
+            println!("{}", balances_json);
         }
         Commands::Pay {
             username,
