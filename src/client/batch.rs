@@ -32,7 +32,7 @@ pub fn validate_csv(
         ));
     }
 
-    let wallet_type = if headers.get(1) == Some(&"cents") {
+    let wallet_type = if headers.get(1) == Some("cents") {
         Wallet::Usd
     } else {
         Wallet::Btc
@@ -63,7 +63,7 @@ pub fn check_sufficient_balance(
     wallet_type: Wallet,
     galoy_cli: &GaloyClient,
 ) -> anyhow::Result<()> {
-    let balance_info = galoy_cli.fetch_balance(Some(wallet_type.clone()), Vec::new())?;
+    let balance_info = galoy_cli.fetch_balance(Some(wallet_type), Vec::new())?;
     let current_balance: Decimal = balance_info.iter().map(|info| info.balance).sum();
 
     let mut total_payment_amount: Decimal = Decimal::new(0, 0);

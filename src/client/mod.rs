@@ -340,9 +340,9 @@ impl GaloyClient {
 
     pub fn batch_payment(self, file: String) -> anyhow::Result<String> {
         check_file_exists(&file)?;
-        let (mut reader, wallet_type) = validate_csv(&self, &file)?;
-        check_sufficient_balance(&mut reader, wallet_type.clone(), &self)?;
-        execute_batch_payment(&mut reader, wallet_type, &self)?;
+        let (reader, wallet_type) = validate_csv(&self, &file)?;
+        check_sufficient_balance(&reader, wallet_type.clone(), &self)?;
+        execute_batch_payment(&reader, wallet_type, &self)?;
         Ok("Batch Payment Successful".to_string())
     }
 
