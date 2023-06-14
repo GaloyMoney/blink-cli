@@ -90,7 +90,10 @@ enum Commands {
         memo: Option<String>,
     },
     /// execute a batch payment
-    Batch { filename: String, price: Decimal },
+    Batch {
+        #[clap(short, long = "csv")]
+        file: String,
+    },
 }
 
 fn main() -> anyhow::Result<()> {
@@ -203,9 +206,9 @@ fn main() -> anyhow::Result<()> {
             Ok(_) => println!("Username has been successfully set!"),
             Err(err) => println!("Error occurred while setting username: {}", err),
         },
-        Commands::Batch { filename, price } => {
+        Commands::Batch { file } => {
             let result = galoy_cli
-                .batch(filename, price)
+                .batch_payment(file)
                 .context("issue batching payment");
             println!("{:#?}", result);
         }

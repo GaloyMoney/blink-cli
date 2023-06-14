@@ -13,7 +13,7 @@ pub mod error;
 pub use error::*;
 
 pub mod batch;
-pub use batch::Batch;
+use crate::client::batch::*;
 
 pub use self::query_me::WalletCurrency;
 
@@ -338,26 +338,12 @@ impl GaloyClient {
         Ok(())
     }
 
-    // TODO: check if we can do self without &
-    pub fn batch(self, filename: String, price: Decimal) -> anyhow::Result<()> {
-        let mut batch = Batch::new(self, price);
-
-        batch.add_csv(filename).context("can't load file")?;
-
-        batch
-            .populate_wallet_id()
-            .context("cant get wallet id for all username")?;
-
-        batch
-            .populate_sats()
-            .context("cant set sats all payments")?;
-
-        println!("going to execute:");
-        batch.show();
-
-        batch.execute().context("can't make payment successfully")?;
-
-        Ok(())
+    pub fn batch_payment(self, file: String) -> anyhow::Result<String> {
+        check_file_exists(&file)?;
+        let (mut reader, wallet_type) = validate_csv(&self, &file)?;
+        check_sufficient_balance(&mut reader, wallet_type.clone(), &self)?;
+        execute_batch_payment(&mut reader, wallet_type, &self)?;
+        Ok("Batch Payment Successful".to_string())
     }
 
     pub fn create_captcha_challenge(&self) -> Result<CaptchaChallenge, CliError> {

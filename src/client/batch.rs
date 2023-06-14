@@ -1,191 +1,106 @@
-use serde::Deserialize;
-
-use std::fs::File;
-
-use super::*;
-
+use csv;
 use rust_decimal::Decimal;
-use rust_decimal_macros::dec;
+use std::path::Path;
+use std::str::FromStr;
 
-#[derive(Debug, Deserialize)]
-pub struct PaymentInput {
-    pub username: String,
-    pub usd: Decimal,
-    pub memo: Option<String>,
+use crate::client::GaloyClient;
+use crate::client::Wallet;
+
+// Utility function to check if file exists
+pub fn check_file_exists(file: &str) -> anyhow::Result<()> {
+    let file_path = Path::new(&file);
+    if !file_path.exists() {
+        return Err(anyhow::anyhow!("File not found: {}", file));
+    }
+    Ok(())
 }
 
-impl From<PaymentInput> for Payment {
-    fn from(input: PaymentInput) -> Payment {
-        Payment {
-            username: input.username,
-            usd: input.usd,
-            sats: None,
-            wallet_id: None,
-            memo: input.memo,
-        }
+// Utility function to read and validate the CSV file
+pub fn validate_csv(
+    galoy_cli: &GaloyClient,
+    file: &str,
+) -> anyhow::Result<(Vec<csv::StringRecord>, Wallet)> {
+    let mut reader = csv::ReaderBuilder::new().delimiter(b',').from_path(file)?;
+    let headers = reader.headers()?.clone();
+
+    if &headers[0] != "username"
+        || (&headers[1] != "cents" && &headers[1] != "sats")
+        || (headers.len() == 3 && &headers[2] != "memo")
+    {
+        return Err(anyhow::anyhow!(
+            "CSV format not correct, requires: username, (cents or sats), memo(optional)"
+        ));
     }
+
+    let wallet_type = if headers.get(1) == Some(&"cents") {
+        Wallet::Usd
+    } else {
+        Wallet::Btc
+    };
+
+    let records: Vec<csv::StringRecord> = reader.records().collect::<Result<_, _>>()?;
+
+    // Validate each record
+    for record in &records {
+        let username = record
+            .get(0)
+            .ok_or(anyhow::anyhow!("Username is missing"))?;
+
+        let amount = record.get(1).ok_or(anyhow::anyhow!("Amount is missing"))?;
+        amount
+            .parse::<Decimal>()
+            .map_err(|_| anyhow::anyhow!("Amount must be a number"))?;
+
+        // Check if the username exists
+        galoy_cli.default_wallet(username.to_string())?;
+    }
+
+    Ok((records, wallet_type))
 }
 
-#[derive(Debug)]
-struct Payment {
-    username: String,
-    usd: Decimal,
-    sats: Option<Decimal>,
-    wallet_id: Option<String>,
-    memo: Option<String>,
+pub fn check_sufficient_balance(
+    records: &[csv::StringRecord],
+    wallet_type: Wallet,
+    galoy_cli: &GaloyClient,
+) -> anyhow::Result<()> {
+    let balance_info = galoy_cli.fetch_balance(Some(wallet_type.clone()), Vec::new())?;
+    let current_balance: Decimal = balance_info.iter().map(|info| info.balance).sum();
+
+    let mut total_payment_amount: Decimal = Decimal::new(0, 0);
+    for record in records {
+        let amount: Decimal = Decimal::from_str(record.get(1).unwrap_or_default())?;
+        total_payment_amount += amount;
+    }
+
+    if total_payment_amount > current_balance {
+        return Err(anyhow::anyhow!("Insufficient balance in the wallet"));
+    }
+
+    Ok(())
 }
 
-pub struct Batch {
-    payments: Vec<Payment>,
-    client: GaloyClient,
-    /// price in btc/usd
-    price: Decimal,
-}
+pub fn execute_batch_payment(
+    records: &[csv::StringRecord],
+    wallet_type: Wallet,
+    galoy_cli: &GaloyClient,
+) -> anyhow::Result<()> {
+    for record in records {
+        let username = record
+            .get(0)
+            .ok_or(anyhow::anyhow!("Username is missing"))?;
 
-impl Batch {
-    pub fn new(client: GaloyClient, price: Decimal) -> Self {
-        let payments: Vec<Payment> = vec![];
-        Self {
-            payments,
-            client,
-            price,
-        }
-    }
+        let amount: Decimal = Decimal::from_str(record.get(1).unwrap_or_default())?;
 
-    pub fn add(&mut self, input: PaymentInput) {
-        self.payments.push(input.into());
-    }
+        let memo = record.get(2).map(|s| s.to_string());
 
-    pub fn add_csv(&mut self, filename: String) -> anyhow::Result<()> {
-        let file = File::open(filename)?;
-        let mut rdr = csv::Reader::from_reader(file);
-        for result in rdr.deserialize() {
-            let record: PaymentInput = result?;
-            self.add(record);
-        }
-
-        Ok(())
-    }
-
-    pub fn len(&self) -> usize {
-        self.payments.len()
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.payments.is_empty()
-    }
-
-    pub fn populate_wallet_id(&mut self) -> anyhow::Result<()> {
-        for payment in self.payments.iter_mut() {
-            let username = payment.username.clone();
-            let query = &self.client.default_wallet(username);
-            match query {
-                Ok(value) => payment.wallet_id = Some(value.clone()),
-                Err(error) => bail!("error query {:?}", error),
+        match wallet_type {
+            Wallet::Usd => {
+                galoy_cli.intraleger_usd_send(username.to_string(), amount, memo)?;
+            }
+            Wallet::Btc => {
+                galoy_cli.intraleger_send(username.to_string(), amount, memo)?;
             }
         }
-
-        Ok(())
     }
-
-    pub fn populate_sats(&mut self) -> anyhow::Result<()> {
-        for payment in self.payments.iter_mut() {
-            let payment_btc: Decimal = payment.usd / self.price;
-            payment.sats = Some(payment_btc * dec!(100_000_000));
-        }
-
-        Ok(())
-    }
-
-    pub fn check_self_payment(&self) -> anyhow::Result<()> {
-        let me = self.client.me()?;
-
-        #[allow(deprecated)]
-        let me_username = match me.username {
-            Some(value) => value,
-            None => bail!("no username has been set"),
-        };
-
-        for payment in self.payments.iter() {
-            if me_username == payment.username {
-                println!("{:#?}", (me_username, &payment.username));
-                bail!("can't pay to self")
-            }
-        }
-
-        Ok(())
-    }
-
-    pub fn check_limit(&self) -> anyhow::Result<()> {
-        todo!("Check limit. need API on the backend for it");
-    }
-
-    pub fn check_balance(&self) -> anyhow::Result<()> {
-        let me = self.client.me()?;
-        let me_wallet_id = me.default_account.default_wallet_id;
-
-        let mut total_sats = dec!(0);
-
-        for payment in self.payments.iter() {
-            let sats = match payment.sats {
-                Some(value) => value,
-                None => bail!("sats needs to be populated first"),
-            };
-            total_sats += sats;
-        }
-
-        let me_default_wallet = me
-            .default_account
-            .wallets
-            .iter()
-            .find(|wallet| wallet.id == me_wallet_id);
-
-        let balance_sats = match me_default_wallet {
-            Some(value) => value.balance,
-            None => bail!("no balance"),
-        };
-        if total_sats > balance_sats {
-            bail!(
-                "not enough balance, got {}, need {}",
-                balance_sats,
-                total_sats
-            )
-        }
-
-        Ok(())
-    }
-
-    pub fn show(&self) {
-        println!("{:#?}", &self.payments)
-    }
-
-    pub fn execute(&mut self) -> anyhow::Result<()> {
-        self.check_self_payment()?;
-        self.check_balance()?;
-
-        for Payment {
-            username,
-            memo,
-            usd,
-            sats,
-            ..
-        } in self.payments.drain(..)
-        {
-            let amount = match sats {
-                Some(value) => value,
-                None => bail!("need sats amount"),
-            };
-            let res = &self
-                .client
-                .intraleger_send(username.clone(), amount, memo)
-                .context("issue sending intraledger")?;
-
-            println!(
-                "payment to {username} of sats {amount}, usd {usd}: {:?}",
-                res
-            );
-        }
-
-        Ok(())
-    }
+    Ok(())
 }
