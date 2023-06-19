@@ -1,0 +1,12 @@
+query QueryGlobals {
+  globals {
+    nodesIds
+    network
+    buildInformation {
+      commitHash
+      helmRevision
+    }
+    lightningAddressDomain
+    lightningAddressDomainAliases
+  }
+}
