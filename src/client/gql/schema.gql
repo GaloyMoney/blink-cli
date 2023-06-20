@@ -238,7 +238,7 @@ scalar LnPaymentSecret
 scalar LnPaymentPreImage
 
 type SettlementViaOnChain {
-  transactionHash: OnChainTxHash!
+  transactionHash: OnChainTxHash
   vout: Int
 }
 
@@ -286,6 +286,7 @@ scalar Memo
 scalar Timestamp
 
 enum AccountLevel {
+  ZERO
   ONE
   TWO
 }
@@ -478,19 +479,19 @@ type Query {
     walletId: WalletId!
     address: OnChainAddress!
     amount: SatAmount!
-    targetConfirmations: TargetConfirmations = 1
+    speed: PayoutSpeed = FAST
   ): OnChainTxFee!
   onChainUsdTxFee(
     walletId: WalletId!
     address: OnChainAddress!
     amount: CentAmount!
-    targetConfirmations: TargetConfirmations = 1
+    speed: PayoutSpeed = FAST
   ): OnChainUsdTxFee!
   onChainUsdTxFeeAsBtcDenominated(
     walletId: WalletId!
     address: OnChainAddress!
     amount: SatAmount!
-    targetConfirmations: TargetConfirmations = 1
+    speed: PayoutSpeed = FAST
   ): OnChainUsdTxFee!
 }
 
@@ -506,6 +507,9 @@ type Globals {
 
   # The domain name for lightning addresses accepted by this Galoy instance
   lightningAddressDomain: String!
+
+  # A list of countries and their supported auth channels
+  supportedCountries: [Country!]!
   lightningAddressDomainAliases: [String!]!
 }
 
@@ -520,6 +524,19 @@ type BuildInformation {
   commitHash: String
   buildTime: Timestamp
   helmRevision: Int
+}
+
+type Country {
+  id: CountryCode!
+  supportedAuthChannels: [PhoneCodeChannelType!]!
+}
+
+# A CCA2 country code (ex US, FR, etc)
+scalar CountryCode
+
+enum PhoneCodeChannelType {
+  SMS
+  WHATSAPP
 }
 
 # A public view of a generic wallet which stores value in one of our supported currencies.
@@ -678,14 +695,20 @@ scalar ContactAlias
 type OnChainTxFee {
   amount: SatAmount!
   targetConfirmations: TargetConfirmations!
+    @deprecated(reason: "Ignored - will be removed")
 }
 
 # (Positive) Number of blocks in which the transaction is expected to be confirmed
 scalar TargetConfirmations
 
+enum PayoutSpeed {
+  FAST
+}
+
 type OnChainUsdTxFee {
   amount: CentAmount!
   targetConfirmations: TargetConfirmations!
+    @deprecated(reason: "Ignored - will be removed")
 }
 
 type Mutation {
@@ -716,6 +739,7 @@ type Mutation {
   lnNoAmountInvoiceCreateOnBehalfOfRecipient(
     input: LnNoAmountInvoiceCreateOnBehalfOfRecipientInput!
   ): LnNoAmountInvoicePayload!
+  userLoginUpgrade(input: UserLoginUpgradeInput!): UpgradePayload!
   userQuizQuestionUpdateCompleted(
     input: UserQuizQuestionUpdateCompletedInput!
   ): UserQuizQuestionUpdateCompletedPayload!
@@ -730,16 +754,20 @@ type Mutation {
   userUpdateUsername(
     input: UserUpdateUsernameInput!
   ): UserUpdateUsernamePayload!
+    @deprecated(
+      reason: "Username will be moved to @Handle in Accounts. Also SetUsername naming should be used instead of UpdateUsername to reflect the idempotency of Handles"
+    )
+  userContactUpdateAlias(
+    input: UserContactUpdateAliasInput!
+  ): UserContactUpdateAliasPayload!
+    @deprecated(reason: "will be moved to AccountContact")
   accountUpdateDefaultWalletId(
     input: AccountUpdateDefaultWalletIdInput!
   ): AccountUpdateDefaultWalletIdPayload!
   accountUpdateDisplayCurrency(
     input: AccountUpdateDisplayCurrencyInput!
   ): AccountUpdateDisplayCurrencyPayload!
-  userContactUpdateAlias(
-    input: UserContactUpdateAliasInput!
-  ): UserContactUpdateAliasPayload!
-    @deprecated(reason: "will be moved to AccountContact")
+  accountDelete: AccountDeletePayload!
 
   # Actions a payment which is internal to the ledger e.g. it does
   # not use onchain/lightning. Returns payment status (success,
@@ -821,11 +849,6 @@ type SuccessPayload {
 input UserRequestAuthCodeInput {
   phone: Phone!
   channel: PhoneCodeChannelType
-}
-
-enum PhoneCodeChannelType {
-  SMS
-  WHATSAPP
 }
 
 type AuthTokenPayload {
@@ -926,6 +949,17 @@ input LnNoAmountInvoiceCreateOnBehalfOfRecipientInput {
   memo: Memo
 }
 
+type UpgradePayload {
+  errors: [Error!]!
+  success: Boolean!
+  authToken: AuthToken
+}
+
+input UserLoginUpgradeInput {
+  phone: Phone!
+  code: OneTimeAuthCode!
+}
+
 type UserQuizQuestionUpdateCompletedPayload {
   errors: [Error!]!
   userQuizQuestion: UserQuizQuestion
@@ -966,6 +1000,16 @@ input UserUpdateUsernameInput {
   username: Username!
 }
 
+type UserContactUpdateAliasPayload {
+  errors: [Error!]!
+  contact: UserContact
+}
+
+input UserContactUpdateAliasInput {
+  username: Username!
+  alias: ContactAlias!
+}
+
 type AccountUpdateDefaultWalletIdPayload {
   errors: [Error!]!
   account: ConsumerAccount
@@ -984,14 +1028,9 @@ input AccountUpdateDisplayCurrencyInput {
   currency: DisplayCurrency!
 }
 
-type UserContactUpdateAliasPayload {
+type AccountDeletePayload {
   errors: [Error!]!
-  contact: UserContact
-}
-
-input UserContactUpdateAliasInput {
-  username: Username!
-  alias: ContactAlias!
+  success: Boolean!
 }
 
 type PaymentSendPayload {
@@ -1148,31 +1187,31 @@ input OnChainPaymentSendInput {
   walletId: WalletId!
   address: OnChainAddress!
   amount: SatAmount!
+  speed: PayoutSpeed = FAST
   memo: Memo
-  targetConfirmations: TargetConfirmations = 1
 }
 
 input OnChainUsdPaymentSendInput {
   walletId: WalletId!
   address: OnChainAddress!
   amount: CentAmount!
+  speed: PayoutSpeed = FAST
   memo: Memo
-  targetConfirmations: TargetConfirmations = 1
 }
 
 input OnChainUsdPaymentSendAsBtcDenominatedInput {
   walletId: WalletId!
   address: OnChainAddress!
   amount: SatAmount!
+  speed: PayoutSpeed = FAST
   memo: Memo
-  targetConfirmations: TargetConfirmations = 1
 }
 
 input OnChainPaymentSendAllInput {
   walletId: WalletId!
   address: OnChainAddress!
+  speed: PayoutSpeed = FAST
   memo: Memo
-  targetConfirmations: TargetConfirmations = 1
 }
 
 type Subscription {

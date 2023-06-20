@@ -1,8 +1,0 @@
-  mutation UserUpdateUsername($input: UserUpdateUsernameInput!) {
-    userUpdateUsername(input: $input) {
-      errors{
-        __typename
-        message
-      }
-    }
-  }

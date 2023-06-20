@@ -1,9 +1,0 @@
-mutation UserLogin($input: UserLoginInput!) {
-  userLogin(input: $input) {
-    errors {
-      __typename
-      message
-    }
-    authToken
-  }
-}
