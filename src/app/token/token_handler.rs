@@ -37,3 +37,14 @@ pub fn save_token(token: &str) -> Result<(), anyhow::Error> {
 
     Ok(())
 }
+
+pub fn remove_token() -> Result<(), anyhow::Error> {
+    let token_file = get_token_file_path()?;
+    if token_file.exists() {
+        fs::remove_file(&token_file)
+            .with_context(|| format!("failed to delete token file '{}'", token_file.display()))?;
+        Ok(())
+    } else {
+        Err(anyhow::anyhow!("Token file does not exist"))
+    }
+}

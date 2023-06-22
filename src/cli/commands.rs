@@ -25,4 +25,6 @@ pub enum Command {
     Globals,
     /// Get auth token of an account
     Login { phone: String, code: String },
+    /// Logout the current user by removing the auth token
+    Logout,
 }
