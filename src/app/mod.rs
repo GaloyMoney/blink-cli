@@ -1,5 +1,7 @@
 mod unauth;
 pub use unauth::*;
+mod user_login;
+pub use user_login::*;
 
 use crate::client::GaloyClient;
 
