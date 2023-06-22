@@ -1,8 +1,10 @@
-use super::constants::{TOKEN_FILE_NAME, TOKEN_FOLDER_NAME};
 use anyhow::Context;
 use std::fs::{self, File};
 use std::io::Write;
 use std::path::PathBuf;
+
+pub const TOKEN_FILE_NAME: &str = "GALOY_TOKEN";
+pub const TOKEN_FOLDER_NAME: &str = ".galoy-cli";
 
 pub fn get_token_file_path() -> Result<PathBuf, anyhow::Error> {
     let home_dir = dirs::home_dir().context("failed to get home directory")?;

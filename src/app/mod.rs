@@ -2,7 +2,6 @@ mod commands;
 pub use commands::*;
 
 mod token;
-pub use token::*;
 
 use crate::client::GaloyClient;
 
