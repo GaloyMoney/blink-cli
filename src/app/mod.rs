@@ -1,6 +1,4 @@
 mod operations;
-pub use operations::*;
-
 mod token;
 
 use crate::client::GaloyClient;
