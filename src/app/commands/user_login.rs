@@ -1,4 +1,4 @@
-use super::App;
+use crate::app::App;
 
 impl App {
     pub async fn user_login(&self, phone: String, code: String) -> anyhow::Result<()> {
