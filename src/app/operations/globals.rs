@@ -1,4 +1,4 @@
-use super::App;
+use crate::app::App;
 
 impl App {
     pub async fn globals(&self) -> anyhow::Result<()> {

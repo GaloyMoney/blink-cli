@@ -1,5 +1,6 @@
-mod unauth;
-pub use unauth::*;
+mod errors;
+mod operations;
+mod token;
 
 use crate::client::GaloyClient;
 
@@ -9,7 +10,8 @@ pub struct App {
 
 impl App {
     pub fn new(api: String) -> anyhow::Result<Self> {
-        let client = GaloyClient::new(api, None)?;
+        let token = token::get_token()?;
+        let client = GaloyClient::new(api, token)?;
         Ok(Self { client })
     }
 }
