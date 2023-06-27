@@ -17,6 +17,9 @@ pub async fn run() -> anyhow::Result<()> {
         Command::Logout => {
             app.user_logout().await?;
         }
+        Command::Me => {
+            app.me().await?;
+        }
     }
 
     Ok(())
