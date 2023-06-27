@@ -2,7 +2,7 @@ use std::fs::{self, File};
 use std::io::Write;
 use std::path::PathBuf;
 
-use crate::app::errors::TokenError;
+use crate::errors::token_error::TokenError;
 
 pub const TOKEN_FILE_NAME: &str = "GALOY_TOKEN";
 pub const TOKEN_FOLDER_NAME: &str = ".galoy-cli";
