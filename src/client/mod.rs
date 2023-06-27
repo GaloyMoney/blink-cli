@@ -8,7 +8,7 @@ use reqwest::{header, Client as GraphQLClient};
 
 pub struct GaloyClient {
     graphql_client: GraphQLClient,
-    api: String,
+    pub api: String,
 }
 
 impl GaloyClient {
