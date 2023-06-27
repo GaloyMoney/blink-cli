@@ -27,4 +27,12 @@ pub enum Command {
     Login { phone: String, code: String },
     /// Logout the current user by removing the auth token
     Logout,
+    /// Request a code from a Phone number
+    RequestPhoneCode {
+        #[clap(value_parser)]
+        phone: String,
+
+        #[clap(long, action)]
+        nocaptcha: bool,
+    },
 }

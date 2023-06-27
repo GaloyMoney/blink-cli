@@ -19,3 +19,9 @@ pub enum TokenError {
     #[error("Failed to delete token file: {0}")]
     FailedToDeleteFile(PathBuf),
 }
+
+#[derive(Error, Debug)]
+pub enum CaptchaError {
+    #[error("Empty captcha create challenge")]
+    EmptyCaptcha,
+}

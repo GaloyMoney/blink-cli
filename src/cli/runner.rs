@@ -17,6 +17,9 @@ pub async fn run() -> anyhow::Result<()> {
         Command::Logout => {
             app.user_logout().await?;
         }
+        Command::RequestPhoneCode { phone, nocaptcha } => {
+            app.request_phone_code(phone, nocaptcha).await?;
+        }
     }
 
     Ok(())

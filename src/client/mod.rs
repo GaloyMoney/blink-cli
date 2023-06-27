@@ -1,12 +1,14 @@
 mod globals;
 mod queries;
+mod request_phone_code;
+mod server;
 mod user_login;
 
 use reqwest::{header, Client as GraphQLClient};
 
 pub struct GaloyClient {
     graphql_client: GraphQLClient,
-    api: String,
+    pub api: String,
 }
 
 impl GaloyClient {
