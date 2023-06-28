@@ -17,7 +17,7 @@ impl App {
                 Ok(())
             }
             Err(err) => {
-                println!("Error occurred while fetching wallet balances: {}", err);
+                println!("Error occurred while fetching wallet balances");
                 Err(err)
             }
         }

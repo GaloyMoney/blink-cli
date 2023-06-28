@@ -33,10 +33,7 @@ impl App {
                         println!("Successfully sent {} sats to username: {}", sats, username)
                     }
                     Err(err) => {
-                        println!(
-                            "Error occurred while executing BTC intraledger payment: {}",
-                            err
-                        );
+                        println!("Error occurred while executing BTC intraledger payment ",);
                         return Err(err.into());
                     }
                 }
@@ -55,10 +52,7 @@ impl App {
                         )
                     }
                     Err(err) => {
-                        println!(
-                            "Error occurred while sending USD intraledger payment: {}",
-                            err
-                        );
+                        println!("Error occurred while sending USD intraledger payment ",);
                         return Err(err.into());
                     }
                 }
