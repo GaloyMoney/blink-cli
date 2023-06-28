@@ -20,6 +20,13 @@ pub async fn run() -> anyhow::Result<()> {
         Command::Me => {
             app.me().await?;
         }
+        Command::Balance {
+            btc,
+            usd,
+            wallet_ids,
+        } => {
+            app.wallet_balance(btc, usd, wallet_ids).await?;
+        }
     }
 
     Ok(())

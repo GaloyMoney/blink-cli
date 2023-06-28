@@ -1,6 +1,9 @@
+mod convert;
+mod fetch_balance;
 mod globals;
 mod me;
 mod queries;
+mod types;
 mod user_login;
 
 use reqwest::{header, Client as GraphQLClient};

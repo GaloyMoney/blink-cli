@@ -29,4 +29,13 @@ pub enum Command {
     Logout,
     /// Execute Me query
     Me,
+    /// Fetch the balance of a wallet
+    Balance {
+        #[clap(long)]
+        btc: bool,
+        #[clap(long)]
+        usd: bool,
+        #[clap(long, use_value_delimiter = true)]
+        wallet_ids: Vec<String>,
+    },
 }
