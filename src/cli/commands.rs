@@ -1,5 +1,8 @@
 use clap::{Parser, Subcommand};
 
+use crate::client::types::Wallet;
+use rust_decimal::Decimal;
+
 #[derive(Parser)]
 #[clap(
     version,
@@ -47,5 +50,18 @@ pub enum Command {
         usd: bool,
         #[clap(long, use_value_delimiter = true)]
         wallet_ids: Vec<String>,
+    },
+    /// Execute a Payment
+    Pay {
+        #[clap(short, long)]
+        username: String,
+        #[clap(short, long, value_parser)]
+        wallet: Wallet,
+        #[clap(short, long)]
+        cents: Option<Decimal>,
+        #[clap(short, long)]
+        sats: Option<Decimal>,
+        #[clap(short, long)]
+        memo: Option<String>,
     },
 }

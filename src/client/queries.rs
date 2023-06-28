@@ -8,6 +8,9 @@ type OneTimeAuthCode = String;
 type Username = String;
 type WalletId = String;
 type SignedAmount = Decimal;
+type SatAmount = Decimal;
+type CentAmount = Decimal;
+type Memo = String;
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -54,3 +57,21 @@ pub use self::user_update_username::UserUpdateUsernameInput;
 )]
 pub(super) struct QueryDefaultWallet;
 pub use self::query_default_wallet::QueryDefaultWalletAccountDefaultWallet;
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "src/client/gql/schema.gql",
+    query_path = "src/client/gql/mutations/intraledger_send.gql",
+    response_derives = "Debug, Serialize"
+)]
+pub(super) struct IntraLedgerPaymentSend;
+pub use self::intra_ledger_payment_send::IntraLedgerPaymentSendInput;
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "src/client/gql/schema.gql",
+    query_path = "src/client/gql/mutations/intraledger_usd_send.gql",
+    response_derives = "Debug, Serialize"
+)]
+pub(super) struct IntraLedgerUsdPaymentSend;
+pub use self::intra_ledger_usd_payment_send::IntraLedgerUsdPaymentSendInput;

@@ -33,6 +33,16 @@ pub async fn run() -> anyhow::Result<()> {
         Command::SetUsername { username } => {
             app.set_username(username).await?;
         }
+        Command::Pay {
+            username,
+            wallet,
+            cents,
+            sats,
+            memo,
+        } => {
+            app.intraledger_payment(username, wallet, cents, sats, memo)
+                .await?;
+        }
     }
 
     Ok(())
