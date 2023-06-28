@@ -20,6 +20,9 @@ pub async fn run() -> anyhow::Result<()> {
         Command::Me => {
             app.me().await?;
         }
+        Command::DefaultWallet { username } => {
+            app.default_wallet(username).await?;
+        }
         Command::Balance {
             btc,
             usd,

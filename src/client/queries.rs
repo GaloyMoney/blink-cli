@@ -45,3 +45,12 @@ pub use self::query_me::QueryMeMe;
 )]
 pub(super) struct UserUpdateUsername;
 pub use self::user_update_username::UserUpdateUsernameInput;
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "src/client/gql/schema.gql",
+    query_path = "src/client/gql/queries/default_wallet.gql",
+    response_derives = "Debug, Serialize"
+)]
+pub(super) struct QueryDefaultWallet;
+pub use self::query_default_wallet::QueryDefaultWalletAccountDefaultWallet;

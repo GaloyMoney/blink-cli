@@ -1,4 +1,5 @@
 mod convert;
+mod default_wallet;
 mod fetch_balance;
 mod globals;
 mod me;

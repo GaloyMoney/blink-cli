@@ -29,6 +29,11 @@ pub enum Command {
     Logout,
     /// Execute Me query
     Me,
+    /// Get WalletId for an account
+    DefaultWallet {
+        #[clap(value_parser)]
+        username: String,
+    },
     /// Set a username for a new account
     SetUsername {
         #[clap(short, long)]
