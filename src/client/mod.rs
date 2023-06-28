@@ -3,6 +3,7 @@ mod fetch_balance;
 mod globals;
 mod me;
 mod queries;
+mod set_username;
 mod types;
 mod user_login;
 

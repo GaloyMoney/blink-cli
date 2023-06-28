@@ -27,6 +27,9 @@ pub async fn run() -> anyhow::Result<()> {
         } => {
             app.wallet_balance(btc, usd, wallet_ids).await?;
         }
+        Command::SetUsername { username } => {
+            app.set_username(username).await?;
+        }
     }
 
     Ok(())

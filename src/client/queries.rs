@@ -36,3 +36,12 @@ pub use self::user_login::UserLoginUserLogin;
 )]
 pub struct QueryMe;
 pub use self::query_me::QueryMeMe;
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "src/client/gql/schema.gql",
+    query_path = "src/client/gql/mutations/user_update_username.gql",
+    response_derives = "Debug, Serialize"
+)]
+pub(super) struct UserUpdateUsername;
+pub use self::user_update_username::UserUpdateUsernameInput;
