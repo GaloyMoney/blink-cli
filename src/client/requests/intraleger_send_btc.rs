@@ -10,7 +10,7 @@ use crate::{
         },
         GaloyClient,
     },
-    errors::{api_error::ApiError, payment_error::PaymentError},
+    errors::api_error::ApiError,
 };
 
 impl GaloyClient {
@@ -48,7 +48,17 @@ impl GaloyClient {
         let response_data = response_body.data.ok_or(ApiError::IssueParsingResponse)?;
 
         if !response_data.intra_ledger_payment_send.errors.is_empty() {
-            return Err(CliError::PaymentError(PaymentError::PaymentError));
+            let error_string: String = response_data
+                .intra_ledger_payment_send
+                .errors
+                .iter()
+                .map(|error| format!("{:?}", error))
+                .collect::<Vec<String>>()
+                .join(", ");
+
+            return Err(CliError::ApiError(ApiError::RequestFailedWithError(
+                error_string,
+            )));
         } else {
             Ok(())
         }
