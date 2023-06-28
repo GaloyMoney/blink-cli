@@ -9,7 +9,7 @@ impl App {
             }
             Err(err) => {
                 println!("Error occurred while fetching globals: {}", err);
-                Err(err)
+                Err(err.into())
             }
         }
     }
