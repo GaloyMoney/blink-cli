@@ -6,4 +6,6 @@ pub enum ApiError {
     IssueGettingResponse,
     #[error("Issue parsing response")]
     IssueParsingResponse,
+    #[error("Request Failed with Error: {0}")]
+    RequestFailedWithError(String),
 }
