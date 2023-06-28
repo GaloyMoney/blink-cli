@@ -1,8 +1,8 @@
-use super::{queries::query_me, GaloyClient};
-use crate::client::queries::{QueryMe, QueryMeMe};
-use crate::errors::api_error::ApiError;
-use crate::errors::me_error::MeError;
-use crate::errors::CliError;
+use crate::client::{
+    queries::{query_me, QueryMe, QueryMeMe},
+    GaloyClient,
+};
+use crate::errors::{api_error::ApiError, me_error::MeError, CliError};
 use graphql_client::reqwest::post_graphql;
 
 impl GaloyClient {

@@ -1,15 +1,7 @@
 mod convert;
-pub mod types;
-
-mod default_wallet;
-mod fetch_balance;
-mod globals;
-mod intraledger_send_usd;
-mod intraleger_send_btc;
-mod me;
 mod queries;
-mod set_username;
-mod user_login;
+mod requests;
+pub mod types;
 
 use reqwest::{header, Client as GraphQLClient};
 

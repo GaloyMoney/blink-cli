@@ -1,7 +1,9 @@
-use super::types::{Wallet, WalletBalance};
 use std::collections::HashSet;
 
-use super::GaloyClient;
+use crate::client::{
+    types::{Wallet, WalletBalance},
+    GaloyClient,
+};
 
 impl GaloyClient {
     pub async fn fetch_balance(

@@ -1,10 +1,11 @@
 use graphql_client::reqwest::post_graphql;
 
-use crate::errors::{api_error::ApiError, set_username_error::SetUsernameError, CliError};
-
-use super::{
-    queries::{user_update_username, UserUpdateUsername, UserUpdateUsernameInput},
-    GaloyClient,
+use crate::{
+    client::{
+        queries::{user_update_username, UserUpdateUsername, UserUpdateUsernameInput},
+        GaloyClient,
+    },
+    errors::{api_error::ApiError, set_username_error::SetUsernameError, CliError},
 };
 
 impl GaloyClient {

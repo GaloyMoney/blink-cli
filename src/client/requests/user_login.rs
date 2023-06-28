@@ -1,8 +1,10 @@
 use anyhow::{bail, Context};
 use graphql_client::reqwest::post_graphql;
 
-use super::{queries::user_login, GaloyClient};
-use crate::client::queries::{UserLogin, UserLoginInput};
+use crate::client::{
+    queries::{user_login, UserLogin, UserLoginInput},
+    GaloyClient,
+};
 
 impl GaloyClient {
     pub async fn user_login(&self, phone: String, code: String) -> anyhow::Result<String> {

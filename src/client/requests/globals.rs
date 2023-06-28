@@ -1,10 +1,11 @@
 use graphql_client::reqwest::post_graphql;
 
-use crate::errors::{api_error::ApiError, CliError};
-
-use super::{
-    queries::{query_globals, QueryGlobals, QueryGlobalsGlobals},
-    GaloyClient,
+use crate::{
+    client::{
+        queries::{query_globals, QueryGlobals, QueryGlobalsGlobals},
+        GaloyClient,
+    },
+    errors::{api_error::ApiError, CliError},
 };
 
 impl GaloyClient {

@@ -1,14 +1,16 @@
 use graphql_client::reqwest::post_graphql;
 use rust_decimal::Decimal;
 
-use crate::errors::{api_error::ApiError, payment_error::PaymentError, CliError};
-
-use super::{
-    queries::{
-        intra_ledger_payment_send, query_me::WalletCurrency, IntraLedgerPaymentSend,
-        IntraLedgerPaymentSendInput,
+use crate::errors::CliError;
+use crate::{
+    client::{
+        queries::{
+            intra_ledger_payment_send, query_me::WalletCurrency, IntraLedgerPaymentSend,
+            IntraLedgerPaymentSendInput,
+        },
+        GaloyClient,
     },
-    GaloyClient,
+    errors::{api_error::ApiError, payment_error::PaymentError},
 };
 
 impl GaloyClient {

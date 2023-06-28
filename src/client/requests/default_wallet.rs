@@ -1,9 +1,11 @@
-use crate::errors::{api_error::ApiError, CliError};
-
-use super::{
-    queries::{query_default_wallet, QueryDefaultWallet},
-    GaloyClient,
+use crate::{
+    client::{
+        queries::{query_default_wallet, QueryDefaultWallet},
+        GaloyClient,
+    },
+    errors::{api_error::ApiError, CliError},
 };
+
 use graphql_client::reqwest::post_graphql;
 
 impl GaloyClient {
