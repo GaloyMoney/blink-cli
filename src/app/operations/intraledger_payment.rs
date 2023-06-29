@@ -2,7 +2,7 @@ use anyhow::Result;
 
 use rust_decimal::Decimal;
 
-use crate::{app::App, client::types::Wallet, errors::payment_error::PaymentError};
+use crate::{app::App, client::types::Wallet};
 
 impl App {
     pub async fn intraledger_payment(
@@ -13,14 +13,6 @@ impl App {
         sats: Option<Decimal>,
         memo: Option<String>,
     ) -> Result<()> {
-        if wallet == Wallet::Btc && sats.is_none() {
-            return Err(PaymentError::AmountNotSpecifiedBTC.into());
-        }
-
-        if wallet == Wallet::Usd && cents.is_none() {
-            return Err(PaymentError::AmountNotSpecifiedUSD.into());
-        }
-
         match wallet {
             Wallet::Btc => {
                 let sats = sats.expect("Can't unwrap sats");

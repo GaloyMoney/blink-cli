@@ -57,9 +57,9 @@ pub enum Command {
         username: String,
         #[clap(short, long, value_parser)]
         wallet: Wallet,
-        #[clap(short, long)]
+        #[clap(short, long, required_if_eq("wallet", "usd"))]
         cents: Option<Decimal>,
-        #[clap(short, long)]
+        #[clap(short, long, required_if_eq("wallet", "btc"))]
         sats: Option<Decimal>,
         #[clap(short, long)]
         memo: Option<String>,
