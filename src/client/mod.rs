@@ -1,5 +1,5 @@
 mod convert;
-mod queries;
+pub mod queries;
 mod requests;
 pub mod types;
 
