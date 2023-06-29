@@ -45,7 +45,7 @@ impl GaloyClient {
             variables,
         )
         .await
-        .map_err(|_| ApiError::IssueGettingResponse)?;
+        .map_err(|err| ApiError::IssueGettingResponse(anyhow::Error::new(err)))?;
 
         let response_data = response_body.data.ok_or(ApiError::IssueParsingResponse)?;
 

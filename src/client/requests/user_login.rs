@@ -17,7 +17,7 @@ impl GaloyClient {
         let response_body =
             post_graphql::<UserLogin, _>(&self.graphql_client, &self.api, variables)
                 .await
-                .map_err(|_| ApiError::IssueGettingResponse)?;
+                .map_err(|err| ApiError::IssueGettingResponse(anyhow::Error::new(err)))?;
 
         let response_data = response_body.data.ok_or(ApiError::IssueParsingResponse)?;
 
