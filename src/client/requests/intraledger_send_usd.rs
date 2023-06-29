@@ -9,7 +9,7 @@ use crate::{
         },
         GaloyClient,
     },
-    errors::{api_error::ApiError, CliError},
+    errors::{api_error::ApiError, payment_error::PaymentError, CliError},
 };
 
 impl GaloyClient {
@@ -26,8 +26,8 @@ impl GaloyClient {
             .iter()
             .find(|wallet| wallet.wallet_currency == WalletCurrency::USD)
             .map(|wallet| &wallet.id)
-            .expect("Can't get USD wallet")
-            .to_owned();
+            .ok_or_else(|| PaymentError::FailedToGetWallet("USD".to_string()))
+            .map(|id| id.to_owned())?;
 
         let recipient_wallet_id = self.default_wallet(username).await?;
         let input = IntraLedgerUsdPaymentSendInput {
