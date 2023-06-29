@@ -15,7 +15,7 @@ impl App {
     ) -> Result<()> {
         match wallet {
             Wallet::Btc => {
-                let sats = sats.expect("Can't unwrap sats");
+                let sats = sats.unwrap();
                 self.client
                     .intraleger_send_btc(username.clone(), sats, memo)
                     .await
@@ -23,7 +23,7 @@ impl App {
                 println!("Successfully sent {} sats to username: {}", sats, username);
             }
             Wallet::Usd => {
-                let cents = cents.expect("Can't unwrap cents");
+                let cents = cents.unwrap();
                 self.client
                     .intraleger_send_usd(username.clone(), cents, memo)
                     .await
