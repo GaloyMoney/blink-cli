@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Context, Result};
 
 use rust_decimal::Decimal;
 
@@ -16,38 +16,22 @@ impl App {
         match wallet {
             Wallet::Btc => {
                 let sats = sats.expect("Can't unwrap sats");
-                match self
-                    .client
+                self.client
                     .intraleger_send_btc(username.clone(), sats, memo)
                     .await
-                {
-                    Ok(()) => {
-                        println!("Successfully sent {} sats to username: {}", sats, username)
-                    }
-                    Err(err) => {
-                        eprintln!("Error occurred while executing BTC intraledger payment ",);
-                        return Err(err.into());
-                    }
-                }
+                    .context("Error occurred while executing BTC intraledger payment")?;
+                println!("Successfully sent {} sats to username: {}", sats, username);
             }
             Wallet::Usd => {
                 let cents = cents.expect("Can't unwrap cents");
-                match self
-                    .client
+                self.client
                     .intraleger_send_usd(username.clone(), cents, memo)
                     .await
-                {
-                    Ok(()) => {
-                        println!(
-                            "Successfully sent {} cents to username: {}",
-                            cents, username
-                        )
-                    }
-                    Err(err) => {
-                        eprintln!("Error occurred while sending USD intraledger payment ",);
-                        return Err(err.into());
-                    }
-                }
+                    .context("Error occurred while sending USD intraledger payment")?;
+                println!(
+                    "Successfully sent {} cents to username: {}",
+                    cents, username
+                );
             }
         }
 

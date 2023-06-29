@@ -1,12 +1,16 @@
+use anyhow::{Context, Result};
+
 use crate::app::App;
 
 impl App {
-    pub async fn set_username(&self, username: String) -> anyhow::Result<()> {
-        let result = self.client.set_username(username).await;
-        match result {
-            Ok(()) => println!("Username has been successfully set!"),
-            Err(err) => eprintln!("Error occurred while setting username: {}", err),
-        }
+    pub async fn set_username(&self, username: String) -> Result<()> {
+        self.client
+            .set_username(username)
+            .await
+            .context("Failed to set username")?;
+
+        println!("Username has been successfully set!");
+
         Ok(())
     }
 }
