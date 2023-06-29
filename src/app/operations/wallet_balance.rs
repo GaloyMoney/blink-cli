@@ -9,17 +9,16 @@ impl App {
         usd: bool,
         wallet_ids: Vec<String>,
     ) -> Result<()> {
-        match self.client.fetch_balance(btc, usd, wallet_ids).await {
-            Ok(balances) => {
-                let balances_json =
-                    serde_json::to_string_pretty(&balances).context("Can't serialize json")?;
-                println!("{}", balances_json);
-                Ok(())
-            }
-            Err(err) => {
-                eprintln!("Error occurred while fetching wallet balances");
-                Err(err)
-            }
-        }
+        let balances = self
+            .client
+            .fetch_balance(btc, usd, wallet_ids)
+            .await
+            .context("Error occurred while fetching wallet balances")?;
+
+        let balances_json =
+            serde_json::to_string_pretty(&balances).context("Can't serialize json")?;
+
+        println!("{}", balances_json);
+        Ok(())
     }
 }
