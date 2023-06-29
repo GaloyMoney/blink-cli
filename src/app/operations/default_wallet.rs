@@ -8,7 +8,7 @@ impl App {
                 println!("Default wallet ID for {} is: {}", username, wallet_id);
             }
             Err(err) => {
-                println!("Error occurred while fetching default wallet id: {}", err);
+                eprintln!("Error occurred while fetching default wallet id: {}", err);
             }
         }
         Ok(())

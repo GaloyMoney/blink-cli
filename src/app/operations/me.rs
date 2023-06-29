@@ -11,7 +11,7 @@ impl App {
                 Ok(())
             }
             Err(err) => {
-                println!("Error occurred while fetching 'me' data");
+                eprintln!("Error occurred while fetching 'me' data");
                 Err(err.into())
             }
         }

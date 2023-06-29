@@ -8,7 +8,7 @@ impl App {
                 Ok(())
             }
             Err(err) => {
-                println!("Error occurred while fetching globals");
+                eprintln!("Error occurred while fetching globals");
                 Err(err.into())
             }
         }
