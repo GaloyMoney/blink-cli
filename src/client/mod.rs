@@ -1,4 +1,5 @@
 mod convert;
+mod errors;
 pub mod queries;
 mod requests;
 pub mod types;

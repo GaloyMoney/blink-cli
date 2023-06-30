@@ -1,15 +1,13 @@
-use crate::{
-    client::{
-        queries::{query_default_wallet, QueryDefaultWallet},
-        GaloyClient,
-    },
-    errors::{api_error::ApiError, CliError},
+use crate::client::{
+    errors::{api_error::ApiError, ClientError},
+    queries::{query_default_wallet, QueryDefaultWallet},
+    GaloyClient,
 };
 
 use graphql_client::reqwest::post_graphql;
 
 impl GaloyClient {
-    pub async fn default_wallet(&self, username: String) -> Result<String, CliError> {
+    pub async fn default_wallet(&self, username: String) -> Result<String, ClientError> {
         let variables = query_default_wallet::Variables {
             username: username.clone(),
         };

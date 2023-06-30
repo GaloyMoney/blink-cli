@@ -2,15 +2,13 @@ use graphql_client::reqwest::post_graphql;
 use intra_ledger_payment_send::IntraLedgerPaymentSendInput;
 use rust_decimal::Decimal;
 
-use crate::{
-    client::{
-        queries::{
-            intra_ledger_payment_send, intra_ledger_usd_payment_send, IntraLedgerPaymentSend,
-            IntraLedgerUsdPaymentSend, IntraLedgerUsdPaymentSendInput,
-        },
-        GaloyClient,
+use crate::client::{
+    errors::{api_error::ApiError, ClientError},
+    queries::{
+        intra_ledger_payment_send, intra_ledger_usd_payment_send, IntraLedgerPaymentSend,
+        IntraLedgerUsdPaymentSend, IntraLedgerUsdPaymentSendInput,
     },
-    errors::{api_error::ApiError, CliError},
+    GaloyClient,
 };
 
 impl GaloyClient {
@@ -20,7 +18,7 @@ impl GaloyClient {
         recipient_wallet_id: String,
         amount: Decimal,
         memo: Option<String>,
-    ) -> Result<(), CliError> {
+    ) -> Result<(), ClientError> {
         let input = IntraLedgerPaymentSendInput {
             amount,
             memo,
@@ -46,7 +44,7 @@ impl GaloyClient {
                 .collect::<Vec<String>>()
                 .join(", ");
 
-            return Err(CliError::ApiError(ApiError::RequestFailedWithError(
+            return Err(ClientError::ApiError(ApiError::RequestFailedWithError(
                 error_string,
             )));
         } else {
@@ -60,7 +58,7 @@ impl GaloyClient {
         recipient_wallet_id: String,
         amount: Decimal,
         memo: Option<String>,
-    ) -> Result<(), CliError> {
+    ) -> Result<(), ClientError> {
         let input = IntraLedgerUsdPaymentSendInput {
             amount,
             memo,
@@ -93,7 +91,7 @@ impl GaloyClient {
                 .collect::<Vec<String>>()
                 .join(", ");
 
-            return Err(CliError::ApiError(ApiError::RequestFailedWithError(
+            return Err(ClientError::ApiError(ApiError::RequestFailedWithError(
                 error_string,
             )));
         } else {

@@ -1,15 +1,13 @@
 use graphql_client::reqwest::post_graphql;
 
-use crate::{
-    client::{
-        queries::{user_update_username, UserUpdateUsername, UserUpdateUsernameInput},
-        GaloyClient,
-    },
-    errors::{api_error::ApiError, CliError},
+use crate::client::{
+    errors::{api_error::ApiError, ClientError},
+    queries::{user_update_username, UserUpdateUsername, UserUpdateUsernameInput},
+    GaloyClient,
 };
 
 impl GaloyClient {
-    pub async fn set_username(&self, username: String) -> Result<(), CliError> {
+    pub async fn set_username(&self, username: String) -> Result<(), ClientError> {
         let input = UserUpdateUsernameInput { username };
 
         let variables = user_update_username::Variables { input };
@@ -30,7 +28,7 @@ impl GaloyClient {
                 .collect::<Vec<String>>()
                 .join(", ");
 
-            return Err(CliError::ApiError(ApiError::RequestFailedWithError(
+            return Err(ClientError::ApiError(ApiError::RequestFailedWithError(
                 error_string,
             )));
         } else {

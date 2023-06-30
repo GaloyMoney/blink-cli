@@ -1,15 +1,13 @@
 use graphql_client::reqwest::post_graphql;
 
-use crate::{
-    client::{
-        queries::{query_globals, QueryGlobals, QueryGlobalsGlobals},
-        GaloyClient,
-    },
-    errors::{api_error::ApiError, CliError},
+use crate::client::{
+    errors::{api_error::ApiError, ClientError},
+    queries::{query_globals, QueryGlobals, QueryGlobalsGlobals},
+    GaloyClient,
 };
 
 impl GaloyClient {
-    pub async fn globals(&self) -> Result<QueryGlobalsGlobals, CliError> {
+    pub async fn globals(&self) -> Result<QueryGlobalsGlobals, ClientError> {
         let variables = query_globals::Variables;
 
         let response_body =
