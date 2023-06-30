@@ -20,9 +20,8 @@ impl App {
         let sender_wallets = me.default_account.wallets;
         let recipient_wallet_id = self.client.default_wallet(username.clone()).await?;
 
-        match wallet {
-            Wallet::Btc => {
-                let sats = sats.unwrap();
+        match (wallet, sats, cents) {
+            (Wallet::Btc, Some(sats), _) => {
                 let btc_wallet_id = sender_wallets
                     .iter()
                     .find(|wallet| wallet.wallet_currency == WalletCurrency::BTC)
@@ -37,8 +36,7 @@ impl App {
 
                 println!("Successfully sent {} sats to username: {}", sats, username);
             }
-            Wallet::Usd => {
-                let cents = cents.unwrap();
+            (Wallet::Usd, _, Some(cents)) => {
                 let usd_wallet_id = sender_wallets
                     .iter()
                     .find(|wallet| wallet.wallet_currency == WalletCurrency::USD)
@@ -56,6 +54,7 @@ impl App {
                     cents, username
                 );
             }
+            _ => {}
         }
         Ok(())
     }
