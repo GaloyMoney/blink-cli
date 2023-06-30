@@ -1,5 +1,4 @@
 mod default_wallet;
-mod fetch_balance;
 mod globals;
 mod intraledger;
 mod me;

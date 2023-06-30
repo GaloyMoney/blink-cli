@@ -17,4 +17,15 @@ impl App {
 
         Ok(())
     }
+
+    pub async fn set_username(&self, username: String) -> anyhow::Result<()> {
+        self.client
+            .set_username(username)
+            .await
+            .context("Failed to set username")?;
+
+        println!("Username has been successfully set!");
+
+        Ok(())
+    }
 }
