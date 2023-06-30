@@ -1,18 +1,31 @@
 use std::collections::HashSet;
 
-use crate::client::{
-    types::{Wallet, WalletBalance},
-    GaloyClient,
+use anyhow::{Context, Result};
+
+use crate::{
+    app::App,
+    client::types::{Wallet, WalletBalance},
 };
 
-impl GaloyClient {
-    pub async fn fetch_balance(
+impl App {
+    pub async fn default_wallet(&self, username: String) -> Result<()> {
+        let result = self
+            .client
+            .default_wallet(username.clone())
+            .await
+            .context("Error occurred while fetching default wallet id")?;
+
+        println!("Default wallet ID for {} is: {}", username, result);
+        Ok(())
+    }
+
+    pub async fn wallet_balance(
         &self,
         btc: bool,
         usd: bool,
         wallet_ids: Vec<String>,
-    ) -> anyhow::Result<Vec<WalletBalance>> {
-        let me = self.me().await?;
+    ) -> Result<()> {
+        let me = self.client.me().await?;
         let default_wallet_id = me.default_account.default_wallet_id;
         let wallets = &me.default_account.wallets;
 
@@ -40,10 +53,10 @@ impl GaloyClient {
             })
             .collect();
 
-        if balances.is_empty() {
-            Err(anyhow::anyhow!("No matching wallet found"))
-        } else {
-            Ok(balances)
-        }
+        let balances_json =
+            serde_json::to_string_pretty(&balances).context("Can't serialize json")?;
+
+        println!("{}", balances_json);
+        Ok(())
     }
 }
