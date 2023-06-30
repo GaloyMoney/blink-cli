@@ -1,0 +1,7 @@
+query QueryDefaultWallet($username: Username!) {
+  accountDefaultWallet(username: $username) {
+    __typename
+    id
+    walletCurrency
+  }
+}

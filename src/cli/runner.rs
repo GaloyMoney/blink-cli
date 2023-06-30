@@ -17,6 +17,32 @@ pub async fn run() -> anyhow::Result<()> {
         Command::Logout => {
             app.user_logout().await?;
         }
+        Command::Me => {
+            app.me().await?;
+        }
+        Command::DefaultWallet { username } => {
+            app.default_wallet(username).await?;
+        }
+        Command::Balance {
+            btc,
+            usd,
+            wallet_ids,
+        } => {
+            app.wallet_balance(btc, usd, wallet_ids).await?;
+        }
+        Command::SetUsername { username } => {
+            app.set_username(username).await?;
+        }
+        Command::Pay {
+            username,
+            wallet,
+            cents,
+            sats,
+            memo,
+        } => {
+            app.intraledger_payment(username, wallet, cents, sats, memo)
+                .await?;
+        }
     }
 
     Ok(())

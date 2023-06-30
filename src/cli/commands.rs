@@ -1,5 +1,8 @@
 use clap::{Parser, Subcommand};
 
+use crate::client::types::Wallet;
+use rust_decimal::Decimal;
+
 #[derive(Parser)]
 #[clap(
     version,
@@ -27,4 +30,38 @@ pub enum Command {
     Login { phone: String, code: String },
     /// Logout the current user by removing the auth token
     Logout,
+    /// Execute Me query
+    Me,
+    /// Get WalletId for an account
+    DefaultWallet {
+        #[clap(value_parser)]
+        username: String,
+    },
+    /// Set a username for a new account
+    SetUsername {
+        #[clap(short, long)]
+        username: String,
+    },
+    /// Fetch the balance of a wallet
+    Balance {
+        #[clap(long)]
+        btc: bool,
+        #[clap(long)]
+        usd: bool,
+        #[clap(long, use_value_delimiter = true)]
+        wallet_ids: Vec<String>,
+    },
+    /// Execute a Payment
+    Pay {
+        #[clap(short, long)]
+        username: String,
+        #[clap(short, long, value_parser)]
+        wallet: Wallet,
+        #[clap(short, long, required_if_eq("wallet", "usd"))]
+        cents: Option<Decimal>,
+        #[clap(short, long, required_if_eq("wallet", "btc"))]
+        sats: Option<Decimal>,
+        #[clap(short, long)]
+        memo: Option<String>,
+    },
 }

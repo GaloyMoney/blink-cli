@@ -754,9 +754,6 @@ type Mutation {
   userUpdateUsername(
     input: UserUpdateUsernameInput!
   ): UserUpdateUsernamePayload!
-    @deprecated(
-      reason: "Username will be moved to @Handle in Accounts. Also SetUsername naming should be used instead of UpdateUsername to reflect the idempotency of Handles"
-    )
   userContactUpdateAlias(
     input: UserContactUpdateAliasInput!
   ): UserContactUpdateAliasPayload!

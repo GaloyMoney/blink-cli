@@ -1,6 +1,8 @@
-mod globals;
-mod queries;
-mod user_login;
+mod convert;
+mod errors;
+pub mod queries;
+mod requests;
+pub mod types;
 
 use reqwest::{header, Client as GraphQLClient};
 
