@@ -68,7 +68,5 @@ pub enum Command {
     RequestPhoneCode {
         #[clap(value_parser)]
         phone: String,
-        #[clap(long, action)]
-        nocaptcha: bool,
     },
 }

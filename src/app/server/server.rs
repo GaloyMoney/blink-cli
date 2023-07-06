@@ -9,10 +9,7 @@ use reqwest::Client;
 
 use std::net::TcpListener;
 
-use crate::client::queries::{
-    captcha_create_challenge, captcha_request_auth_code, CaptchaChallenge, CaptchaCreateChallenge,
-    CaptchaRequestAuthCode,
-};
+use crate::client::queries::{captcha_request_auth_code, CaptchaChallenge, CaptchaRequestAuthCode};
 
 include!(concat!(env!("OUT_DIR"), "/generated.rs"));
 
@@ -20,26 +17,24 @@ struct AppData {
     tera: Tera,
     phone: String,
     api: String,
+    captcha_challenge_result: CaptchaChallenge,
 }
 
 async fn login(appdata: web::Data<AppData>) -> impl Responder {
     println!("Fetching Captcha Challenge...");
-    let client = Client::builder().build().expect("Can't build client");
-    let variables = captcha_create_challenge::Variables;
-    let response =
-        post_graphql::<CaptchaCreateChallenge, _>(&client, appdata.api.clone(), variables)
-            .await
-            .expect("Couldn't create Captcha");
-    let response = response.data.expect("Captcha Data is missing");
-    let captcha_challenge_result =
-        CaptchaChallenge::try_from(response).expect("Couldn't parse Captcha Response Body");
 
     let mut ctx = Context::new();
 
-    ctx.insert("id", &captcha_challenge_result.id);
-    ctx.insert("new_captcha", &captcha_challenge_result.new_captcha);
-    ctx.insert("failback_mode", &captcha_challenge_result.failback_mode);
-    ctx.insert("challenge_code", &captcha_challenge_result.challenge_code);
+    ctx.insert("id", &appdata.captcha_challenge_result.id);
+    ctx.insert("new_captcha", &appdata.captcha_challenge_result.new_captcha);
+    ctx.insert(
+        "failback_mode",
+        &appdata.captcha_challenge_result.failback_mode,
+    );
+    ctx.insert(
+        "challenge_code",
+        &appdata.captcha_challenge_result.challenge_code,
+    );
 
     let rendered = appdata.tera.render("login.html", &ctx).unwrap();
     HttpResponse::Ok().body(rendered)
@@ -83,14 +78,24 @@ async fn solve(r: web::Json<GeetestResponse>, appdata: web::Data<AppData>) -> im
     HttpResponse::Ok()
 }
 
-pub async fn run(listener: TcpListener, phone: String, api: String) -> Result<()> {
+pub async fn run(
+    listener: TcpListener,
+    phone: String,
+    api: String,
+    captcha_challenge_result: CaptchaChallenge,
+) -> Result<()> {
     let tera = Tera::new(concat!(
         env!("CARGO_MANIFEST_DIR"),
         "/src/app/server/public/**/*"
     ))
     .unwrap();
 
-    let appdata = web::Data::new(AppData { tera, phone, api });
+    let appdata = web::Data::new(AppData {
+        tera,
+        phone,
+        api,
+        captcha_challenge_result,
+    });
 
     let server = HttpServer::new(move || {
         let generated = generate();

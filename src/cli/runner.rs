@@ -43,8 +43,8 @@ pub async fn run() -> anyhow::Result<()> {
             app.intraledger_payment(username, wallet, cents, sats, memo)
                 .await?;
         }
-        Command::RequestPhoneCode { phone, nocaptcha } => {
-            app.request_phone_code(phone, nocaptcha).await?;
+        Command::RequestPhoneCode { phone } => {
+            app.request_phone_code(phone).await?;
         }
     }
 
