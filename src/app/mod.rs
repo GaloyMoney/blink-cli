@@ -1,5 +1,6 @@
 mod errors;
 mod operations;
+mod server;
 mod token;
 
 use crate::client::GaloyClient;
