@@ -1,8 +1,12 @@
 use graphql_client::reqwest::post_graphql;
+use reqwest::Client;
 
 use crate::client::{
     errors::{api_error::ApiError, ClientError},
-    queries::{user_login, UserLogin, UserLoginInput},
+    queries::{
+        captcha_create_challenge, user_login, CaptchaChallenge, CaptchaCreateChallenge, UserLogin,
+        UserLoginInput,
+    },
     GaloyClient,
 };
 
@@ -34,5 +38,18 @@ impl GaloyClient {
                 error_string,
             )));
         }
+    }
+
+    pub async fn create_captcha_challenge(&self) -> Result<CaptchaChallenge, ClientError> {
+        let client = Client::builder().build().expect("Can't build client");
+        let variables = captcha_create_challenge::Variables;
+        let response_body =
+            post_graphql::<CaptchaCreateChallenge, _>(&client, &self.api.clone(), variables)
+                .await
+                .map_err(|err| ApiError::IssueGettingResponse(anyhow::Error::new(err)))?;
+        let response_data = response_body.data.ok_or(ApiError::IssueParsingResponse)?;
+        let captcha_challenge_result = CaptchaChallenge::try_from(response_data)
+            .map_err(|err| ApiError::IssueGettingResponse(anyhow::Error::new(err)))?;
+        Ok(captcha_challenge_result)
     }
 }

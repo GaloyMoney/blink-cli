@@ -1,0 +1,9 @@
+mutation CaptchaRequestAuthCode($input: CaptchaRequestAuthCodeInput!) {
+  captchaRequestAuthCode(input: $input) {
+    errors {
+      __typename
+      message
+    }
+    success
+  }
+}
