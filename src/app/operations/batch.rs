@@ -131,6 +131,7 @@ impl App {
                         .await?;
                 }
             }
+            println!("Payment of {} successfully sent to {}!", amount, username);
         }
         println!("Batch Payment successful!");
         Ok(())
