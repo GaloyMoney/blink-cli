@@ -43,6 +43,9 @@ pub async fn run() -> anyhow::Result<()> {
             app.intraledger_payment(username, wallet, cents, sats, memo)
                 .await?;
         }
+        Command::Batch { file } => {
+            app.batch_payment(file).await?;
+      }
         Command::RequestPhoneCode { phone } => {
             app.request_phone_code(phone).await?;
         }

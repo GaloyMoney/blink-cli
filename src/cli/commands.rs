@@ -64,6 +64,11 @@ pub enum Command {
         #[clap(short, long)]
         memo: Option<String>,
     },
+    /// execute a batch payment
+    Batch {
+        #[clap(short, long = "csv")]
+        file: String,
+  }
     /// Request a code from a Phone number
     RequestPhoneCode {
         #[clap(value_parser)]
