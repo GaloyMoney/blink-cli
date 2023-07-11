@@ -42,12 +42,12 @@ logout_user() {
 
 get_balance() {
   local wallet_type=$1
-  local response=$(galoy_cli_cmd me)
-  local default_wallet_id=$(echo $response | jq -r '.defaultAccount.defaultWalletId')
-
+  local response
   if [[ -z "$wallet_type" ]]; then
-    echo $response | jq -r --arg default_wallet_id "$default_wallet_id" '.defaultAccount.wallets[] | select(.id==$default_wallet_id) | .balance'
+    response=$(galoy_cli_cmd balance)
+    echo $response | jq -r 'map(select(.default == true)) | .[0] | .balance'
   else
-    echo $response | jq -r --arg wallet_type "$wallet_type" '.defaultAccount.wallets[] | select(.walletCurrency==$wallet_type) | .balance'
+    response=$(galoy_cli_cmd balance --$wallet_type)
+    echo $response | jq -r '.[0] | .balance'
   fi
 }

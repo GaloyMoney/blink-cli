@@ -13,11 +13,11 @@ setup_file() {
   logout_user
 
   login_user A
-  initial_balance_A=$(get_balance "BTC")
+  initial_balance_A=$(get_balance "btc")
   
   galoy_cli_cmd pay --username ${USER_B_USERNAME} --wallet btc --sats 100
 
-  final_balance_A=$(get_balance "BTC")
+  final_balance_A=$(get_balance "btc")
   logout_user
 
   login_user B
@@ -34,11 +34,11 @@ setup_file() {
   logout_user
 
   login_user B
-  initial_balance_B=$(get_balance "USD")
+  initial_balance_B=$(get_balance "usd")
   
   galoy_cli_cmd pay --username ${USER_A_USERNAME} --wallet usd --cents 1
 
-  final_balance_B=$(get_balance "USD")
+  final_balance_B=$(get_balance "usd")
   logout_user
 
   login_user A
