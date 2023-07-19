@@ -1,4 +1,6 @@
 REPO_ROOT=$(git rev-parse --show-toplevel)
+BASH_SOURCE=${BASH_SOURCE:-tests/e2e/helpers/.}
+source $(dirname "$BASH_SOURCE")/_common.bash
 
 galoy_cli_cmd() {
   galoy_cli_location=${REPO_ROOT}/target/debug/galoy-cli
@@ -13,23 +15,14 @@ galoy_cli_setup() {
   rm ~/.galoy-cli/GALOY_TOKEN || true
 }
 
-galoy_cli_setup_usernames() {
-  login_user A
-  galoy_cli_cmd set-username --username ${USER_A_USERNAME} || true
-  logout_user
-
-  login_user B
-  galoy_cli_cmd set-username --username ${USER_B_USERNAME} || true
-  logout_user
-}
 
 login_user() {
   local user=$1
 
   if [[ "$user" == "A" ]]; then
-    galoy_cli_cmd login ${USER_A_PHONE} ${USER_A_CODE}
+    galoy_cli_cmd login "$ALICE_PHONE" "$ALICE_CODE"
   elif [[ "$user" == "B" ]]; then
-    galoy_cli_cmd login ${USER_B_PHONE} ${USER_B_CODE}
+    galoy_cli_cmd login "$BOB_PHONE" "$BOB_CODE"
   else
     echo "Invalid user: $user"
     exit 1

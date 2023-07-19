@@ -3,7 +3,13 @@
 load "helpers"
 
 setup_file() {
+ 
   galoy_cli_setup
+}
+
+teardown_file() {
+  stop_server
+  stop_ws_server
 }
 
 @test "galoy-cli: login saves token to home directory" {
@@ -13,7 +19,7 @@ setup_file() {
 
 @test "galoy-cli: can query me" {
   phone=$(galoy_cli_cmd me | jq -r ".phone")
-  [ "$phone" = "${USER_A_PHONE}" ] || exit 1
+  [ "$phone" = "${ALICE_PHONE}" ] || exit 1
 }
 
 @test "galoy-cli: logout deletes token from home directory" {
