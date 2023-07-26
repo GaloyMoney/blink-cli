@@ -1,0 +1,129 @@
+#@ load("@ytt:data", "data")
+
+#@ load("vendor/pipeline-fragments.lib.yml",
+#@   "rust_check_code",
+#@   "repo_resource",
+#@   "edge_image_resource",
+#@   "version_resource",
+#@   "gh_release_resource",
+#@   "pipeline_tasks_resource",
+#@   "release_task_image_config",
+#@   "rust_task_image_config",
+#@   "charts_repo_resource",
+#@   "charts_repo_bot_branch",
+#@   "slack_resource_type",
+#@   "slack_resource",
+#@   "slack_failure_notification"
+#@ )
+
+groups:
+- name: all
+  jobs:
+    - check-code
+    - release
+    - set-dev-version
+
+jobs:
+- #@ rust_check_code()
+
+- name: release
+  serial: true
+  plan:
+  - in_parallel:
+    - get: repo
+      passed:
+      - check-code
+    - get: pipeline-tasks
+    - get: version
+  - task: prep-release
+    config:
+      platform: linux
+      image_resource: #@ release_task_image_config()
+      inputs:
+      - name: pipeline-tasks
+      - name: repo
+      - name: version
+      outputs:
+      - name: version
+      - name: artifacts
+      run:
+        path: pipeline-tasks/ci/vendor/tasks/prep-release-src.sh
+  - task: update-repo
+    config:
+      platform: linux
+      image_resource: #@ rust_task_image_config()
+      inputs:
+      - name: artifacts
+      - name: pipeline-tasks
+      - name: repo
+      - name: version
+      outputs:
+      - name: repo
+      run:
+        path: pipeline-tasks/ci/tasks/update-repo.sh
+  - task: publish-to-crates
+    config:
+      image_resource: #@ rust_task_image_config()
+      platform: linux
+      inputs:
+      - name: version
+      - name: pipeline-tasks
+      - name: repo
+      params:
+        CRATES_API_TOKEN: #@ data.values.crates_api_token
+      caches:
+      - path: cargo-home
+      - path: cargo-target-dir
+      run:
+        path: pipeline-tasks/ci/tasks/publish-to-crates.sh
+  - put: repo
+    params:
+      tag: artifacts/gh-release-tag
+      repository: repo
+      merge: true
+  - put: version
+    params:
+      file: version/version
+  - put: gh-release
+    params:
+      name: artifacts/gh-release-name
+      tag: artifacts/gh-release-tag
+      body: artifacts/gh-release-notes.md
+
+- name: set-dev-version
+  plan:
+  - in_parallel:
+    - { get: repo, passed: [release] }
+    - { get: pipeline-tasks }
+    - get: version
+      trigger: true
+      params: { bump: patch }
+      passed: [release]
+  - task: set-dev-version
+    config:
+      image_resource: #@ release_task_image_config()
+      platform: linux
+      inputs:
+      - name: version
+      - name: repo
+      - name: pipeline-tasks
+      outputs:
+      - name: repo
+      run:
+        path: pipeline-tasks/ci/tasks/set-dev-version.sh
+      params:
+        BRANCH: #@ data.values.git_branch
+  - put: repo
+    params:
+      repository: repo
+      rebase: true
+
+resources:
+- #@ repo_resource(True)
+- #@ pipeline_tasks_resource()
+- #@ slack_resource()
+- #@ version_resource()
+- #@ gh_release_resource()
+
+resource_types:
+- #@ slack_resource_type()
