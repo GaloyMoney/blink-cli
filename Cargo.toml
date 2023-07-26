@@ -1,7 +1,10 @@
 [package]
 name = "galoy-cli"
-version = "0.1.0"
+description = "A CLI Client for interacting with Galoy Backend"
+repository = "https://github.com/GaloyMoney/galoy-cli"
+version = "0.0.0"
 edition = "2021"
+license = "MIT"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
