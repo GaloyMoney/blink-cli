@@ -45,7 +45,7 @@ pub async fn run() -> anyhow::Result<()> {
         }
         Command::Batch { file } => {
             app.batch_payment(file).await?;
-      }
+        }
         Command::RequestPhoneCode { phone } => {
             app.request_phone_code(phone).await?;
         }
