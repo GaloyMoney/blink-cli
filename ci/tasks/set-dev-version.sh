@@ -4,9 +4,7 @@ VERSION="$(cat version/version)-dev"
 
 pushd repo
 
-for file in $(find . -mindepth 2 -name Cargo.toml); do
-    sed -i'' "s/^version.*/version = \"${VERSION}\"/" ${file}
-done
+sed -i'' "s/^version.*/version = \"${VERSION}\"/" Cargo.toml
 
 if [[ -z $(git config --global user.email) ]]; then
   git config --global user.email "bot@galoy.io"

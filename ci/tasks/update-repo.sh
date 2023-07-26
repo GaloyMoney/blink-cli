@@ -19,9 +19,7 @@ $(cat CHANGELOG.md)
 EOF
 mv new_change_log.md CHANGELOG.md
 
-for file in $(find . -mindepth 2 -name Cargo.toml); do
-    sed -i'' "s/^version.*/version = \"${VERSION}\"/" ${file}
-done
+sed -i'' "s/^version.*/version = \"${VERSION}\"/" Cargo.toml
 
 git status
 git add .
