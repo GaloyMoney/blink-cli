@@ -1,5 +1,12 @@
 REPO_ROOT=$(git rev-parse --show-toplevel)
 
+USER_A_PHONE="+16505554321"
+USER_A_CODE="321321"
+USER_A_USERNAME="alice"
+USER_B_PHONE="+16505554322"
+USER_B_CODE="321654"
+USER_B_USERNAME="bob"
+
 galoy_cli_cmd() {
   galoy_cli_location=${REPO_ROOT}/target/debug/galoy-cli
   if [[ ! -z ${CARGO_TARGET_DIR} ]] ; then
@@ -9,18 +16,24 @@ galoy_cli_cmd() {
   ${galoy_cli_location} $@
 }
 
-galoy_cli_setup() {
-  rm ~/.galoy-cli/GALOY_TOKEN || true
+bitcoin_cli_cmd() {
+  docker compose exec bitcoind bitcoin-cli -regtest $@
 }
 
-galoy_cli_setup_usernames() {
-  login_user A
-  galoy_cli_cmd set-username --username ${USER_A_USERNAME} || true
-  logout_user
+galoy_cli_setup() {
+  rm ~/.galoy-cli/GALOY_TOKEN || true
+  local retries=0
+  while [[ $retries -lt 30 ]]; do
+    if galoy_cli_cmd globals; then break; fi
+    sleep 1
+    retries=$((retries+1))
+  done
+}
 
-  login_user B
-  galoy_cli_cmd set-username --username ${USER_B_USERNAME} || true
-  logout_user
+bitcoind_setup() {
+  bitcoin_cli_cmd createwallet "galoycli" || true
+  bitcoin_cli_cmd -generate 101
+  sleep 10
 }
 
 login_user() {
@@ -50,4 +63,36 @@ get_balance() {
     response=$(galoy_cli_cmd balance --$wallet_type)
     echo $response | jq -r '.[0] | .balance'
   fi
+}
+
+fund_user() {
+  local user=$1
+  local wallet_type=$2
+  local btc_amount=$3
+
+  login_user $user
+  
+  start_balance=$(get_balance $wallet_type)
+  
+  galoy_cli_cmd receive --wallet $wallet_type --via onchain
+  btc_address=$(galoy_cli_cmd receive --wallet $wallet_type --via onchain | jq -r '.address')
+  echo "btc_address:" $btc_address
+  echo "------"
+  docker compose logs bria
+  echo "------"
+  docker compose logs galoy
+
+  bitcoin_cli_cmd sendtoaddress "$btc_address" $btc_amount
+  bitcoin_cli_cmd -generate 10
+
+  local retries=0
+  while [[ $retries -lt 30 ]]; do
+    final_balance=$(get_balance $wallet_type)
+    if [ $final_balance -gt $start_balance ]; then break; fi
+    sleep 5
+    retries=$((retries+1))
+  done
+
+  logout_user
+  [[ "$retries" != "30" ]] || exit 1
 }

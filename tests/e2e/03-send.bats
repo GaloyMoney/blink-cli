@@ -4,10 +4,12 @@ load "helpers"
 
 setup_file() {
   galoy_cli_setup
-  galoy_cli_setup_usernames
+  bitcoind_setup
 }
 
-@test "pay(intraledger, btc): sats deducted from sender's wallet and received by recipient" {
+@test "send(intraledger, btc): sats deducted from A's wallet and received by B" {
+  fund_user "A" "btc" 0.1
+
   login_user B
   initial_balance_B=$(get_balance)
   logout_user
@@ -28,7 +30,9 @@ setup_file() {
   [ "$final_balance_A" -lt "$initial_balance_A" ] || exit 1
 }
 
-@test "pay(intraledger, usd): cents deducted from sender's wallet and received by recipient" {
+@test "send(intraledger, usd): cents deducted from B's wallet and received by A" {
+  fund_user "B" "usd" 0.1
+
   login_user A
   initial_balance_A=$(get_balance)
   logout_user

@@ -15,5 +15,15 @@ check-code:
 build:
 	cargo build --locked
 
-e2e: build
+start-deps-bats:
+	docker compose up bats-deps -d
+
+clean-deps:
+	docker compose down -t 3
+
+reset-deps-bats: clean-deps start-deps-bats
+
+bats:
 	bats -t tests/e2e
+
+e2e: build reset-deps-bats bats
