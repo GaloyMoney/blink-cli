@@ -1,6 +1,6 @@
 use clap::{Parser, Subcommand};
 
-use crate::client::types::Wallet;
+use crate::client::types::{ReceiveVia, Wallet};
 use rust_decimal::Decimal;
 
 #[derive(Parser)]
@@ -63,6 +63,13 @@ pub enum Command {
         sats: Option<Decimal>,
         #[clap(short, long)]
         memo: Option<String>,
+    },
+    /// Receive a Payment
+    Receive {
+        #[clap(short, long, value_parser)]
+        wallet: Wallet,
+        #[clap(short, long, value_parser)]
+        via: ReceiveVia,
     },
     /// execute a batch payment
     Batch {

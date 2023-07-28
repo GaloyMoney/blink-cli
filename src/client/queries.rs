@@ -12,6 +12,7 @@ type SignedAmount = Decimal;
 type SatAmount = Decimal;
 type CentAmount = Decimal;
 type Memo = String;
+type OnChainAddress = String;
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -137,3 +138,13 @@ pub(super) struct IntraLedgerUsdPaymentSend;
 pub use self::intra_ledger_usd_payment_send::IntraLedgerUsdPaymentSendInput;
 
 use super::errors::captcha_error::CaptchaError;
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "src/client/gql/schema.gql",
+    query_path = "src/client/gql/mutations/onchain_address_current.gql",
+    response_derives = "Debug, Serialize"
+)]
+pub(super) struct OnChainAddressCurrent;
+pub use self::on_chain_address_current::OnChainAddressCurrentInput;
+pub use self::on_chain_address_current::OnChainAddressCurrentOnChainAddressCurrent;

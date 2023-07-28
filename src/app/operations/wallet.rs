@@ -3,8 +3,11 @@ use std::collections::HashSet;
 use anyhow::{Context, Result};
 
 use crate::{
-    app::App,
-    client::types::{Wallet, WalletBalance},
+    app::{errors::payment_error::PaymentError, App},
+    client::{
+        queries::query_me::{QueryMeMeDefaultAccountWallets, WalletCurrency},
+        types::{Wallet, WalletBalance},
+    },
 };
 
 impl App {
@@ -58,5 +61,31 @@ impl App {
 
         println!("{}", balances_json);
         Ok(())
+    }
+
+    pub fn get_user_btc_wallet_id(
+        &self,
+        wallets: Vec<QueryMeMeDefaultAccountWallets>,
+    ) -> Result<String> {
+        let btc_wallet_id = wallets
+            .iter()
+            .find(|wallet| wallet.wallet_currency == WalletCurrency::BTC)
+            .map(|wallet| &wallet.id)
+            .ok_or_else(|| PaymentError::FailedToGetWallet("BTC".to_string()))
+            .map(|id| id.to_owned())?;
+        Ok(btc_wallet_id)
+    }
+
+    pub fn get_user_usd_wallet_id(
+        &self,
+        wallets: Vec<QueryMeMeDefaultAccountWallets>,
+    ) -> Result<String> {
+        let usd_wallet_id = wallets
+            .iter()
+            .find(|wallet| wallet.wallet_currency == WalletCurrency::USD)
+            .map(|wallet| &wallet.id)
+            .ok_or_else(|| PaymentError::FailedToGetWallet("USD".to_string()))
+            .map(|id| id.to_owned())?;
+        Ok(usd_wallet_id)
     }
 }

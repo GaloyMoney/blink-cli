@@ -2,10 +2,7 @@ use anyhow::{Context, Result};
 
 use rust_decimal::Decimal;
 
-use crate::{
-    app::{errors::payment_error::PaymentError, App},
-    client::{queries::query_me::WalletCurrency, types::Wallet},
-};
+use crate::{app::App, client::types::Wallet};
 
 impl App {
     pub async fn intraledger_payment(
@@ -22,12 +19,7 @@ impl App {
 
         match (wallet, sats, cents) {
             (Wallet::Btc, Some(sats), _) => {
-                let btc_wallet_id = sender_wallets
-                    .iter()
-                    .find(|wallet| wallet.wallet_currency == WalletCurrency::BTC)
-                    .map(|wallet| &wallet.id)
-                    .ok_or_else(|| PaymentError::FailedToGetWallet("BTC".to_string()))
-                    .map(|id| id.to_owned())?;
+                let btc_wallet_id = self.get_user_btc_wallet_id(sender_wallets)?;
 
                 self.client
                     .intraleger_send_btc(btc_wallet_id, recipient_wallet_id, sats, memo)
@@ -37,12 +29,7 @@ impl App {
                 println!("Successfully sent {} sats to username: {}", sats, username);
             }
             (Wallet::Usd, _, Some(cents)) => {
-                let usd_wallet_id = sender_wallets
-                    .iter()
-                    .find(|wallet| wallet.wallet_currency == WalletCurrency::USD)
-                    .map(|wallet| &wallet.id)
-                    .ok_or_else(|| PaymentError::FailedToGetWallet("USD".to_string()))
-                    .map(|id| id.to_owned())?;
+                let usd_wallet_id = self.get_user_usd_wallet_id(sender_wallets)?;
 
                 self.client
                     .intraleger_send_usd(usd_wallet_id, recipient_wallet_id, cents, memo)
