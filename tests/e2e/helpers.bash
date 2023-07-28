@@ -33,6 +33,7 @@ galoy_cli_setup() {
 bitcoind_setup() {
   bitcoin_cli_cmd createwallet "galoycli" || true
   bitcoin_cli_cmd -generate 101
+  sleep 10
 }
 
 login_user() {
@@ -73,7 +74,10 @@ fund_user() {
   
   start_balance=$(get_balance $wallet_type)
   
+  galoy_cli_cmd receive --wallet $wallet_type --via onchain
   btc_address=$(galoy_cli_cmd receive --wallet $wallet_type --via onchain | jq -r '.address')
+  echo "btc_address:" $btc_address
+
   bitcoin_cli_cmd sendtoaddress "$btc_address" $btc_amount
   bitcoin_cli_cmd -generate 10
 
