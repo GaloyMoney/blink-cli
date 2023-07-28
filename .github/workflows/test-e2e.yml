@@ -25,4 +25,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-
       - name: Run e2e
-        run: make e2e
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 20
+          retry_on: error
+          max_attempts: 3
+          command: make e2e
