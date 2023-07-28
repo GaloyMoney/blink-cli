@@ -1,11 +1,11 @@
 REPO_ROOT=$(git rev-parse --show-toplevel)
-BASH_SOURCE=${BASH_SOURCE:-tests/e2e/helpers/.}
-source $(dirname "$BASH_SOURCE")/_common.bash
 
-ALICE_PHONE="+16505554321"
-ALICE_CODE="321321"
-BOB_PHONE="+16505554322"
-BOB_CODE="321654"
+USER_A_PHONE="+16505554321"
+USER_A_CODE="321321"
+USER_A_USERNAME="alice"
+USER_B_PHONE="+16505554322"
+USER_B_CODE="321654"
+USER_B_USERNAME="bob"
 
 galoy_cli_cmd() {
   galoy_cli_location=${REPO_ROOT}/target/debug/galoy-cli
@@ -16,18 +16,32 @@ galoy_cli_cmd() {
   ${galoy_cli_location} $@
 }
 
-galoy_cli_setup() {
-  rm ~/.galoy-cli/GALOY_TOKEN || true
+bitcoin_cli_cmd() {
+  docker compose exec bitcoind bitcoin-cli -regtest $@
 }
 
+galoy_cli_setup() {
+  rm ~/.galoy-cli/GALOY_TOKEN || true
+  local retries=0
+  while [[ $retries -lt 30 ]]; do
+    if galoy_cli_cmd globals; then break; fi
+    sleep 1
+    retries=$((retries+1))
+  done
+}
+
+bitcoind_setup() {
+  bitcoin_cli_cmd createwallet "galoycli" || true
+  bitcoin_cli_cmd -generate 101
+}
 
 login_user() {
   local user=$1
 
   if [[ "$user" == "A" ]]; then
-    galoy_cli_cmd login ${ALICE_PHONE} ${ALICE_CODE}
+    galoy_cli_cmd login ${USER_A_PHONE} ${USER_A_CODE}
   elif [[ "$user" == "B" ]]; then
-    galoy_cli_cmd login ${BOB_PHONE} ${BOB_CODE}
+    galoy_cli_cmd login ${USER_B_PHONE} ${USER_B_CODE}
   else
     echo "Invalid user: $user"
     exit 1
@@ -48,4 +62,29 @@ get_balance() {
     response=$(galoy_cli_cmd balance --$wallet_type)
     echo $response | jq -r '.[0] | .balance'
   fi
+}
+
+fund_user() {
+  local user=$1
+  local wallet_type=$2
+  local btc_amount=$3
+
+  login_user $user
+  
+  start_balance=$(get_balance $wallet_type)
+  
+  btc_address=$(galoy_cli_cmd receive --wallet $wallet_type --via onchain | jq -r '.address')
+  bitcoin_cli_cmd sendtoaddress "$btc_address" $btc_amount
+  bitcoin_cli_cmd -generate 10
+
+  local retries=0
+  while [[ $retries -lt 30 ]]; do
+    final_balance=$(get_balance $wallet_type)
+    if [ $final_balance -gt $start_balance ]; then break; fi
+    sleep 5
+    retries=$((retries+1))
+  done
+
+  logout_user
+  [[ "$retries" != "30" ]] || exit 1
 }
