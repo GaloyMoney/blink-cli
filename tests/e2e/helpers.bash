@@ -2,6 +2,11 @@ REPO_ROOT=$(git rev-parse --show-toplevel)
 BASH_SOURCE=${BASH_SOURCE:-tests/e2e/helpers/.}
 source $(dirname "$BASH_SOURCE")/_common.bash
 
+ALICE_PHONE="+16505554321"
+ALICE_CODE="321321"
+BOB_PHONE="+16505554322"
+BOB_CODE="321654"
+
 galoy_cli_cmd() {
   galoy_cli_location=${REPO_ROOT}/target/debug/galoy-cli
   if [[ ! -z ${CARGO_TARGET_DIR} ]] ; then
