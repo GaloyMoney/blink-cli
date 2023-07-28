@@ -20,9 +20,9 @@ login_user() {
   local user=$1
 
   if [[ "$user" == "A" ]]; then
-    galoy_cli_cmd login "$ALICE_PHONE" "$ALICE_CODE"
+    galoy_cli_cmd login ${ALICE_PHONE} ${ALICE_CODE}
   elif [[ "$user" == "B" ]]; then
-    galoy_cli_cmd login "$BOB_PHONE" "$BOB_CODE"
+    galoy_cli_cmd login ${BOB_PHONE} ${BOB_CODE}
   else
     echo "Invalid user: $user"
     exit 1
