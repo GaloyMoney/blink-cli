@@ -9,10 +9,20 @@ services:
     env_file: ${HOST_PROJECT_PATH:-.}/dev/.env.galoy
     volumes:
       - ${HOST_PROJECT_PATH:-.}/dev/galoy.yml:/var/yaml/custom.yaml
+  trigger:
+    image: us.gcr.io/galoy-org/galoy-app:edge
+    command:
+      - "-r"
+      - "/app/lib/services/tracing.js"
+      - "lib/servers/trigger.js"
+    env_file: ${HOST_PROJECT_PATH:-.}/dev/.env.galoy
+    volumes:
+      - ${HOST_PROJECT_PATH:-.}/dev/galoy.yml:/var/yaml/custom.yaml
   bats-deps:
     image: busybox
     depends_on:
       - galoy
+      - trigger
       - apollo-router
       - redis
       - mongodb
