@@ -76,11 +76,6 @@ fund_user() {
   
   galoy_cli_cmd receive --wallet $wallet_type --via onchain
   btc_address=$(galoy_cli_cmd receive --wallet $wallet_type --via onchain | jq -r '.address')
-  echo "btc_address:" $btc_address
-  echo "------"
-  docker compose logs bria
-  echo "------"
-  docker compose logs galoy
 
   bitcoin_cli_cmd sendtoaddress "$btc_address" $btc_amount
   bitcoin_cli_cmd -generate 10
