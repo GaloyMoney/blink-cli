@@ -1,0 +1,10 @@
+mutation OnChainAddressCurrent($input: OnChainAddressCurrentInput!) {
+  onChainAddressCurrent(input: $input) {
+    errors {
+      message
+      __typename
+    }
+    address
+    __typename
+  }
+}

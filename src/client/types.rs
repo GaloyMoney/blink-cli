@@ -14,3 +14,8 @@ pub struct WalletBalance {
     pub id: Option<String>,
     pub default: bool,
 }
+
+#[derive(Debug, Clone, clap::ValueEnum, PartialEq, Eq)]
+pub enum ReceiveVia {
+    Onchain,
+}
