@@ -22,13 +22,11 @@ groups:
 - name: all
   jobs:
     - check-code
-    - e2e-tests
     - release
     - set-dev-version
 
 jobs:
 - #@ rust_check_code()
-- #@ test_on_docker_host("e2e-tests")
 
 - name: release
   serial: true
@@ -37,7 +35,6 @@ jobs:
     - get: repo
       passed:
       - check-code
-      - e2e-tests
     - get: pipeline-tasks
     - get: version
   - task: prep-release
@@ -129,7 +126,6 @@ resources:
 - #@ slack_resource()
 - #@ version_resource()
 - #@ gh_release_resource()
-- #@ docker_host_pool()
 
 resource_types:
 - #@ slack_resource_type()

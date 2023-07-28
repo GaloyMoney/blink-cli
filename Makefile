@@ -27,5 +27,3 @@ bats:
 	bats -t tests/e2e
 
 e2e: build reset-deps-bats bats
-
-create-tmp-env-ci:

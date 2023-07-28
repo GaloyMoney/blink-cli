@@ -332,7 +332,7 @@ services:
     volumes:
       - ./:/repo
   bats-tests:
-    image: us.gcr.io/galoy-org/nodejs-concourse
+    image: us.gcr.io/galoy-org/rust-concourse
     depends_on:
       - bats-deps
     command: ["make", "execute-bats-from-within-container"]
