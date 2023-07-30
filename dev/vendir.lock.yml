@@ -1,0 +1,17 @@
+apiVersion: vendir.k14s.io/v1alpha1
+directories:
+- contents:
+  - git:
+      commitTitle: 'chore: allow cors on localhost for local dev (#2974)...'
+      sha: 2cba2415a91c552bfb90d1e49085b338a7aff3b9
+      tags:
+      - 0.10.25-1-g2cba2415a
+    path: dev
+  - git:
+      commitTitle: 'chore: allow cors on localhost for local dev (#2974)...'
+      sha: 2cba2415a91c552bfb90d1e49085b338a7aff3b9
+      tags:
+      - 0.10.25-1-g2cba2415a
+    path: envs
+  path: ./vendor
+kind: LockConfig

@@ -15,15 +15,22 @@ check-code:
 build:
 	cargo build --locked
 
-start-deps-bats:
+start-deps:
 	docker compose up bats-deps -d
 
 clean-deps:
 	docker compose down -t 3
 
-reset-deps-bats: clean-deps start-deps-bats
+reset-deps: clean-deps start-deps
 
 bats:
 	bats -t tests/e2e
 
-e2e: build reset-deps-bats bats
+e2e: build reset-deps bats
+
+prep-deps:
+	cd dev && vendir sync
+	cd dev/vendor \
+		&& source envs/.envrc \
+		&& envsubst < envs/.env.ci > ../.env.galoy \
+		&& rm -rf envs
