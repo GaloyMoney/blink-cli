@@ -1,6 +1,9 @@
 use anyhow::Result;
 use csv;
+use indicatif::{ProgressBar, ProgressStyle};
+use prettytable::{format, row, Table};
 use rust_decimal::Decimal;
+use std::io::Write;
 use std::path::Path;
 use std::str::FromStr;
 
@@ -12,6 +15,23 @@ const CSV_HEADER_USERNAME: &str = "username";
 const CSV_HEADER_CENTS: &str = "cents";
 const CSV_HEADER_SATS: &str = "sats";
 const CSV_HEADER_MEMO: &str = "memo";
+
+pub struct ListedPayment {
+    pub username: String,
+    pub recipient_wallet_id: String,
+    pub amount: Decimal,
+    pub memo: Option<String>,
+}
+
+impl Wallet {
+    pub fn to_unit(&self) -> &str {
+        if *self == Wallet::Btc {
+            "sats"
+        } else {
+            "cents"
+        }
+    }
+}
 
 pub fn check_file_exists(file: &str) -> Result<(), PaymentError> {
     let file_path = Path::new(file);
@@ -65,22 +85,77 @@ pub fn check_sufficient_balance(
         return Err(PaymentError::InsufficientBalance.into());
     }
 
-    //TODO: add a check for the sending limits.
+    // TODO: add a check for the sending limits.
+
+    Ok(())
+}
+
+pub fn verify_armed_records(
+    armed_records: &Vec<ListedPayment>,
+    wallet_type: &Wallet,
+    skip_confirmation: bool,
+) -> Result<()> {
+    let mut table = Table::new();
+    table.set_format(*format::consts::FORMAT_NO_LINESEP_WITH_TITLE);
+    table.set_titles(row![
+        "Username",
+        format!("Amount (in {})", wallet_type.to_unit()),
+        "Memo"
+    ]);
+
+    for record in armed_records {
+        table.add_row(row![
+            record.username,
+            record.amount,
+            format!(
+                "{}",
+                if record.memo.is_some() {
+                    record.memo.clone().unwrap()
+                } else {
+                    "".to_string()
+                }
+            )
+        ]);
+    }
+
+    println!("These are the specified payouts:\n");
+    table.printstd();
+    println!("\nYou're sending funds from your {:?} wallet.", wallet_type);
+
+    if !skip_confirmation {
+        print!("Are you sure you want to submit this payout (type 'yes' to confirm): ");
+        std::io::stdout().flush().unwrap();
+
+        let mut input = String::new();
+        std::io::stdin()
+            .read_line(&mut input)
+            .expect("Failed to read line");
+        input = input.trim().to_string();
+
+        if input != "yes" {
+            println!("Payout cancelled!");
+            std::process::exit(0);
+        }
+    }
+
+    println!();
 
     Ok(())
 }
 
 impl App {
-    pub async fn batch_payment(&self, file: String) -> Result<()> {
+    pub async fn batch_payment(&self, file: String, skip_confirmation: bool) -> Result<()> {
+        // ----- Checks -----
         check_file_exists(&file)?;
         let (reader, wallet_type) = validate_csv(&file)?;
+
         for record in &reader {
             let username = record
                 .get(0)
                 .filter(|&username| !username.is_empty())
                 .ok_or(PaymentError::NoUsernameFound(record.clone()))?;
 
-            //check if username exists
+            // check if username exists
             self.client
                 .default_wallet(username.to_string())
                 .await
@@ -100,14 +175,49 @@ impl App {
 
         check_sufficient_balance(&reader, user_wallet_balance)?;
 
+        // ----- Arming the records in internal structure -----
+
+        let mut armed_records: Vec<ListedPayment> = vec![];
+
         for record in &reader {
             let username = record
                 .get(0)
-                .ok_or(PaymentError::NoUsernameFound(record.clone()))?;
+                .ok_or(PaymentError::NoUsernameFound(record.clone()))?
+                .to_string();
             let recipient_wallet_id = self.client.default_wallet(username.to_string()).await?;
-
             let amount: Decimal = Decimal::from_str(record.get(1).unwrap_or_default())?;
             let memo = record.get(2).map(|s| s.to_string());
+
+            armed_records.push(ListedPayment {
+                username: username.clone(),
+                recipient_wallet_id,
+                amount,
+                memo: memo.clone(),
+            });
+        }
+
+        verify_armed_records(&armed_records, &wallet_type, skip_confirmation)?;
+
+        // ----- Run -----
+
+        let total_size: u64 = reader.iter().len().try_into()?;
+        let pb = ProgressBar::new(total_size);
+
+        pb.set_style(
+            ProgressStyle::with_template(
+                "{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {pos:>7}/{len:7} {msg}",
+            )
+            .unwrap()
+            .progress_chars("##-"),
+        );
+
+        for record in armed_records.into_iter() {
+            let ListedPayment {
+                recipient_wallet_id,
+                amount,
+                memo,
+                username,
+            } = record;
 
             match wallet_type {
                 Wallet::Usd => {
@@ -131,9 +241,18 @@ impl App {
                         .await?;
                 }
             }
-            println!("Payment of {} successfully sent to {}!", amount, username);
+
+            pb.inc(1);
+            pb.println(format!(
+                "Payment of {} {} sent successfully to {}!",
+                amount,
+                wallet_type.to_unit(),
+                username
+            ));
         }
-        println!("Batch Payment successful!");
+
+        pb.finish_with_message("Batch payouts completed successfully!");
+
         Ok(())
     }
 }

@@ -6,6 +6,9 @@ USER_A_USERNAME="alice"
 USER_B_PHONE="+16505554322"
 USER_B_CODE="321654"
 USER_B_USERNAME="bob"
+USER_C_PHONE="+16505554323"
+USER_C_CODE="321987"
+USER_C_USERNAME="charlie"
 
 galoy_cli_cmd() {
   galoy_cli_location=${REPO_ROOT}/target/debug/galoy-cli
@@ -43,6 +46,8 @@ login_user() {
     galoy_cli_cmd login ${USER_A_PHONE} ${USER_A_CODE}
   elif [[ "$user" == "B" ]]; then
     galoy_cli_cmd login ${USER_B_PHONE} ${USER_B_CODE}
+  elif [[ "$user" == "C" ]]; then
+    galoy_cli_cmd login ${USER_C_PHONE} ${USER_C_CODE}
   else
     echo "Invalid user: $user"
     exit 1
