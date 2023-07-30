@@ -19,6 +19,10 @@ galoy_cli_cmd() {
   ${galoy_cli_location} $@
 }
 
+tests_dir() {
+  echo ${REPO_ROOT}/tests/e2e
+}
+
 bitcoin_cli_cmd() {
   docker compose exec bitcoind bitcoin-cli -regtest $@
 }
