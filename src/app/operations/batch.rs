@@ -105,8 +105,8 @@ pub fn verify_armed_records(
 
     for record in armed_records {
         table.add_row(row![
-            record.username,
-            record.amount,
+            bl->record.username,
+            br->record.amount,
             format!(
                 "{}",
                 if record.memo.is_some() {
@@ -146,6 +146,7 @@ pub fn verify_armed_records(
 impl App {
     pub async fn batch_payment(&self, file: String, skip_confirmation: bool) -> Result<()> {
         // ----- Checks -----
+        println!("Checking usernames and balances...");
         check_file_exists(&file)?;
         let (reader, wallet_type) = validate_csv(&file)?;
 
@@ -203,12 +204,13 @@ impl App {
         let total_size: u64 = reader.iter().len().try_into()?;
         let pb = ProgressBar::new(total_size);
 
+        pb.enable_steady_tick(std::time::Duration::from_millis(10));
         pb.set_style(
             ProgressStyle::with_template(
-                "{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {pos:>7}/{len:7} {msg}",
+                "[{elapsed_precise}] [{bar:40.cyan/blue}] {pos:>5}/{len:5} {msg}",
             )
             .unwrap()
-            .progress_chars("##-"),
+            .progress_chars("=> "),
         );
 
         for record in armed_records.into_iter() {
