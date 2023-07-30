@@ -1,3 +1,14 @@
+# [galoy-cli release v0.1.2](https://github.com/GaloyMoney/galoy-cli/releases/tag/v0.1.2)
+
+
+### Features
+
+- Onchain receive (#182)
+
+### Testing
+
+- Bootstrap galoy for testing locally (#181)
+
 # [galoy-cli release v0.1.1](https://github.com/GaloyMoney/galoy-cli/releases/tag/v0.1.1)
 
 

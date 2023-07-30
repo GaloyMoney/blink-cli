@@ -2,7 +2,7 @@
 name = "galoy-cli"
 description = "A CLI Client for interacting with Galoy Backend"
 repository = "https://github.com/GaloyMoney/galoy-cli"
-version = "0.0.0"
+version = "0.1.2"
 edition = "2021"
 license = "MIT"
 
