@@ -52,3 +52,37 @@ setup_file() {
   [ "$final_balance_A" -gt "$initial_balance_A" ] || exit 1
   [ "$final_balance_B" -lt "$initial_balance_B" ] || exit 1
 }
+
+@test "batch(A, B, C): submit batch from A to B and C" {
+  fund_user "A" "usd" 0.01
+
+  login_user B
+  initial_balance_B=$(get_balance)
+  logout_user
+
+  login_user C
+  initial_balance_C=$(get_balance)
+  logout_user
+
+  login_user A
+
+  # payouts.csv sends from USD wallet
+  initial_balance_A=$(get_balance "usd")
+  
+  galoy_cli_cmd batch --csv $(tests_dir)/payouts.csv --skip-confirmation
+
+  final_balance_A=$(get_balance "usd")
+  logout_user
+
+  login_user B
+  final_balance_B=$(get_balance)
+  logout_user
+
+  login_user C
+  final_balance_C=$(get_balance)
+  logout_user
+
+  [ "$final_balance_B" -gt "$initial_balance_B" ] || exit 1
+  [ "$final_balance_C" -gt "$initial_balance_C" ] || exit 1
+  [ "$final_balance_A" -lt "$initial_balance_A" ] || exit 1
+}

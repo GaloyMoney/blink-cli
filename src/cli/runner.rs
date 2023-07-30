@@ -46,8 +46,11 @@ pub async fn run() -> anyhow::Result<()> {
         Command::Receive { wallet, via } => {
             app.receive(wallet, via).await?;
         }
-        Command::Batch { file } => {
-            app.batch_payment(file).await?;
+        Command::Batch {
+            file,
+            skip_confirmation,
+        } => {
+            app.batch_payment(file, skip_confirmation).await?;
         }
         Command::RequestPhoneCode { phone } => {
             app.request_phone_code(phone).await?;
