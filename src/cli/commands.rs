@@ -75,6 +75,8 @@ pub enum Command {
     Batch {
         #[clap(short, long = "csv")]
         file: String,
+        #[clap(action, long)]
+        skip_confirmation: bool,
     },
     /// Request a code from a Phone number
     RequestPhoneCode {

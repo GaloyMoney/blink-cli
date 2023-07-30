@@ -21,3 +21,11 @@ setup_file() {
   [[ "$username" == "${USER_B_USERNAME}" ]] || exit 1
   logout_user
 }
+
+@test "auth: login/logout C and set username" {
+  login_user C
+  galoy_cli_cmd set-username --username ${USER_C_USERNAME}
+  username=$(galoy_cli_cmd me | jq -r '.username')
+  [[ "$username" == "${USER_C_USERNAME}" ]] || exit 1
+  logout_user
+}
