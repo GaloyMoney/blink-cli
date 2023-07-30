@@ -5,6 +5,7 @@ VERSION="$(cat version/version)-dev"
 pushd repo
 
 sed -i'' "s/^version.*/version = \"${VERSION}\"/" Cargo.toml
+cargo check # Generates the Cargo.lock file version update
 
 if [[ -z $(git config --global user.email) ]]; then
   git config --global user.email "bot@galoy.io"

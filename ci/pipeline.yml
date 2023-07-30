@@ -103,7 +103,7 @@ jobs:
       passed: [release]
   - task: set-dev-version
     config:
-      image_resource: #@ release_task_image_config()
+      image_resource: #@ rust_task_image_config()
       platform: linux
       inputs:
       - name: version
@@ -113,8 +113,6 @@ jobs:
       - name: repo
       run:
         path: pipeline-tasks/ci/tasks/set-dev-version.sh
-      params:
-        BRANCH: #@ data.values.git_branch
   - put: repo
     params:
       repository: repo

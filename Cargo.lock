@@ -979,7 +979,7 @@ dependencies = [
 
 [[package]]
 name = "galoy-cli"
-version = "0.0.0"
+version = "0.1.3-dev"
 dependencies = [
  "actix-web",
  "actix-web-static-files",
