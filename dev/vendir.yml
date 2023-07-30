@@ -1,0 +1,22 @@
+apiVersion: vendir.k14s.io/v1alpha1
+kind: Config
+
+directories:
+- path: ./vendor
+  contents:
+  - path: dev
+    git:
+      url: https://github.com/GaloyMoney/galoy.git
+      ref: main
+    includePaths:
+    - dev/**/*
+    excludePaths:
+    - dev/bin/**/*
+    newRootPath: dev
+  - path: envs
+    git:
+      url: https://github.com/GaloyMoney/galoy.git
+      ref: main
+    includePaths:
+    - .envrc
+    - .env.ci
