@@ -1,3 +1,16 @@
+# [galoy-cli release v0.1.3](https://github.com/GaloyMoney/galoy-cli/releases/tag/v0.1.3)
+
+
+### Features
+
+- Add Set Default Wallet Command (#188)
+- Package static files and tera template in bin (#186)
+
+### Miscellaneous Tasks
+
+- Some more cleanup
+- Cleanup for testing/dev (#185)
+
 # [galoy-cli release v0.1.2](https://github.com/GaloyMoney/galoy-cli/releases/tag/v0.1.2)
 
 
