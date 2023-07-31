@@ -1,6 +1,7 @@
 use actix_web::{web, App, HttpResponse, HttpServer, Responder};
-use actix_web_static_files::ResourceFiles;
 use anyhow::Result;
+use mime_guess::from_path;
+use rust_embed::RustEmbed;
 use serde::{Deserialize, Serialize};
 use tera::{Context, Tera};
 
@@ -11,8 +12,6 @@ use std::net::TcpListener;
 
 use crate::client::queries::{captcha_request_auth_code, CaptchaChallenge, CaptchaRequestAuthCode};
 
-include!(concat!(env!("OUT_DIR"), "/generated.rs"));
-
 struct AppData {
     tera: Tera,
     phone: String,
@@ -20,9 +19,8 @@ struct AppData {
     captcha_challenge_result: CaptchaChallenge,
 }
 
+#[actix_web::get("/login")]
 async fn login(appdata: web::Data<AppData>) -> impl Responder {
-    println!("Fetching Captcha Challenge...");
-
     let mut ctx = Context::new();
 
     ctx.insert("id", &appdata.captcha_challenge_result.id);
@@ -36,7 +34,7 @@ async fn login(appdata: web::Data<AppData>) -> impl Responder {
         &appdata.captcha_challenge_result.challenge_code,
     );
 
-    let rendered = appdata.tera.render("login.html", &ctx).unwrap();
+    let rendered = appdata.tera.render("login.tera.html", &ctx).unwrap();
     HttpResponse::Ok().body(rendered)
 }
 
@@ -47,6 +45,7 @@ struct GeetestResponse {
     geetest_validate: String,
 }
 
+#[actix_web::post("/solve")]
 async fn solve(r: web::Json<GeetestResponse>, appdata: web::Data<AppData>) -> impl Responder {
     println!("Captcha Solved, you may close the browser and return to the CLI.");
 
@@ -78,17 +77,28 @@ async fn solve(r: web::Json<GeetestResponse>, appdata: web::Data<AppData>) -> im
     HttpResponse::Ok()
 }
 
+#[derive(RustEmbed)]
+#[folder = "src/app/server/public/"]
+struct Asset;
+
+#[actix_web::get("/static/{_:.*}")]
+async fn static_dir(path: web::Path<String>) -> impl Responder {
+    match Asset::get(&path) {
+        Some(content) => HttpResponse::Ok()
+            .content_type(from_path(path.as_str()).first_or_octet_stream().as_ref())
+            .body(content.data.into_owned()),
+        None => HttpResponse::NotFound().body("404 Not Found"),
+    }
+}
+
 pub async fn run(
     listener: TcpListener,
     phone: String,
     api: String,
     captcha_challenge_result: CaptchaChallenge,
 ) -> Result<()> {
-    let tera = Tera::new(concat!(
-        env!("CARGO_MANIFEST_DIR"),
-        "/src/app/server/public/**/*"
-    ))
-    .unwrap();
+    let mut tera = Tera::default();
+    tera.add_raw_template("login.tera.html", include_str!("./public/login.tera.html"))?;
 
     let appdata = web::Data::new(AppData {
         tera,
@@ -98,11 +108,10 @@ pub async fn run(
     });
 
     let server = HttpServer::new(move || {
-        let generated = generate();
         App::new()
-            .service(ResourceFiles::new("/static", generated))
-            .route("/login", web::get().to(login))
-            .route("/solve", web::post().to(solve))
+            .service(static_dir)
+            .service(login)
+            .service(solve)
             .app_data(appdata.clone())
     })
     .listen(listener)?
