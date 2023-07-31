@@ -1,0 +1,8 @@
+mutation AccountUpdateDefaultWalletId($input: AccountUpdateDefaultWalletIdInput!) {
+  accountUpdateDefaultWalletId(input: $input) {
+    errors{
+        __typename
+        message
+    }
+  }
+}

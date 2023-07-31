@@ -5,7 +5,7 @@ use anyhow::{Context, Result};
 use crate::{
     app::{errors::payment_error::PaymentError, App},
     client::{
-        queries::query_me::{QueryMeMeDefaultAccountWallets, WalletCurrency},
+        queries::query_me::WalletCurrency,
         types::{Wallet, WalletBalance},
     },
 };
@@ -19,6 +19,38 @@ impl App {
             .context("Error occurred while fetching default wallet id")?;
 
         println!("Default wallet ID for {} is: {}", username, result);
+        Ok(())
+    }
+
+    pub async fn set_default_wallet(
+        &self,
+        wallet: Option<Wallet>,
+        wallet_id: Option<String>,
+    ) -> Result<()> {
+        let wallet_id = if let Some(wallet_id) = wallet_id {
+            wallet_id
+        } else {
+            match wallet {
+                Some(Wallet::Btc) => self.get_user_btc_wallet_id().await?,
+                Some(Wallet::Usd) => self.get_user_usd_wallet_id().await?,
+                None => {
+                    return Err(anyhow::anyhow!(
+                        "Either 'wallet' or 'wallet_id' must be provided."
+                    ))
+                }
+            }
+        };
+
+        self.client
+            .update_default_wallet(wallet_id.clone())
+            .await
+            .context("Failed to update default wallet")?;
+
+        println!(
+            "Default wallet ID has been successfully set to {}",
+            wallet_id
+        );
+
         Ok(())
     }
 
@@ -63,10 +95,10 @@ impl App {
         Ok(())
     }
 
-    pub fn get_user_btc_wallet_id(
-        &self,
-        wallets: Vec<QueryMeMeDefaultAccountWallets>,
-    ) -> Result<String> {
+    pub async fn get_user_btc_wallet_id(&self) -> Result<String> {
+        let me = self.client.me().await?;
+        let wallets = me.default_account.wallets;
+
         let btc_wallet_id = wallets
             .iter()
             .find(|wallet| wallet.wallet_currency == WalletCurrency::BTC)
@@ -76,10 +108,10 @@ impl App {
         Ok(btc_wallet_id)
     }
 
-    pub fn get_user_usd_wallet_id(
-        &self,
-        wallets: Vec<QueryMeMeDefaultAccountWallets>,
-    ) -> Result<String> {
+    pub async fn get_user_usd_wallet_id(&self) -> Result<String> {
+        let me = self.client.me().await?;
+        let wallets = me.default_account.wallets;
+
         let usd_wallet_id = wallets
             .iter()
             .find(|wallet| wallet.wallet_currency == WalletCurrency::USD)

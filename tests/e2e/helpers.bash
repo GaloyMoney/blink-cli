@@ -74,6 +74,10 @@ get_balance() {
   fi
 }
 
+get_default_wallet_id() {
+  echo $(galoy_cli_cmd me | jq -r '.defaultAccount.defaultWalletId')
+}
+
 fund_user() {
   local user=$1
   local wallet_type=$2
