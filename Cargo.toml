@@ -21,13 +21,10 @@ thiserror = "1.0.37"
 rust_decimal = "1.27.0"
 csv= "1.2.2"
 actix-web = "4.2.1"
-actix-web-static-files = "4.0.0"
 tera = "1.19.0"
 log = "0.4.18"
-static-files = "0.2.3"
 webbrowser = "0.8.10"
 indicatif = "0.17.5"
 prettytable-rs = "0.10.0"
-
-[build-dependencies]
-static-files = "0.2.3"
+rust-embed = { version = "6.8.1", features = ["actix"] }
+mime_guess = "2.0.4"
