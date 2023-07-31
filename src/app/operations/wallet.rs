@@ -95,9 +95,7 @@ impl App {
         Ok(())
     }
 
-    pub async fn get_user_btc_wallet_id(
-        &self,
-    ) -> Result<String> {
+    pub async fn get_user_btc_wallet_id(&self) -> Result<String> {
         let me = self.client.me().await?;
         let wallets = me.default_account.wallets;
 
@@ -110,9 +108,7 @@ impl App {
         Ok(btc_wallet_id)
     }
 
-    pub async fn get_user_usd_wallet_id(
-        &self,
-    ) -> Result<String> {
+    pub async fn get_user_usd_wallet_id(&self) -> Result<String> {
         let me = self.client.me().await?;
         let wallets = me.default_account.wallets;
 
