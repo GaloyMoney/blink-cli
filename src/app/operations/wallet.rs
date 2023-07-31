@@ -22,6 +22,41 @@ impl App {
         Ok(())
     }
 
+    pub async fn set_default_wallet(
+        &self,
+        wallet: Option<Wallet>,
+        wallet_id: Option<String>,
+    ) -> Result<()> {
+        let me = self.client.me().await?;
+        let wallets = me.default_account.wallets;
+
+        let wallet_id = if let Some(wallet_id) = wallet_id {
+            wallet_id
+        } else {
+            match wallet {
+                Some(Wallet::Btc) => self.get_user_btc_wallet_id(wallets)?,
+                Some(Wallet::Usd) => self.get_user_usd_wallet_id(wallets)?,
+                None => {
+                    return Err(anyhow::anyhow!(
+                        "Either 'wallet' or 'wallet_id' must be provided."
+                    ))
+                }
+            }
+        };
+
+        self.client
+            .update_default_wallet(wallet_id.clone())
+            .await
+            .context("Failed to update default wallet")?;
+
+        println!(
+            "Default wallet ID has been successfully set to {}",
+            wallet_id
+        );
+
+        Ok(())
+    }
+
     pub async fn wallet_balance(
         &self,
         btc: bool,

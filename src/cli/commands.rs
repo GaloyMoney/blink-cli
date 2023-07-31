@@ -37,6 +37,13 @@ pub enum Command {
         #[clap(value_parser)]
         username: String,
     },
+    // Update the default wallet of an account
+    SetDefaultWallet {
+        #[clap(short, long, value_parser, conflicts_with("wallet_id"))]
+        wallet: Option<Wallet>,
+        #[clap(long)]
+        wallet_id: Option<String>,
+    },
     /// Set a username for a new account
     SetUsername {
         #[clap(short, long)]

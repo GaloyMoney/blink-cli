@@ -113,6 +113,15 @@ pub use self::user_update_username::UserUpdateUsernameInput;
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "src/client/gql/schema.gql",
+    query_path = "src/client/gql/mutations/account_update_default_wallet_id.gql",
+    response_derives = "Debug, Serialize"
+)]
+pub(super) struct AccountUpdateDefaultWalletId;
+pub use self::account_update_default_wallet_id::AccountUpdateDefaultWalletIdInput;
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "src/client/gql/schema.gql",
     query_path = "src/client/gql/queries/default_wallet.gql",
     response_derives = "Debug, Serialize"
 )]
