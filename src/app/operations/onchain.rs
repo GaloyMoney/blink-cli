@@ -7,12 +7,9 @@ use crate::{
 
 impl App {
     pub async fn receive(&self, wallet: Wallet, via: ReceiveVia) -> anyhow::Result<()> {
-        let me = self.client.me().await?;
-        let wallets = me.default_account.wallets;
-
         let receiving_wallet_id = match wallet {
-            Wallet::Btc => self.get_user_btc_wallet_id(wallets)?,
-            Wallet::Usd => self.get_user_usd_wallet_id(wallets)?,
+            Wallet::Btc => self.get_user_btc_wallet_id().await?,
+            Wallet::Usd => self.get_user_usd_wallet_id().await?,
         };
 
         match via {

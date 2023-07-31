@@ -5,7 +5,7 @@ use anyhow::{Context, Result};
 use crate::{
     app::{errors::payment_error::PaymentError, App},
     client::{
-        queries::query_me::{QueryMeMeDefaultAccountWallets, WalletCurrency},
+        queries::query_me::WalletCurrency,
         types::{Wallet, WalletBalance},
     },
 };
@@ -27,15 +27,12 @@ impl App {
         wallet: Option<Wallet>,
         wallet_id: Option<String>,
     ) -> Result<()> {
-        let me = self.client.me().await?;
-        let wallets = me.default_account.wallets;
-
         let wallet_id = if let Some(wallet_id) = wallet_id {
             wallet_id
         } else {
             match wallet {
-                Some(Wallet::Btc) => self.get_user_btc_wallet_id(wallets)?,
-                Some(Wallet::Usd) => self.get_user_usd_wallet_id(wallets)?,
+                Some(Wallet::Btc) => self.get_user_btc_wallet_id().await?,
+                Some(Wallet::Usd) => self.get_user_usd_wallet_id().await?,
                 None => {
                     return Err(anyhow::anyhow!(
                         "Either 'wallet' or 'wallet_id' must be provided."
@@ -98,10 +95,12 @@ impl App {
         Ok(())
     }
 
-    pub fn get_user_btc_wallet_id(
+    pub async fn get_user_btc_wallet_id(
         &self,
-        wallets: Vec<QueryMeMeDefaultAccountWallets>,
     ) -> Result<String> {
+        let me = self.client.me().await?;
+        let wallets = me.default_account.wallets;
+
         let btc_wallet_id = wallets
             .iter()
             .find(|wallet| wallet.wallet_currency == WalletCurrency::BTC)
@@ -111,10 +110,12 @@ impl App {
         Ok(btc_wallet_id)
     }
 
-    pub fn get_user_usd_wallet_id(
+    pub async fn get_user_usd_wallet_id(
         &self,
-        wallets: Vec<QueryMeMeDefaultAccountWallets>,
     ) -> Result<String> {
+        let me = self.client.me().await?;
+        let wallets = me.default_account.wallets;
+
         let usd_wallet_id = wallets
             .iter()
             .find(|wallet| wallet.wallet_currency == WalletCurrency::USD)
