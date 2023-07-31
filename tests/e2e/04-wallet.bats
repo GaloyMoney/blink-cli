@@ -12,8 +12,8 @@ setup_file() {
   default_wallet_id=$(get_default_wallet_id)
 
   balances=$(galoy_cli_cmd balance)
-  non_default_wallet_id=$($balances | jq -r 'map(select(.default == false)) | .[0] | .id')
-  galoy_cli_cmd set-default-wallet --wallet-id $non_default_wallet_id
+  non_default_wallet_id=$(echo "$balances" | jq -r 'map(select(.default == false)) | .[0].id')
+  galoy_cli_cmd set-default-wallet --wallet-id "$non_default_wallet_id"
 
   updated_default_wallet_id=$(get_default_wallet_id)
 
