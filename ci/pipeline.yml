@@ -23,6 +23,7 @@ groups:
   jobs:
     - check-code
     - release
+    - publish-to-crates
     - set-dev-version
 
 jobs:
@@ -63,6 +64,112 @@ jobs:
       - name: repo
       run:
         path: pipeline-tasks/ci/tasks/update-repo.sh
+  - in_parallel:
+    - task: build-windows-release
+      privileged: true
+      config:
+        platform: linux
+        image_resource:
+          type: registry-image
+          source:
+            username: #@ data.values.osxcross_docker_username
+            password: #@ data.values.osxcross_docker_password
+            repository: #@ data.values.osxcross_repository
+        inputs:
+        - name: version
+        - name: pipeline-tasks
+        - name: repo
+        outputs:
+        - name: x86_64-pc-windows-gnu
+        caches:
+        - path: cargo-home
+        - path: cargo-target-dir
+        params:
+          TARGET: x86_64-pc-windows-gnu
+          OUT: x86_64-pc-windows-gnu
+        run:
+          path: pipeline-tasks/ci/tasks/build-release.sh
+    - task: build-osx-release
+      privileged: true
+      config:
+        platform: linux
+        image_resource:
+          type: registry-image
+          source:
+            username: #@ data.values.osxcross_docker_username
+            password: #@ data.values.osxcross_docker_password
+            repository: #@ data.values.osxcross_repository
+        inputs:
+        - name: version
+        - name: pipeline-tasks
+        - name: repo
+        outputs:
+        - name: x86_64-apple-darwin
+        caches:
+        - path: cargo-home
+        - path: cargo-target-dir
+        params:
+          TARGET: x86_64-apple-darwin
+          OUT: x86_64-apple-darwin
+        run:
+          path: pipeline-tasks/ci/tasks/build-release.sh
+    - task: build-static-release
+      privileged: true
+      config:
+        platform: linux
+        image_resource:
+          type: registry-image
+          source: { repository: clux/muslrust, tag: stable }
+        inputs:
+        - name: version
+        - name: pipeline-tasks
+        - name: repo
+        outputs:
+        - name: x86_64-unknown-linux-musl
+        caches:
+        - path: cargo-home
+        - path: cargo-target-dir
+        params:
+          TARGET: x86_64-unknown-linux-musl
+          OUT: x86_64-unknown-linux-musl
+        run:
+          path: pipeline-tasks/ci/tasks/build-release.sh
+  - task: prep-github-release
+    config:
+      image_resource: #@ release_task_image_config()
+      platform: linux
+      inputs:
+      - name: x86_64-pc-windows-gnu
+      - name: x86_64-apple-darwin
+      - name: x86_64-unknown-linux-musl
+      - name: version
+      - name: pipeline-tasks
+      - name: artifacts
+      outputs:
+      - name: artifacts
+      run:
+        path: pipeline-tasks/ci/tasks/prep-github-release.sh
+  - put: repo
+    params:
+      tag: artifacts/gh-release-tag
+      repository: repo
+      merge: true
+  - put: gh-release
+    params:
+      name: artifacts/gh-release-name
+      tag: artifacts/gh-release-tag
+      body: artifacts/gh-release-notes.md
+      globs: [artifacts/binaries/*]
+  - put: version
+    params:
+      file: version/version
+
+- name: publish-to-crates
+  plan:
+  - in_parallel:
+    - { get: repo, passed: [release], trigger: true }
+    - get: pipeline-tasks
+    - get: version
   - task: publish-to-crates
     config:
       image_resource: #@ rust_task_image_config()
@@ -78,19 +185,6 @@ jobs:
       - path: cargo-target-dir
       run:
         path: pipeline-tasks/ci/tasks/publish-to-crates.sh
-  - put: repo
-    params:
-      tag: artifacts/gh-release-tag
-      repository: repo
-      merge: true
-  - put: version
-    params:
-      file: version/version
-  - put: gh-release
-    params:
-      name: artifacts/gh-release-name
-      tag: artifacts/gh-release-tag
-      body: artifacts/gh-release-notes.md
 
 - name: set-dev-version
   plan:
