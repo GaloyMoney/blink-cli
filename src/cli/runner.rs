@@ -38,14 +38,22 @@ pub async fn run() -> anyhow::Result<()> {
         }
         Command::Pay {
             username,
+            onchain_address,
             wallet,
             cents,
             sats,
             memo,
-        } => {
-            app.intraledger_payment(username, wallet, cents, sats, memo)
-                .await?;
-        }
+        } => match (username, onchain_address) {
+            (Some(username), None) => {
+                app.intraledger_payment(username, wallet, cents, sats, memo)
+                    .await?;
+            }
+            (None, Some(onchain_address)) => {
+                app.send_onchain(onchain_address, wallet, cents, sats, memo)
+                    .await?;
+            }
+            _ => {}
+        },
         Command::Receive { wallet, via } => {
             app.receive(wallet, via).await?;
         }
