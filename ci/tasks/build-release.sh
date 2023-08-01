@@ -8,7 +8,7 @@ if [[ -f version/version ]];then
 fi
 
 REPO=${REPO:-repo}
-BINARY=bria
+BINARY=galoy-cli
 OUT=${OUT:-none}
 WORKSPACE="$(pwd)"
 
@@ -27,7 +27,13 @@ cd ${CARGO_TARGET_DIR}/${TARGET}/release
 OUT_DIR="${BINARY}-${TARGET}-${VERSION}"
 rm -rf "${OUT_DIR}" || true
 mkdir "${OUT_DIR}"
-mv ./${BINARY} ${OUT_DIR}
+
+if [[ $TARGET == "x86_64-pc-windows-gnu" ]]; then
+  mv ./${BINARY}.exe ${OUT_DIR}
+else
+  mv ./${BINARY} ${OUT_DIR}
+fi
+
 tar -czvf ${OUT_DIR}.tar.gz ${OUT_DIR}
 
 mv ${OUT_DIR}.tar.gz ${WORKSPACE}/${OUT}/

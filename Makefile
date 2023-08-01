@@ -34,3 +34,12 @@ prep-deps:
 		&& source envs/.envrc \
 		&& envsubst < envs/.env.ci > ../.env.galoy \
 		&& rm -rf envs
+
+build-x86_64-unknown-linux-musl-release:
+	SQLX_OFFLINE=true cargo build --release --locked --target x86_64-unknown-linux-musl
+
+build-x86_64-apple-darwin-release:
+	bin/osxcross-compile.sh
+
+build-x86_64-pc-windows-gnu-release:
+	bin/wincross-compile.sh

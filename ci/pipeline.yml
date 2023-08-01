@@ -72,9 +72,9 @@ jobs:
         image_resource:
           type: registry-image
           source:
-            username: #@ data.values.osxcross_docker_username
-            password: #@ data.values.osxcross_docker_password
-            repository: #@ data.values.osxcross_repository
+            username: #@ data.values.docker_registry_user
+            password: #@ data.values.docker_registry_password
+            repository: #@ data.values.docker_registry + "/wincross-rust"
         inputs:
         - name: version
         - name: pipeline-tasks

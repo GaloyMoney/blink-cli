@@ -20,6 +20,7 @@ EOF
 mv new_change_log.md CHANGELOG.md
 
 sed -i'' "s/^version.*/version = \"${VERSION}\"/" Cargo.toml
+cargo check
 
 git status
 git add .

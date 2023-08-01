@@ -22,3 +22,6 @@ slack_webhook_url: ((addons-slack.api_url))
 osxcross_docker_username: ((osxcross-image.username))
 osxcross_docker_password: ((osxcross-image.password))
 osxcross_repository: ((osxcross-image.repository))
+docker_registry: us.gcr.io/galoy-org
+docker_registry_user: ((docker-creds.username))
+docker_registry_password: ((docker-creds.password))
