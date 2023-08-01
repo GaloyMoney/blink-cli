@@ -1,3 +1,10 @@
+# [galoy-cli release v0.1.4](https://github.com/GaloyMoney/galoy-cli/releases/tag/v0.1.4)
+
+
+### Features
+
+- Onchain send (#190)
+
 # [galoy-cli release v0.1.3](https://github.com/GaloyMoney/galoy-cli/releases/tag/v0.1.3)
 
 
