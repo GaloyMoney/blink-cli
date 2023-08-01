@@ -61,7 +61,9 @@ pub enum Command {
     /// Execute a Payment
     Pay {
         #[clap(short, long)]
-        username: String,
+        username: Option<String>,
+        #[clap(short, long, conflicts_with("username"))]
+        onchain_address: Option<String>,
         #[clap(short, long, value_parser)]
         wallet: Wallet,
         #[clap(short, long, required_if_eq("wallet", "usd"))]

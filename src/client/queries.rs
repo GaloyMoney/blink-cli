@@ -157,3 +157,14 @@ use super::errors::captcha_error::CaptchaError;
 pub(super) struct OnChainAddressCurrent;
 pub use self::on_chain_address_current::OnChainAddressCurrentInput;
 pub use self::on_chain_address_current::OnChainAddressCurrentOnChainAddressCurrent;
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "src/client/gql/schema.gql",
+    query_path = "src/client/gql/mutations/onchain_payment_send.gql",
+    response_derives = "Debug, Serialize"
+)]
+pub(super) struct OnChainPaymentSend;
+pub use self::on_chain_payment_send::OnChainPaymentSendInput;
+pub use self::on_chain_payment_send::OnChainPaymentSendOnChainPaymentSend;
+pub use self::on_chain_payment_send::PayoutSpeed;
