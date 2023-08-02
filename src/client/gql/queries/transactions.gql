@@ -1,8 +1,8 @@
-query Transactions($after: String, $before: String, $first: Int, $last: Int, $walletIds: [WalletId]) {
+query Transactions {
   me {
     defaultAccount {
       __typename
-      transactions(after: $after, before: $before, first: $first, last: $last, walletIds: $walletIds) {
+      transactions {
         edges {
           cursor
           node {

@@ -23,26 +23,20 @@ impl GaloyClient {
 
     pub async fn list_transactions(
         &self,
-        after: Option<String>,
-        before: Option<String>,
-        last: Option<i64>,
-        first: Option<i64>,
-        wallet_ids: Option<Vec<Option<String>>>,
+        //TODO: Add pagination from BE
+
+        // after: Option<String>,
+        // before: Option<String>,
+        // last: Option<i64>,
+        // first: Option<i64>,
+        // wallet_ids: Option<Vec<Option<String>>>,
     ) -> Result<Option<Vec<TransactionsMeDefaultAccountTransactionsEdges>>, ClientError> {
-        let variables = transactions::Variables {
-            after,
-            before,
-            first,
-            last,
-            wallet_ids,
-        };
+        let variables = transactions::Variables;
 
         let response_body =
             post_graphql::<Transactions, _>(&self.graphql_client, &self.api, variables)
                 .await
                 .map_err(|err| ApiError::IssueGettingResponse(anyhow::Error::new(err)))?;
-
-        println!("{:?}", response_body);
 
         let response_data = response_body.data.ok_or(ApiError::IssueParsingResponse)?;
         let transactions = response_data
@@ -50,7 +44,7 @@ impl GaloyClient {
             .ok_or(MeError::FailedToUnwrapMe)?
             .default_account
             .transactions
-            .ok_or(ApiError::IssueParsingResponse)? //change this error
+            .ok_or(MeError::FailedToUnwrapTransactions)?
             .edges;
         Ok(transactions)
     }

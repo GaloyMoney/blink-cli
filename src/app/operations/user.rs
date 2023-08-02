@@ -20,20 +20,40 @@ impl App {
 
     pub async fn list_transactions(
         &self,
-        after: Option<String>,
-        before: Option<String>,
+        // after: Option<String>,
+        // before: Option<String>,
         last: Option<i64>,
         first: Option<i64>,
-        wallet_ids: Option<Vec<Option<String>>>,
+        // wallet_ids: Option<Vec<Option<String>>>,
     ) -> anyhow::Result<()> {
         let result = self
             .client
-            .list_transactions(after, before, last, first, wallet_ids)
+            .list_transactions()
             .await
             .context("Error occurred while fetching transactions")?;
 
-        println!("{:?}", result);
+        if let Some(transactions) = result {
+            let selected_transactions: Vec<_> = if let Some(first) = first {
+                transactions
+                    .iter()
+                    .take(first.try_into().unwrap())
+                    .collect()
+            } else if let Some(last) = last {
+                let total_transactions = transactions.len();
+                transactions
+                    .iter()
+                    .skip(total_transactions.saturating_sub(last.try_into().unwrap()))
+                    .collect()
+            } else {
+                transactions.iter().collect()
+            };
 
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&selected_transactions)
+                    .context("Failed to serialize JSON")?
+            );
+        }
         Ok(())
     }
 
