@@ -32,6 +32,19 @@ pub enum Command {
     Logout,
     /// Execute Me query
     Me,
+    // Lists all transactions of user
+    Transactions {
+        #[clap(short, long)]
+        after: Option<String>,
+        #[clap(short, long)]
+        before: Option<String>,
+        #[clap(short, long)]
+        last: Option<i64>,
+        #[clap(short, long)]
+        first: Option<i64>,
+        #[clap(long, use_value_delimiter = true)]
+        wallet_ids: Option<Vec<Option<String>>>,
+    },
     /// Get WalletId for an account
     DefaultWallet {
         #[clap(value_parser)]

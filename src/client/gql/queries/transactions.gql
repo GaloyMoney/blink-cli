@@ -1,0 +1,59 @@
+query Transactions($after: String, $before: String, $first: Int, $last: Int, $walletIds: [WalletId]) {
+  me {
+    defaultAccount {
+      __typename
+      transactions(after: $after, before: $before, first: $first, last: $last, walletIds: $walletIds) {
+        edges {
+          cursor
+          node {
+            createdAt
+            direction
+            id
+            initiationVia {
+              __typename
+              ... on InitiationViaIntraLedger {
+                counterPartyUsername
+                counterPartyWalletId
+              }
+              ... on InitiationViaLn {
+                paymentHash
+              }
+              ... on InitiationViaOnChain {
+                address
+              }
+            }
+            memo
+            settlementAmount
+            settlementCurrency
+            settlementDisplayAmount
+            settlementDisplayCurrency
+            settlementDisplayFee
+            settlementFee
+            settlementPrice {
+              base
+              currencyUnit
+              formattedAmount
+              offset
+            }
+            settlementVia {
+              __typename
+              ... on SettlementViaIntraLedger {
+                counterPartyUsername
+                counterPartyWalletId
+              }
+              ... on SettlementViaLn {
+                preImage
+                paymentSecret
+              }
+              ... on SettlementViaOnChain {
+                transactionHash
+                vout
+              }
+            }
+            status
+          }
+        }
+      }
+    }
+  }
+}

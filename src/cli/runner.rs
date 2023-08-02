@@ -20,6 +20,16 @@ pub async fn run() -> anyhow::Result<()> {
         Command::Me => {
             app.me().await?;
         }
+        Command::Transactions {
+            after,
+            before,
+            last,
+            first,
+            wallet_ids,
+        } => {
+            app.list_transactions(after, before, last, first, wallet_ids)
+                .await?;
+        }
         Command::DefaultWallet { username } => {
             app.default_wallet(username).await?;
         }

@@ -18,6 +18,25 @@ impl App {
         Ok(())
     }
 
+    pub async fn list_transactions(
+        &self,
+        after: Option<String>,
+        before: Option<String>,
+        last: Option<i64>,
+        first: Option<i64>,
+        wallet_ids: Option<Vec<Option<String>>>,
+    ) -> anyhow::Result<()> {
+        let result = self
+            .client
+            .list_transactions(after, before, last, first, wallet_ids)
+            .await
+            .context("Error occurred while fetching transactions")?;
+
+        println!("{:?}", result);
+
+        Ok(())
+    }
+
     pub async fn set_username(&self, username: String) -> anyhow::Result<()> {
         self.client
             .set_username(username)
