@@ -44,6 +44,8 @@ pub enum Command {
         first: Option<i64>,
         // #[clap(long, use_value_delimiter = true)]
         // wallet_ids: Option<Vec<Option<String>>>,
+        #[clap(long, conflicts_with_all(["first", "last"]))]
+        all: bool,
     },
     /// Get WalletId for an account
     DefaultWallet {

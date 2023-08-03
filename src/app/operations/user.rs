@@ -25,6 +25,7 @@ impl App {
         last: Option<i64>,
         first: Option<i64>,
         // wallet_ids: Option<Vec<Option<String>>>,
+        all: bool,
     ) -> anyhow::Result<()> {
         let result = self
             .client
@@ -33,7 +34,9 @@ impl App {
             .context("Error occurred while fetching transactions")?;
 
         if let Some(transactions) = result {
-            let selected_transactions: Vec<_> = if let Some(first) = first {
+            let selected_transactions: Vec<_> = if all {
+                transactions.iter().collect()
+            } else if let Some(first) = first {
                 let total_transactions = transactions.len();
                 transactions
                     .iter()
