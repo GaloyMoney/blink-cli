@@ -38,7 +38,7 @@ pub enum Command {
         // after: Option<String>,
         // #[clap(short, long)]
         // before: Option<String>,
-        #[clap(short, long, conflicts_with("first"))]
+        #[clap(short, long, default_value("5"), conflicts_with("first"))]
         last: Option<i64>,
         #[clap(short, long)]
         first: Option<i64>,
