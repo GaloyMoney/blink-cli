@@ -34,16 +34,13 @@ impl App {
 
         if let Some(transactions) = result {
             let selected_transactions: Vec<_> = if let Some(first) = first {
-                transactions
-                    .iter()
-                    .take(first.try_into().unwrap())
-                    .collect()
-            } else if let Some(last) = last {
                 let total_transactions = transactions.len();
                 transactions
                     .iter()
-                    .skip(total_transactions.saturating_sub(last.try_into().unwrap()))
+                    .skip(total_transactions.saturating_sub(first.try_into().unwrap()))
                     .collect()
+            } else if let Some(last) = last {
+                transactions.iter().take(last.try_into().unwrap()).collect()
             } else {
                 transactions.iter().collect()
             };
