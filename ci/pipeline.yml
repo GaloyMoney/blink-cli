@@ -24,6 +24,7 @@ groups:
     - check-code
     - release
     - publish-to-crates
+    - publish-to-choco
     - set-dev-version
 
 jobs:
