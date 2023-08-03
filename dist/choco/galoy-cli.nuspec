@@ -4,12 +4,13 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
   <metadata>
     <id>galoy-cli</id>
-    <version>0.1.2</version>
+    <version>0.1.4</version>
     <title>Galoy CLI</title>
     <authors>Galoy</authors>
     <owners>Galoy</owners>
     <licenseUrl>https://github.com/GaloyMoney/galoy-cli/blob/main/LICENSE</licenseUrl>
     <projectUrl>https://github.com/GaloyMoney/galoy-cli</projectUrl>
+    <iconUrl>https://galoy.io/wp-content/uploads/2021/07/Galoy-Current-Logo-Blue.svg</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>A CLI Client for interacting with Galoy Backend.</description>
     <copyright>Copyright 2023</copyright>
