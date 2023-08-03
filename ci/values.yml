@@ -13,7 +13,9 @@ staging_ssh_pub_key: ((staging-ssh.ssh_public_key))
 git_version_branch: version
 gh_org: GaloyMoney
 gh_repository: galoy-cli
+
 crates_api_token: ((crates.token))
+choco_api_token: ((chocolatey.token))
 
 slack_channel: galoy-cli-github
 slack_username: concourse

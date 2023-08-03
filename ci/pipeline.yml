@@ -24,6 +24,7 @@ groups:
     - check-code
     - release
     - publish-to-crates
+    - publish-to-choco
     - set-dev-version
 
 jobs:
@@ -185,6 +186,27 @@ jobs:
       - path: cargo-target-dir
       run:
         path: pipeline-tasks/ci/tasks/publish-to-crates.sh
+
+- name: publish-to-choco
+  plan:
+  - in_parallel:
+    - { get: repo, passed: [release], trigger: true }
+    - get: pipeline-tasks
+    - get: version
+  - task: publish-to-choco
+    config:
+      image_resource:
+        type: registry-image
+        source: { repository: chocolatey/choco, tag: latest }
+      platform: linux
+      inputs:
+      - name: version
+      - name: pipeline-tasks
+      - name: repo
+      params:
+        CHOCO_API_TOKEN: #@ data.values.choco_api_token
+      run:
+        path: pipeline-tasks/ci/tasks/publish-to-choco.sh
 
 - name: set-dev-version
   plan:
