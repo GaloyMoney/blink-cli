@@ -43,14 +43,18 @@ pub async fn run() -> anyhow::Result<()> {
             cents,
             sats,
             memo,
-        } => match (username, onchain_address) {
-            (Some(username), None) => {
+            ln_payment_request,
+        } => match (username, onchain_address, ln_payment_request) {
+            (Some(username), None, None) => {
                 app.intraledger_payment(username, wallet, cents, sats, memo)
                     .await?;
             }
-            (None, Some(onchain_address)) => {
+            (None, Some(onchain_address), None) => {
                 app.send_onchain(onchain_address, wallet, cents, sats, memo)
                     .await?;
+            }
+            (None, None, Some(ln_payment_request)) => {
+                app.send_lightning(ln_payment_request, wallet, memo).await?;
             }
             _ => {}
         },

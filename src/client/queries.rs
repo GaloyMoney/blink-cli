@@ -182,6 +182,15 @@ pub use self::ln_usd_invoice_create::LnUsdInvoiceCreateInput;
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "src/client/gql/schema.gql",
+    query_path = "src/client/gql/mutations/ln_invoice_payment_send.gql",
+    response_derives = "Debug, Serialize"
+)]
+pub(super) struct LnInvoicePaymentSend;
+pub use self::ln_invoice_payment_send::LnInvoicePaymentInput;
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "src/client/gql/schema.gql",
     query_path = "src/client/gql/mutations/onchain_payment_send.gql",
     response_derives = "Debug, Serialize"
 )]
