@@ -57,6 +57,13 @@ pub async fn run() -> anyhow::Result<()> {
         Command::Receive { wallet, via } => {
             app.receive(wallet, via).await?;
         }
+        Command::LnInvoice {
+            wallet,
+            amount,
+            memo,
+        } => {
+            app.ln_invoice_create(wallet, amount, memo).await?;
+        }
         Command::Batch {
             file,
             skip_confirmation,

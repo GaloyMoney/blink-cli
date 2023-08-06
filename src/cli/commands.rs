@@ -80,6 +80,15 @@ pub enum Command {
         #[clap(short, long, value_parser)]
         via: ReceiveVia,
     },
+    /// Create a lightning invoice
+    LnInvoice {
+        #[clap(short, long, value_parser)]
+        wallet: Wallet,
+        #[clap(short, long, value_parser)]
+        amount: Decimal,
+        #[clap(short, long, value_parser)]
+        memo: Option<String>,
+    },
     /// execute a batch payment
     Batch {
         #[clap(short, long = "csv")]

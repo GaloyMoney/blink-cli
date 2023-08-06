@@ -1,0 +1,14 @@
+mutation LnUsdInvoiceCreate($input: LnUsdInvoiceCreateInput!) {
+  lnUsdInvoiceCreate(input: $input) {
+    errors {
+      message
+      __typename
+    }
+    invoice {
+      paymentHash
+      paymentRequest
+      paymentSecret
+      __typename
+    }
+  }
+}
