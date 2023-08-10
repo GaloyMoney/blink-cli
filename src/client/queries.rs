@@ -36,6 +36,15 @@ pub use self::user_login::UserLoginUserLogin;
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "src/client/gql/schema.gql",
+    query_path = "src/client/gql/mutations/user_logout.gql",
+    response_derives = "Debug, Serialize"
+)]
+pub(super) struct UserLogout;
+pub use self::user_logout::UserLogoutInput;
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "src/client/gql/schema.gql",
     query_path = "src/client/gql/mutations/request_auth_code.gql",
     response_derives = "Debug, Serialize"
 )]
