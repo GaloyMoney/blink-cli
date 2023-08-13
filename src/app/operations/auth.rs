@@ -1,18 +1,33 @@
 use anyhow::{Context, Result};
 
-use crate::app::{errors::token_error::TokenError, token, App};
+use crate::app::{errors::token_error::TokenError, token, App, file_manager};
 
 impl App {
-    pub async fn user_login(&self, phone: String, code: String) -> Result<()> {
-        let result = self
-            .client
-            .user_login(phone, code)
-            .await
-            .context("Failed to log in")?;
+    pub async fn user_login(&self, phone: Option<String>, code: String, email: bool) -> Result<()> {
+        if let Some(phone) = phone {
+            let result = self
+                .client
+                .user_login_phone(phone.clone(), code.clone())
+                .await
+                .context("Failed to log in")?;
 
-        token::save_token(&result).context("Failed to save token")?;
+            file_manager::save_data(file_manager::TOKEN_FILE_NAME, &result)
+                .context("Failed to save token")?;
+        } else if email {
+            let email_login_id =
+                file_manager::get_data(file_manager::EMAIL_LOGIN_ID_FILE_NAME)?.unwrap();
 
-        println!("User logged in successfully!");
+            let result = self
+                .client
+                .user_login_email(email_login_id, code.clone())
+                .await
+                .context("Failed to log in")?;
+
+            file_manager::save_data(file_manager::TOKEN_FILE_NAME, &result)
+                .context("Failed to save token")?;
+
+            println!("User logged in successfully!");
+        }
         Ok(())
     }
 
@@ -23,6 +38,7 @@ impl App {
                 .await
                 .context("Failed to log out")?;
 
+            file_manager::remove_data(file_manager::TOKEN_FILE_NAME).context("Failed to log out")?;
             token::remove_token().context("Failed to delete token")?;
 
             println!("User logged out successfully!");
