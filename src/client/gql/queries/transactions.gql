@@ -1,0 +1,59 @@
+query Transactions {
+  me {
+    defaultAccount {
+      __typename
+      transactions {
+        edges {
+          cursor
+          node {
+            createdAt
+            direction
+            id
+            initiationVia {
+              __typename
+              ... on InitiationViaIntraLedger {
+                counterPartyUsername
+                counterPartyWalletId
+              }
+              ... on InitiationViaLn {
+                paymentHash
+              }
+              ... on InitiationViaOnChain {
+                address
+              }
+            }
+            memo
+            settlementAmount
+            settlementCurrency
+            settlementDisplayAmount
+            settlementDisplayCurrency
+            settlementDisplayFee
+            settlementFee
+            settlementPrice {
+              base
+              currencyUnit
+              formattedAmount
+              offset
+            }
+            settlementVia {
+              __typename
+              ... on SettlementViaIntraLedger {
+                counterPartyUsername
+                counterPartyWalletId
+              }
+              ... on SettlementViaLn {
+                preImage
+                paymentSecret
+              }
+              ... on SettlementViaOnChain {
+                transactionHash
+                vout
+              }
+            }
+            status
+          }
+        }
+      }
+    }
+  }
+}

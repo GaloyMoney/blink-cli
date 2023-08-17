@@ -13,6 +13,14 @@ type SatAmount = Decimal;
 type CentAmount = Decimal;
 type Memo = String;
 type OnChainAddress = String;
+type PaymentHash = String;
+type LnPaymentSecret = String;
+type LnPaymentPreImage = String;
+type OnChainTxHash = String;
+type SignedDisplayMajorAmount = String;
+type DisplayCurrency = String;
+type SafeInt = Decimal;
+type Timestamp = Decimal;
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -109,6 +117,15 @@ pub use self::captcha_request_auth_code::CaptchaRequestAuthCodeInput;
 )]
 pub struct QueryMe;
 pub use self::query_me::QueryMeMe;
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "src/client/gql/schema.gql",
+    query_path = "src/client/gql/queries/transactions.gql",
+    response_derives = "Debug, Serialize, PartialEq"
+)]
+pub(super) struct Transactions;
+pub use self::transactions::TransactionsMeDefaultAccountTransactionsEdges;
 
 #[derive(GraphQLQuery)]
 #[graphql(
