@@ -1,0 +1,8 @@
+mutation UserLogout($input: UserLogoutInput!) {
+  userLogout(input: $input) {
+    errors {
+      __typename
+      message
+    }
+  }
+}

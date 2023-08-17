@@ -4,8 +4,8 @@ use reqwest::Client;
 use crate::client::{
     errors::{api_error::ApiError, ClientError},
     queries::{
-        captcha_create_challenge, user_login, CaptchaChallenge, CaptchaCreateChallenge, UserLogin,
-        UserLoginInput,
+        captcha_create_challenge, user_login, user_logout, CaptchaChallenge,
+        CaptchaCreateChallenge, UserLogin, UserLoginInput, UserLogout, UserLogoutInput,
     },
     GaloyClient,
 };
@@ -37,6 +37,34 @@ impl GaloyClient {
             return Err(ClientError::ApiError(ApiError::RequestFailedWithError(
                 error_string,
             )));
+        }
+    }
+
+    pub async fn user_logout(&self, auth_token: String) -> Result<(), ClientError> {
+        let input = UserLogoutInput { auth_token };
+
+        let variables = user_logout::Variables { input };
+
+        let response_body =
+            post_graphql::<UserLogout, _>(&self.graphql_client, &self.api, variables)
+                .await
+                .map_err(|err| ApiError::IssueGettingResponse(anyhow::Error::new(err)))?;
+
+        let response_data = response_body.data.ok_or(ApiError::IssueParsingResponse)?;
+        if !response_data.user_logout.errors.is_empty() {
+            let error_string: String = response_data
+                .user_logout
+                .errors
+                .iter()
+                .map(|error| format!("{:?}", error))
+                .collect::<Vec<String>>()
+                .join(", ");
+
+            return Err(ClientError::ApiError(ApiError::RequestFailedWithError(
+                error_string,
+            )));
+        } else {
+            Ok(())
         }
     }
 

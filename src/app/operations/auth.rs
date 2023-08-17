@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
 
-use crate::app::{token, App};
+use crate::app::{errors::token_error::TokenError, token, App};
 
 impl App {
     pub async fn user_login(&self, phone: String, code: String) -> Result<()> {
@@ -17,9 +17,18 @@ impl App {
     }
 
     pub async fn user_logout(&self) -> Result<()> {
-        token::remove_token().context("Failed to log out")?;
+        if let Some(token) = token::get_token()? {
+            self.client
+                .user_logout(token)
+                .await
+                .context("Failed to log out")?;
 
-        println!("User logged out successfully!");
-        Ok(())
+            token::remove_token().context("Failed to delete token")?;
+
+            println!("User logged out successfully!");
+            Ok(())
+        } else {
+            Err(TokenError::TokenFileNotFound.into())
+        }
     }
 }
