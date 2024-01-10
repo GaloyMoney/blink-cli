@@ -4,5 +4,5 @@ mod globals;
 mod intraledger;
 mod me;
 mod onchain;
-mod set_username;
 mod real_time_price;
+mod set_username;
