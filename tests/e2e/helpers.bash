@@ -104,3 +104,7 @@ fund_user() {
   logout_user
   [[ "$retries" != "30" ]] || exit 1
 }
+
+redis_cli() {
+  docker exec "${COMPOSE_PROJECT_NAME}-redis-1" redis-cli $@
+}

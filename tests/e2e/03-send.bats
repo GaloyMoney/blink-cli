@@ -8,6 +8,7 @@ setup_file() {
 }
 
 @test "send(intraledger, btc): sats deducted from A's wallet and received by B" {
+  redis_cli FLUSHALL > /dev/null 2>&1 || true
   fund_user "A" "btc" 0.1
 
   login_user B
@@ -31,6 +32,7 @@ setup_file() {
 }
 
 @test "send(intraledger, usd): cents deducted from B's wallet and received by A" {
+  redis_cli FLUSHALL > /dev/null 2>&1 || true
   fund_user "B" "usd" 0.1
 
   login_user A
@@ -54,6 +56,7 @@ setup_file() {
 }
 
 @test "batch(A, B, C): submit batch from A to B and C" {
+  redis_cli FLUSHALL > /dev/null 2>&1 || true
   fund_user "A" "usd" 0.01
 
   login_user B

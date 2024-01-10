@@ -7,6 +7,7 @@ setup_file() {
 }
 
 @test "auth: login/logout A and set username" {
+  redis_cli FLUSHALL > /dev/null 2>&1 || true
   login_user A
   galoy_cli_cmd set-username --username ${USER_A_USERNAME}
   username=$(galoy_cli_cmd me | jq -r '.username')
