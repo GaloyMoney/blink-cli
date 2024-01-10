@@ -30,7 +30,7 @@ pub struct ListedPayment {
     pub username: String,
     pub amount: Decimal,
     pub currency: AmountCurrency,
-    pub wallet_currency: Wallet,
+    pub wallet_currency: WalletCurrency,
     pub memo: Option<String>,
     pub recipient_wallet_id: String,
 }
@@ -338,8 +338,8 @@ impl App {
             };
 
             let wallet = match wallet_str {
-                "BTC" => Wallet::Btc,
-                "USD" => Wallet::Usd,
+                "BTC" => WalletCurrency::BTC,
+                "USD" => WalletCurrency::USD,
                 _ => return Err(PaymentError::IncorrectCSVFormat.into()),
             };
 
@@ -377,17 +377,17 @@ impl App {
             } = record;
 
             match wallet_currency {
-                Wallet::Usd => {
+                WalletCurrency::USD => {
                     self.client
                         .intraleger_send_usd(
                             usd_wallets[0].id.clone(),
                             recipient_wallet_id,
-                            amount,
+                            usd_to_cents(amount),
                             memo,
                         )
                         .await?;
                 }
-                Wallet::Btc => {
+                WalletCurrency::BTC => {
                     let mut final_amount = amount;
                     if currency == AmountCurrency::USD {
                         final_amount = convert_usd_to_btc_sats(amount, &btc_sat_price);
@@ -401,14 +401,14 @@ impl App {
                         )
                         .await?;
                 }
+                WalletCurrency::Other(_) => {
+                   return Err(PaymentError::FailedToGetWallet("Invalid Wallet Currency".to_string()).into());
+                }
             }
-
             pb.inc(1);
             pb.println(format!("Payment sent successfully to {}!", username));
         }
-
         pb.finish_with_message("Batch payouts completed successfully!");
-
         Ok(())
     }
 }
