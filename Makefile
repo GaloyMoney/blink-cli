@@ -16,10 +16,10 @@ build:
 	cargo build --locked
 
 start-deps:
-	docker compose up bats-deps -d
+	docker compose -p $$(basename "$$PWD") -f ./vendor/galoy-quickstart/docker-compose.yml up -d
 
 clean-deps:
-	docker compose down -t 3
+	docker compose -p $$(basename "$$PWD") -f ./vendor/galoy-quickstart/docker-compose.yml down -t 3
 
 reset-deps: clean-deps start-deps
 
