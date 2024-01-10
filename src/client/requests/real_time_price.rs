@@ -11,8 +11,6 @@ impl GaloyClient {
         &self,
         currency: String,
     ) -> Result<RealtimePriceRealtimePrice, ClientError> {
-        let currency = currency;
-
         let variables = realtime_price::Variables {
             currency: Some(currency),
         };
