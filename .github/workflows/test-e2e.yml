@@ -16,7 +16,8 @@ jobs:
         run: |
           echo "HOST_PROJECT_PATH=${{ github.workspace }}" >> $GITHUB_ENV
           echo "GALOY_QUICKSTART_PATH=vendor/galoy-quickstart" >> $GITHUB_ENV
-
+          echo "COMPOSE_PROJECT_NAME=$(basename $PWD)" >> $GITHUB_ENV
+          
       - name: Setup BATS
         uses: mig4/setup-bats@v1
         with:
