@@ -72,6 +72,7 @@ pub fn validate_csv(
     file: &str,
     default_wallet: &WalletCurrency,
 ) -> Result<Vec<csv::StringRecord>, PaymentError> {
+
     let mut reader = csv::ReaderBuilder::new()
         .delimiter(b',')
         .from_path(file)
@@ -86,7 +87,6 @@ pub fn validate_csv(
 
     reader.records().map(|result| {
         let record = result.map_err(|_| PaymentError::FailedToGetRecords)?;
-
         let username_str = record.get(USERNAME_IDX)
             .ok_or(PaymentError::IncorrectCSVFormat)?
             .trim();
@@ -97,11 +97,12 @@ pub fn validate_csv(
             .ok_or(PaymentError::IncorrectCSVFormat)?
             .trim();
 
+        // required fields
         if username_str.is_empty() || amount_str.is_empty() || currency_str.is_empty() {
             return Err(PaymentError::IncorrectCSVFormat);
         }
 
-        // Optional fields with concise handling
+        // if wallet is not given use default wallet, optional fields ie wallet and memo
         let wallet_str = record.get(WALLET_IDX).map_or(default_wallet.to_str(), |wallet| if wallet.is_empty() { default_wallet.to_str() } else { wallet });
         let memo_str = record.get(MEMO_IDX).unwrap_or("");
 
@@ -153,13 +154,13 @@ pub fn check_sufficient_balance(
     btc_wallet_balance: Decimal,
     usd_wallet_balance: Decimal,
 ) -> Result<()> {
-    let total_amount_in_btc_wallet =
+    let total_payable_amount_for_btc_wallet =
         convert_usd_to_btc_sats(amount_payable.usd_wallet.usd, btc_sat_price)
-            + amount_payable.btc_wallet.sats;
-    let total_amount_in_usd_wallet = amount_payable.usd_wallet.usd * Decimal::new(100, 0);
+        + amount_payable.btc_wallet.sats;
+    let total_payable_amount_for_usd_wallet = usd_to_cents(amount_payable.usd_wallet.usd);
 
-    if total_amount_in_btc_wallet > btc_wallet_balance
-        || total_amount_in_usd_wallet > usd_wallet_balance
+    if  total_payable_amount_for_btc_wallet > btc_wallet_balance
+        || total_payable_amount_for_usd_wallet > usd_wallet_balance
     {
         return Err(PaymentError::InsufficientBalance.into());
     }
@@ -180,6 +181,11 @@ pub fn convert_usd_to_btc_sats(
 
     let current = base_decimal / ten_power_offset;
     (Decimal::from(100) * usd_amount / current).floor()
+}
+
+pub fn usd_to_cents(usd: Decimal) -> Decimal {
+    let cents = usd * Decimal::new(100, 0);
+    cents.round()
 }
 
 pub fn verify_armed_records(
@@ -313,7 +319,6 @@ impl App {
         )?;
 
         // ----- Arming the records in internal structure -----
-
         let mut armed_records: Vec<ListedPayment> = vec![];
         for record in &reader {
             let username = record
@@ -384,7 +389,7 @@ impl App {
                 }
                 Wallet::Btc => {
                     let mut final_amount = amount;
-                    if currency == AmountCurrency::SATS {
+                    if currency == AmountCurrency::USD {
                         final_amount = convert_usd_to_btc_sats(amount, &btc_sat_price);
                     }
                     self.client
