@@ -43,7 +43,7 @@ impl GaloyClient {
         let input = OnChainPaymentSendInput {
             wallet_id: sender_wallet_id,
             address: onchain_address,
-            speed: Some(PayoutSpeed::FAST),
+            speed: PayoutSpeed::FAST,
             amount,
             memo,
         };
