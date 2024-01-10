@@ -9,11 +9,50 @@ use crate::{
     client::{
         queries::{
             query_me::{QueryMeMeDefaultAccountWallets, WalletCurrency},
-            RealtimePriceRealtimePriceBtcSatPrice,
+            RealtimePriceRealtimePriceBtcSatPrice, QueryMeMe,
         },
-        types::{AmountCurrency, Wallet},
+        types::AmountCurrency,
     },
 };
+
+impl QueryMeMe {
+    pub fn get_btc_wallet(&self) -> Option<&QueryMeMeDefaultAccountWallets> {
+        self.default_account.wallets.iter()
+            .find(|wallet| wallet.wallet_currency == WalletCurrency::BTC)
+    }
+
+    pub fn get_usd_wallet(&self) -> Option<&QueryMeMeDefaultAccountWallets> {
+        self.default_account.wallets.iter()
+            .find(|wallet| wallet.wallet_currency == WalletCurrency::USD)
+    }
+
+    pub fn get_btc_wallet_balance(&self) -> Option<Decimal> {
+        self.default_account.wallets.iter()
+            .find(|wallet| wallet.wallet_currency == WalletCurrency::BTC)
+            .map(|wallet| wallet.balance)
+    }
+
+    pub fn get_usd_wallet_balance(&self) -> Option<Decimal> {
+        self.default_account.wallets.iter()
+            .find(|wallet| wallet.wallet_currency == WalletCurrency::USD)
+            .map(|wallet| wallet.balance)
+    }
+
+    pub fn get_btc_wallet_id(&self) -> Option<String> {
+        self.get_btc_wallet().map(|wallet| wallet.id.clone())
+    }
+
+    pub fn get_usd_wallet_id(&self) -> Option<String> {
+        self.get_usd_wallet().map(|wallet| wallet.id.clone())
+    }
+
+    pub fn get_default_wallet_currency(&self) -> Option<&WalletCurrency> {
+            let default_wallet_id = &self.default_account.default_wallet_id;
+            self.default_account.wallets.iter()
+                .find(|wallet| &wallet.id == default_wallet_id)
+                .map(|wallet| &wallet.wallet_currency)
+        }
+}
 
 const USERNAME_IDX: usize = 0;
 const AMOUNT_IDX: usize = 1;
@@ -32,7 +71,7 @@ pub struct ListedPayment {
     pub currency: AmountCurrency,
     pub wallet_currency: WalletCurrency,
     pub memo: Option<String>,
-    pub recipient_wallet_id: String,
+    pub recipient_wallet_id: Option<String>,
 }
 
 pub struct TotalAmount {
@@ -71,7 +110,7 @@ pub fn check_file_exists(file: &str) -> Result<(), PaymentError> {
 pub fn validate_csv(
     file: &str,
     default_wallet: &WalletCurrency,
-) -> Result<Vec<csv::StringRecord>, PaymentError> {
+) -> Result<Vec<ListedPayment>, PaymentError> {
 
     let mut reader = csv::ReaderBuilder::new()
         .delimiter(b',')
@@ -87,25 +126,24 @@ pub fn validate_csv(
 
     reader.records().map(|result| {
         let record = result.map_err(|_| PaymentError::FailedToGetRecords)?;
-        let username_str = record.get(USERNAME_IDX)
+        let username = record.get(USERNAME_IDX)
             .ok_or(PaymentError::IncorrectCSVFormat)?
             .trim();
         let amount_str = record.get(AMOUNT_IDX)
             .ok_or(PaymentError::IncorrectCSVFormat)?
             .trim();
-        let currency_str = record.get(CURRENCY_IDX)
+        let currency = record.get(CURRENCY_IDX)
             .ok_or(PaymentError::IncorrectCSVFormat)?
             .trim();
 
         // required fields
-        if username_str.is_empty() || amount_str.is_empty() || currency_str.is_empty() {
+        if username.is_empty() || amount_str.is_empty() || currency.is_empty() {
             return Err(PaymentError::IncorrectCSVFormat);
         }
 
         // if wallet is not given use default wallet, optional fields ie wallet and memo
-        let wallet_str = record.get(WALLET_IDX).map_or(default_wallet.to_str(), |wallet| if wallet.is_empty() { default_wallet.to_str() } else { wallet });
-        let memo_str = record.get(MEMO_IDX).unwrap_or("");
-
+        let wallet_currency = record.get(WALLET_IDX).map_or(default_wallet.to_str(), |wallet| if wallet.is_empty() { default_wallet.to_str() } else { wallet });
+        let memo = record.get(MEMO_IDX).map(|s| s.to_string());
 
         let amount = Decimal::from_str(amount_str).map_err(|_| PaymentError::IncorrectCSVFormat)?;
         //amount should be greater than 0        
@@ -113,37 +151,39 @@ pub fn validate_csv(
             return Err(PaymentError::IncorrectCSVFormat);
         }
 
-        let currency = match currency_str {
+        let currency = match currency {
             "SATS" => AmountCurrency::SATS,
             "USD" => AmountCurrency::USD,
             _ => return Err(PaymentError::IncorrectCSVFormat),
         };
 
+        let wallet_currency = match wallet_currency {
+            "BTC" => WalletCurrency::BTC,
+            "USD" => WalletCurrency::USD,
+            _ => return Err(PaymentError::IncorrectCSVFormat),
+        };
+
         //amount for SATS will be whole number and for USD max 2 decimals
         let formatted_amount = match currency {
-            AmountCurrency::SATS => amount.round_dp(0).to_string(),
+            AmountCurrency::SATS => amount.round_dp(0),
             AmountCurrency::USD => amount
                 .round_dp_with_strategy(2, RoundingStrategy::MidpointAwayFromZero)
-                .to_string(),
+                
         };
 
         //if currency is SATS then wallet should be BTC
-        if  currency_str == "SATS" && wallet_str != "BTC" {
+        if  currency == AmountCurrency::SATS && wallet_currency != WalletCurrency::BTC {
             return Err(PaymentError::IncorrectCSVFormat);
         }
 
-        //wallet can only be USD and BTC
-        if wallet_str != "USD" && wallet_str != "BTC" {
-            return Err(PaymentError::IncorrectCSVFormat);
-        }
-
-        Ok(csv::StringRecord::from(vec![
-            username_str.to_string(),
-            formatted_amount,
-            currency_str.to_string(),
-            wallet_str.to_string(),
-            memo_str.to_string(),
-        ]))
+        Ok(ListedPayment {
+            username: username.to_string(),
+            amount: formatted_amount,
+            currency,
+            wallet_currency,
+            memo,
+            recipient_wallet_id: None,
+        })
     }).collect()
 }
 
@@ -203,10 +243,11 @@ pub fn verify_armed_records(
     ]);
 
     for record in armed_records {
-        let memo_display = if let Some(ref memo) = record.memo {
-            memo.clone()
+        let memo_display = record.memo.clone().unwrap_or_default();
+        let recipient_wallet_id_display = if let Some(ref id) = record.recipient_wallet_id {
+            id.clone()
         } else {
-            "".to_string()
+            "Not Set".to_string()
         };
 
         table.add_row(row![
@@ -214,7 +255,7 @@ pub fn verify_armed_records(
             format!("{} {:?}", record.amount.to_string(), record.currency),
             format!("{:?}", record.wallet_currency),
             memo_display,
-            record.recipient_wallet_id,
+            recipient_wallet_id_display,
         ]);
     }
 
@@ -241,6 +282,7 @@ pub fn verify_armed_records(
     Ok(())
 }
 
+
 impl App {
     pub async fn batch_payment(&self, file: String, skip_confirmation: bool) -> Result<()> {
         // ----- Checks -----
@@ -248,27 +290,14 @@ impl App {
         check_file_exists(&file)?;
 
         let me = self.client.me().await?;
-        let default_wallet_id = me.default_account.default_wallet_id;
-        let default_wallet = me
-            .default_account
-            .wallets
-            .iter()
-            .find(|wallet| wallet.id == default_wallet_id)
-            .unwrap();
+        let default_wallet_currency = me.get_default_wallet_currency()
+            .ok_or_else(|| PaymentError::FailedToGetWallet("Default Wallet not found".to_string()))?;
 
-        let usd_wallets: Vec<&QueryMeMeDefaultAccountWallets> = me
-            .default_account
-            .wallets
-            .iter()
-            .filter(|wallet| Wallet::Usd == Wallet::from(&wallet.wallet_currency))
-            .collect();
+        let usd_wallets_id = me.get_usd_wallet_id()
+            .ok_or_else(|| PaymentError::FailedToGetWallet("USD Wallet not found".to_string()))?;
 
-        let btc_wallets: Vec<&QueryMeMeDefaultAccountWallets> = me
-            .default_account
-            .wallets
-            .iter()
-            .filter(|wallet| Wallet::Btc == Wallet::from(&wallet.wallet_currency))
-            .collect();
+        let btc_wallets_id = me.get_btc_wallet_id()
+            .ok_or_else(|| PaymentError::FailedToGetWallet("BTC Wallet not found".to_string()))?;
 
         let mut total_amount_payable = TotalAmount {
             btc_wallet: BtcWalletAmount {
@@ -280,36 +309,34 @@ impl App {
             },
         };
 
-        let wallet_type = &default_wallet.wallet_currency;
-        let reader = validate_csv(&file, &wallet_type)?;
+        let mut reader = validate_csv(&file, default_wallet_currency)?;
 
         for record in &reader {
-            let username = record
-                .get(0)
-                .filter(|&username| !username.is_empty())
-                .ok_or_else(|| PaymentError::NoUsernameFound(record.clone()))?;
+            let amount = &record.amount;
+            let currency = &record.currency;
+            let wallet_type = &record.wallet_currency;
 
-            let amount = Decimal::from_str(&record[1]).unwrap();
-            let currency = &record[2];
-
-            if currency == "SATS" && wallet_type == &WalletCurrency::BTC {
+            if currency == &AmountCurrency::SATS && wallet_type == &WalletCurrency::BTC {
                 total_amount_payable.btc_wallet.sats += amount;
-            } else if currency == "USD" && wallet_type == &WalletCurrency::BTC {
+            } else if currency == &AmountCurrency::USD && wallet_type == &WalletCurrency::BTC {
                 total_amount_payable.btc_wallet.usd += amount;
-            } else if currency == "USD" && wallet_type == &WalletCurrency::USD {
+            } else if currency == &AmountCurrency::USD && wallet_type == &WalletCurrency::USD {
                 total_amount_payable.usd_wallet.usd += amount;
             }
 
-            self.client
-                .default_wallet(username.to_string())
+            // Make sure username exists
+            self.client.default_wallet(record.username.clone())
                 .await
-                .map_err(|_| PaymentError::UsernameDoesNotExist(username.to_string()))?;
+                .map_err(|_| PaymentError::UsernameDoesNotExist(record.username.clone()))?;
         }
 
         let price_response = self.client.realtime_price_usd().await;
         let btc_sat_price = price_response.unwrap().btc_sat_price;
-        let btc_wallet_balance = btc_wallets[0].balance;
-        let usd_wallet_balance = usd_wallets[0].balance;
+
+        let btc_wallet_balance = me.get_btc_wallet_balance()
+            .ok_or_else(|| PaymentError::FailedToGetWallet("BTC Wallet balance not found".to_string()))?;
+        let usd_wallet_balance = me.get_usd_wallet_balance()
+            .ok_or_else(|| PaymentError::FailedToGetWallet("USD Wallet balance not found".to_string()))?;
 
         check_sufficient_balance(
             &total_amount_payable,
@@ -318,43 +345,14 @@ impl App {
             usd_wallet_balance,
         )?;
 
-        // ----- Arming the records in internal structure -----
-        let mut armed_records: Vec<ListedPayment> = vec![];
-        for record in &reader {
-            let username = record
-                .get(0)
-                .ok_or(PaymentError::NoUsernameFound(record.clone()))?
-                .to_string();
-            let recipient_wallet_id = self.client.default_wallet(username.to_string()).await?;
-            let amount: Decimal = Decimal::from_str(record.get(1).unwrap_or_default())?;
-            let memo = record.get(4).map(|s| s.to_string());
-            let currency_str = record.get(2).unwrap_or("");
-            let wallet_str = record.get(3).unwrap_or("");
-     
-            let currency = match currency_str {
-                "SATS" => AmountCurrency::SATS,
-                "USD" => AmountCurrency::USD,
-                _ => return Err(PaymentError::IncorrectCSVFormat.into()), 
-            };
+        for record in reader.iter_mut() {
+                let recipient_wallet_id = self.client.default_wallet(record.username.clone()).await?;
+                record.recipient_wallet_id = Some(recipient_wallet_id);
+            }
 
-            let wallet = match wallet_str {
-                "BTC" => WalletCurrency::BTC,
-                "USD" => WalletCurrency::USD,
-                _ => return Err(PaymentError::IncorrectCSVFormat.into()),
-            };
+        verify_armed_records(&reader, skip_confirmation)?;
 
-            armed_records.push(ListedPayment {
-                username: username.clone(),
-                recipient_wallet_id,
-                amount,
-                memo: memo.clone(),
-                currency,
-                wallet_currency: wallet,
-            });
-        }
-
-        verify_armed_records(&armed_records, skip_confirmation)?;
-        let total_size: u64 = reader.iter().len().try_into()?;
+        let total_size: u64 = reader.len().try_into().unwrap();
         let pb = ProgressBar::new(total_size);
 
         pb.enable_steady_tick(std::time::Duration::from_millis(10));
@@ -366,7 +364,7 @@ impl App {
             .progress_chars("=> "),
         );
 
-        for record in armed_records.into_iter() {
+        for record in reader.into_iter() {
             let ListedPayment {
                 username,
                 amount,
@@ -376,12 +374,19 @@ impl App {
                 recipient_wallet_id,
             } = record;
 
+            let recipient_wallet_id_check = match recipient_wallet_id {
+                Some(id) => id,
+                None => {
+                    return Err(PaymentError::FailedToGetWallet("Recipient Wallet ID not found".to_string()).into());
+                }
+            };
+
             match wallet_currency {
                 WalletCurrency::USD => {
                     self.client
                         .intraleger_send_usd(
-                            usd_wallets[0].id.clone(),
-                            recipient_wallet_id,
+                            usd_wallets_id.clone(),
+                            recipient_wallet_id_check,
                             usd_to_cents(amount),
                             memo,
                         )
@@ -394,8 +399,8 @@ impl App {
                     }
                     self.client
                         .intraleger_send_btc(
-                            btc_wallets[0].id.clone(),
-                            recipient_wallet_id,
+                            btc_wallets_id.clone(),
+                            recipient_wallet_id_check,
                             final_amount,
                             memo,
                         )
