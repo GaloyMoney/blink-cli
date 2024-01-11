@@ -1,3 +1,15 @@
+# [galoy-cli release v0.1.5](https://github.com/GaloyMoney/galoy-cli/releases/tag/v0.1.5)
+
+
+### Features
+
+- Deauthorize Token on Logout (#196)
+- Chocolatey package (#189)
+
+### Miscellaneous Tasks
+
+- Fix quickstart (#225)
+
 # [galoy-cli release v0.1.4](https://github.com/GaloyMoney/galoy-cli/releases/tag/v0.1.4)
 
 
