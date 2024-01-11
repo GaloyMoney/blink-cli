@@ -13,6 +13,9 @@ type SatAmount = Decimal;
 type CentAmount = Decimal;
 type Memo = String;
 type OnChainAddress = String;
+type DisplayCurrency = String;
+type Timestamp = i128;
+type SafeInt = i128;
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -166,3 +169,14 @@ pub(super) struct OnChainPaymentSend;
 pub use self::on_chain_payment_send::OnChainPaymentSendInput;
 pub use self::on_chain_payment_send::OnChainPaymentSendOnChainPaymentSend;
 pub use self::on_chain_payment_send::PayoutSpeed;
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "src/client/gql/schema.gql",
+    query_path = "src/client/gql/queries/real_time_price.gql",
+    response_derives = "Debug, Serialize"
+)]
+pub(super) struct RealtimePrice;
+pub use self::realtime_price::RealtimePriceRealtimePrice;
+pub use self::realtime_price::RealtimePriceRealtimePriceBtcSatPrice;
+pub use self::realtime_price::RealtimePriceRealtimePriceUsdCentPrice;

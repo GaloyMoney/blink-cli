@@ -7,6 +7,12 @@ pub enum Wallet {
     Usd,
 }
 
+#[derive(Debug, Clone, clap::ValueEnum, PartialEq, Eq)]
+pub enum AmountCurrency {
+    SATS,
+    USD,
+}
+
 #[derive(Debug, Serialize)]
 pub struct WalletBalance {
     pub currency: String,

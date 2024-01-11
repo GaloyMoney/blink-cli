@@ -7,7 +7,7 @@ pub enum PaymentError {
     FailedToGetWallet(String),
     #[error("File does not exist: {0}")]
     FileNotFound(String),
-    #[error("CSV format not correct, requires: username, (cents or sats), memo(optional)")]
+    #[error("CSV format not correct, please use --help to get correct format for CSV file")]
     IncorrectCSVFormat,
     #[error("Failed to read CSV file.")]
     FailedToReadCSV,
