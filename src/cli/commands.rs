@@ -80,7 +80,44 @@ pub enum Command {
         #[clap(short, long, value_parser)]
         via: ReceiveVia,
     },
-    /// execute a batch payment
+    ///
+    ///
+    /// Execute a batch payment
+    ///
+    /// This command allows you to perform multiple payments at once using a CSV file. Each line in the CSV file represents a single payment transaction.
+    /// Information About Columns Required in the CSV File:
+    ///
+    /// - username:
+    ///     This column determines the Blink username of the recipient.
+    ///
+    /// - amount:
+    ///     Amount that will be sent.
+    ///
+    /// - currency:
+    ///     Indicates the currency of the amount. Can be either USD or SATS. Note: SATS currency only works with BTC wallets.
+    ///
+    /// - wallet (optional values):
+    ///     Specifies the wallet (USD or BTC) to be used for sending the payment. If not provided, the default wallet is used.
+    ///
+    /// - memo (optional values):
+    ///     A message or note to attach with the payment.
+    ///
+    /// *--* ALL HEADERS NEEDS TO BE IN THIS ORDER, BUT VALUES ARE OPTIONAL FOR "wallet" AND "memo" *--*
+    ///
+    ///
+    /// EXAMPLE :-
+    ///
+    /// | username  | amount | currency | wallet | memo   |
+    ///
+    /// |-----------|--------|----------|--------|--------|
+    ///
+    /// |   user a  |   12   |   USD    |   USD  |        |
+    ///
+    /// |   user b  |   10   |   SATS   |   BTC  |  memo  |
+    ///
+    /// |   user a  |   14   |   USD    |   BTC  |        |
+    ///
+    ///
     Batch {
         #[clap(short, long = "csv")]
         file: String,
