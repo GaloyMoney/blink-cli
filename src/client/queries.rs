@@ -45,17 +45,6 @@ pub use self::user_logout::UserLogoutInput;
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "src/client/gql/schema.gql",
-    query_path = "src/client/gql/mutations/request_auth_code.gql",
-    response_derives = "Debug, Serialize"
-)]
-pub(super) struct UserRequestAuthCode;
-pub use self::user_request_auth_code::PhoneCodeChannelType;
-pub use self::user_request_auth_code::UserRequestAuthCodeInput;
-pub use self::user_request_auth_code::UserRequestAuthCodeUserRequestAuthCode;
-
-#[derive(GraphQLQuery)]
-#[graphql(
-    schema_path = "src/client/gql/schema.gql",
     query_path = "src/client/gql/mutations/captcha_create_challenge.gql",
     response_derives = "Debug, Serialize"
 )]

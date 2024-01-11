@@ -1,13 +1,13 @@
 REPO_ROOT=$(git rev-parse --show-toplevel)
 
 USER_A_PHONE="+16505554321"
-USER_A_CODE="321321"
+USER_A_CODE="000000"
 USER_A_USERNAME="alice"
 USER_B_PHONE="+16505554322"
-USER_B_CODE="321654"
+USER_B_CODE="000000"
 USER_B_USERNAME="bob"
 USER_C_PHONE="+16505554323"
-USER_C_CODE="321987"
+USER_C_CODE="000000"
 USER_C_USERNAME="charlie"
 
 galoy_cli_cmd() {
@@ -103,4 +103,8 @@ fund_user() {
 
   logout_user
   [[ "$retries" != "30" ]] || exit 1
+}
+
+redis_cli() {
+  docker exec "${COMPOSE_PROJECT_NAME}-redis-1" redis-cli $@
 }

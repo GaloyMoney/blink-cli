@@ -41,7 +41,9 @@ impl GaloyClient {
     }
 
     pub async fn user_logout(&self, auth_token: String) -> Result<(), ClientError> {
-        let input = UserLogoutInput { auth_token };
+        let input = UserLogoutInput {
+            device_token: auth_token,
+        };
 
         let variables = user_logout::Variables { input };
 

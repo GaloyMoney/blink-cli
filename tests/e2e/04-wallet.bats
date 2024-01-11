@@ -7,6 +7,7 @@ setup_file() {
 }
 
 @test "wallet: update default wallet" {
+  redis_cli FLUSHALL > /dev/null 2>&1 || true
   login_user A
 
   default_wallet_id=$(get_default_wallet_id)
