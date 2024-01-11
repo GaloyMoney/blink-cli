@@ -13,6 +13,9 @@ type SatAmount = Decimal;
 type CentAmount = Decimal;
 type Memo = String;
 type OnChainAddress = String;
+type PaymentHash = String;
+type LnPaymentSecret = String;
+type LnPaymentRequest = String;
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -155,6 +158,33 @@ use super::errors::captcha_error::CaptchaError;
 pub(super) struct OnChainAddressCurrent;
 pub use self::on_chain_address_current::OnChainAddressCurrentInput;
 pub use self::on_chain_address_current::OnChainAddressCurrentOnChainAddressCurrent;
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "src/client/gql/schema.gql",
+    query_path = "src/client/gql/mutations/ln_invoice_create.gql",
+    response_derives = "Debug, Serialize"
+)]
+pub(super) struct LnInvoiceCreate;
+pub use self::ln_invoice_create::LnInvoiceCreateInput;
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "src/client/gql/schema.gql",
+    query_path = "src/client/gql/mutations/ln_usd_invoice_create.gql",
+    response_derives = "Debug, Serialize"
+)]
+pub(super) struct LnUsdInvoiceCreate;
+pub use self::ln_usd_invoice_create::LnUsdInvoiceCreateInput;
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "src/client/gql/schema.gql",
+    query_path = "src/client/gql/mutations/ln_invoice_payment_send.gql",
+    response_derives = "Debug, Serialize"
+)]
+pub(super) struct LnInvoicePaymentSend;
+pub use self::ln_invoice_payment_send::LnInvoicePaymentInput;
 
 #[derive(GraphQLQuery)]
 #[graphql(

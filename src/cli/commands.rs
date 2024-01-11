@@ -62,13 +62,25 @@ pub enum Command {
     Pay {
         #[clap(short, long)]
         username: Option<String>,
-        #[clap(short, long, conflicts_with("username"))]
+        #[clap(short, long, conflicts_with_all(["username", "ln_payment_request"]))]
         onchain_address: Option<String>,
+        #[clap(short, long, conflicts_with_all(["username", "onchain_address"]))]
+        ln_payment_request: Option<String>,
         #[clap(short, long, value_parser)]
         wallet: Wallet,
-        #[clap(short, long, required_if_eq("wallet", "usd"))]
+        #[clap(
+            short,
+            long,
+            required_if_eq("wallet", "usd"),
+            required_unless_present("ln_payment_request")
+        )]
         cents: Option<Decimal>,
-        #[clap(short, long, required_if_eq("wallet", "btc"))]
+        #[clap(
+            short,
+            long,
+            required_if_eq("wallet", "btc"),
+            required_unless_present("ln_payment_request")
+        )]
         sats: Option<Decimal>,
         #[clap(short, long)]
         memo: Option<String>,
@@ -79,6 +91,15 @@ pub enum Command {
         wallet: Wallet,
         #[clap(short, long, value_parser)]
         via: ReceiveVia,
+    },
+    /// Create a lightning invoice
+    LnInvoice {
+        #[clap(short, long, value_parser)]
+        wallet: Wallet,
+        #[clap(short, long, value_parser)]
+        amount: Decimal,
+        #[clap(short, long, value_parser)]
+        memo: Option<String>,
     },
     /// execute a batch payment
     Batch {
