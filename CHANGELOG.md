@@ -1,3 +1,7 @@
+# [galoy-cli release v0.1.6](https://github.com/GaloyMoney/galoy-cli/releases/tag/v0.1.6)
+
+
+
 # [galoy-cli release v0.1.5](https://github.com/GaloyMoney/galoy-cli/releases/tag/v0.1.5)
 
 
