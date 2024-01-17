@@ -5,8 +5,8 @@ use serde_json::{json, Value};
 use crate::client::{
     errors::{api_error::ApiError, ClientError},
     queries::{
-        captcha_create_challenge, user_login, user_logout, CaptchaChallenge,
-        CaptchaCreateChallenge, UserLogin, UserLoginInput, UserLogout, UserLogoutInput,
+        captcha_create_challenge, user_login, CaptchaChallenge,
+        CaptchaCreateChallenge, UserLogin, UserLoginInput,
     },
     GaloyClient,
 };
@@ -45,35 +45,6 @@ impl GaloyClient {
         }
     }
 
-    pub async fn user_logout(&self, auth_token: String) -> Result<(), ClientError> {
-        let input = UserLogoutInput {
-            device_token: auth_token,
-        };
-
-        let variables = user_logout::Variables { input };
-
-        let response_body =
-            post_graphql::<UserLogout, _>(&self.graphql_client, &self.api, variables)
-                .await
-                .map_err(|err| ApiError::IssueGettingResponse(anyhow::Error::new(err)))?;
-
-        let response_data = response_body.data.ok_or(ApiError::IssueParsingResponse)?;
-        if !response_data.user_logout.errors.is_empty() {
-            let error_string: String = response_data
-                .user_logout
-                .errors
-                .iter()
-                .map(|error| format!("{:?}", error))
-                .collect::<Vec<String>>()
-                .join(", ");
-
-            return Err(ClientError::ApiError(ApiError::RequestFailedWithError(
-                error_string,
-            )));
-        } else {
-            Ok(())
-        }
-    }
     pub async fn user_login_email(
         &self,
         email_login_id: String,
@@ -102,7 +73,7 @@ impl GaloyClient {
 
         Ok(auth_token)
     }
-
+        
     pub async fn create_captcha_challenge(&self) -> Result<CaptchaChallenge, ClientError> {
         let client = Client::builder().build().expect("Can't build client");
         let variables = captcha_create_challenge::Variables;
