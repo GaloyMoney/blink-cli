@@ -10,7 +10,7 @@ get_email_code() {
     DB_NAME="default"
     local EMAIL=$1
     local email_code_response=$(docker exec -i "$DB_CONTAINER" psql -U "$DB_USER" -d "$DB_NAME" -t -c "SELECT body FROM courier_messages WHERE recipient='$EMAIL' ORDER BY created_at DESC LIMIT 1;")
-    local email_code=$(echo "$email_code_response" | grep -Eo '\d{6}')
+    local email_code=$(echo "$email_code_response" | grep -Eo '[0-9]{6}')
     echo $email_code
 }
 
