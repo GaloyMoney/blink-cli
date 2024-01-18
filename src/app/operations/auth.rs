@@ -13,6 +13,8 @@ impl App {
 
             file_manager::save_data(file_manager::TOKEN_FILE_NAME, &result)
                 .context("Failed to save token")?;
+
+            println!("User logged in successfully!");
         } else if email {
             let email_login_id =
                 file_manager::get_data(file_manager::EMAIL_LOGIN_ID_FILE_NAME)?.unwrap();
