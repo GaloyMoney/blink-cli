@@ -5,8 +5,8 @@ use serde_json::{json, Value};
 use crate::client::{
     errors::{api_error::ApiError, ClientError},
     queries::{
-        captcha_create_challenge, user_login, CaptchaChallenge,
-        CaptchaCreateChallenge, UserLogin, UserLoginInput,
+        captcha_create_challenge, user_login, CaptchaChallenge, CaptchaCreateChallenge, UserLogin,
+        UserLoginInput,
     },
     GaloyClient,
 };
@@ -73,7 +73,7 @@ impl GaloyClient {
 
         Ok(auth_token)
     }
-        
+
     pub async fn create_captcha_challenge(&self) -> Result<CaptchaChallenge, ClientError> {
         let client = Client::builder().build().expect("Can't build client");
         let variables = captcha_create_challenge::Variables;
