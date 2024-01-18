@@ -1,4 +1,6 @@
 #!/bin/bash
+REPO_ROOT=$(git rev-parse --show-toplevel)
+source "${REPO_ROOT}/tests/e2e/gql.sh"
 
 GRAPHQL_ENDPOINT="http://localhost:4455/graphql"
 AUTH_ENDPOINT="http://localhost:4455/auth/phone/login"
@@ -23,17 +25,12 @@ register_email() {
     echo "Login response: $login_response"
     local auth_token=$(echo "$login_response" | jq -r '.authToken')
 
-    local mail_reg_init_response=$(curl -s -X POST "$GRAPHQL_ENDPOINT" -H "Content-Type: application/json" -H "Authorization: Bearer $auth_token" -d '
-    {
-        "query": "mutation UserEmailRegistrationInitiate { userEmailRegistrationInitiate(input: { email: \"'"$EMAIL"'\" }) { emailRegistrationId errors { code message path } me { createdAt id language phone totpEnabled username } } }"
-    }')
-    local email_registration_id=$(echo "$mail_reg_init_response" | jq -r '.data.userEmailRegistrationInitiate.emailRegistrationId')
+    variables="{\"input\": {\"email\": \"$EMAIL\"}}"
+    local email_registration_id=$(exec_graphql $auth_token 'user-email-registration-initiate' "${variables}" '.data.userEmailRegistrationInitiate.emailRegistrationId')
     echo "Email registration ID: $email_registration_id"
 
     local email_code=$(get_email_code "$EMAIL")
-    local email_reg_validate_response=$(curl -s -X POST "$GRAPHQL_ENDPOINT" \
-    -H "Content-Type: application/json" \
-    -H "Authorization: Bearer $auth_token" \
-    -d '{"query": "mutation UserEmailRegistrationValidate { userEmailRegistrationValidate( input: { code: \"'"$email_code"'\", emailRegistrationId: \"'"$email_registration_id"'\" }) { errors { code message path } } }"}')
-    echo "Email registration validate response: $email_reg_validate_response"
+
+    variables="{\"input\": {\"code\": \"$email_code\", \"emailRegistrationId\": \"$email_registration_id\"}}"
+    exec_graphql $auth_token 'user-email-registration-validate' "${variables}"
 }
