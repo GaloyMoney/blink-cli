@@ -1,9 +1,9 @@
-use anyhow::{Context, Result};
+use anyhow::Context;
 
 use crate::app::App;
 
 impl App {
-    pub async fn globals(&self) -> Result<()> {
+    pub async fn globals(&self) -> anyhow::Result<()> {
         let globals = self
             .client
             .globals()
