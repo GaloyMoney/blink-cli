@@ -35,7 +35,9 @@ impl GaloyClient {
 
         let login_result = response_data.user_login;
 
-        if let (Some(auth_token), Some(totp_required)) = (login_result.auth_token, login_result.totp_required) {
+        if let (Some(auth_token), Some(totp_required)) =
+            (login_result.auth_token, login_result.totp_required)
+        {
             Ok(LoginResponse {
                 auth_token,
                 totp_required,
@@ -81,8 +83,8 @@ impl GaloyClient {
             .to_string();
 
         let totp_required = response_json["result"]["totpRequired"]
-                .as_bool()
-                .ok_or(ApiError::IssueParsingResponse)?;
+            .as_bool()
+            .ok_or(ApiError::IssueParsingResponse)?;
 
         Ok(LoginResponse {
             auth_token,
@@ -127,42 +129,47 @@ impl GaloyClient {
         Ok(email_login_id.to_string())
     }
 
-    pub async fn validate_totp_code(&self, auth_token: String, totp_code: String) -> Result<bool, ClientError> {
+    pub async fn validate_totp_code(
+        &self,
+        auth_token: String,
+        totp_code: String,
+    ) -> Result<bool, ClientError> {
         let endpoint = self.api.trim_end_matches("/graphql");
         let url = format!("{}/auth/totp/validate", endpoint);
         let request_body = json!({ "totpCode": totp_code, "authToken": auth_token });
-        
-        let response = Client::new()
-            .post(&url)
-            .json(&request_body)
-            .send()
-            .await;
+
+        let response = Client::new().post(&url).json(&request_body).send().await;
 
         // TODO status code coming from backend are not appropriate need, will update this when correct status codes are added.
         match response {
-            Ok(resp) => {
-                match resp.status() {
-                    StatusCode::OK => Ok(true),
-                    StatusCode::UNPROCESSABLE_ENTITY => {
+            Ok(resp) => match resp.status() {
+                StatusCode::OK => Ok(true),
+                StatusCode::UNPROCESSABLE_ENTITY => Ok(false),
+                StatusCode::INTERNAL_SERVER_ERROR => {
+                    let error_details = resp
+                        .text()
+                        .await
+                        .unwrap_or_else(|_| "Unknown error".to_string());
+                    if error_details.contains("Request failed with status code 400") {
                         Ok(false)
-                    },
-                    StatusCode::INTERNAL_SERVER_ERROR => {
-                        let error_details = resp.text().await.unwrap_or_else(|_| "Unknown error".to_string());
-                        if error_details.contains("Request failed with status code 400") {
-                            Ok(false)
-                        } else {
-                            Err(ClientError::ApiError(ApiError::RequestFailedWithError(error_details)))
-                        }
-                    },
-                    _ => {
-                        let status = resp.status();
-                        Err(ClientError::ApiError(ApiError::RequestFailedWithError(format!("Unexpected status code: {}", status))))
+                    } else {
+                        Err(ClientError::ApiError(ApiError::RequestFailedWithError(
+                            error_details,
+                        )))
                     }
+                }
+                _ => {
+                    let status = resp.status();
+                    Err(ClientError::ApiError(ApiError::RequestFailedWithError(
+                        format!("Unexpected status code: {}", status),
+                    )))
                 }
             },
             Err(e) => {
                 eprintln!("Network or other error: {}", e);
-                Err(ClientError::ApiError(ApiError::IssueGettingResponse(anyhow::Error::new(e))))
+                Err(ClientError::ApiError(ApiError::IssueGettingResponse(
+                    anyhow::Error::new(e),
+                )))
             }
         }
     }

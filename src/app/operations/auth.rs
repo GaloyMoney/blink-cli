@@ -3,14 +3,20 @@ use anyhow::{Context, Result};
 use crate::app::{file_manager, App};
 
 impl App {
-    pub async fn user_login(&self, phone: Option<String>, code: String, email: bool ,two_fa_code: Option<String>)  -> Result<()> {
+    pub async fn user_login(
+        &self,
+        phone: Option<String>,
+        code: String,
+        email: bool,
+        two_fa_code: Option<String>,
+    ) -> Result<()> {
         if let Some(phone) = phone {
             let result = self
                 .client
                 .user_login_phone(phone.clone(), code.clone())
                 .await
                 .context("Failed to log in")?;
-            
+
             let auth_token = result.auth_token;
             let totp_required = result.totp_required;
 
@@ -22,7 +28,9 @@ impl App {
                     if final_two_fa_code.is_none() {
                         println!("Your account requires two-factor authentication. Please enter your TFA code:");
                         let mut input = String::new();
-                        std::io::stdin().read_line(&mut input).expect("Failed to read line");
+                        std::io::stdin()
+                            .read_line(&mut input)
+                            .expect("Failed to read line");
                         final_two_fa_code = Some(input.trim().to_string());
                     }
 
@@ -33,12 +41,14 @@ impl App {
                         .context("something went wrong")?;
 
                     if !is_valid_2fa {
-                        println!("The entered 2FA code is incorrect. Please enter the correct TFA code:");
-                        final_two_fa_code = None; 
+                        println!(
+                            "The entered 2FA code is incorrect. Please enter the correct TFA code:"
+                        );
+                        final_two_fa_code = None;
                     }
                 }
             }
-        
+
             file_manager::save_data(file_manager::TOKEN_FILE_NAME, &auth_token)
                 .context("Failed to save token")?;
 
@@ -56,7 +66,7 @@ impl App {
             let auth_token = result.auth_token;
             let totp_required = result.totp_required;
 
-           if totp_required {
+            if totp_required {
                 let mut is_valid_2fa = false;
                 let mut final_two_fa_code = two_fa_code;
 
@@ -64,7 +74,9 @@ impl App {
                     if final_two_fa_code.is_none() {
                         println!("Your account requires two-factor authentication. Please enter your TFA code:");
                         let mut input = String::new();
-                        std::io::stdin().read_line(&mut input).expect("Failed to read line");
+                        std::io::stdin()
+                            .read_line(&mut input)
+                            .expect("Failed to read line");
                         final_two_fa_code = Some(input.trim().to_string());
                     }
 
@@ -75,12 +87,14 @@ impl App {
                         .context("something went wrong")?;
 
                     if !is_valid_2fa {
-                        println!("The entered 2FA code is incorrect. Please enter the correct TFA code:");
-                        final_two_fa_code = None; 
+                        println!(
+                            "The entered 2FA code is incorrect. Please enter the correct TFA code:"
+                        );
+                        final_two_fa_code = None;
                     }
                 }
             }
-            
+
             file_manager::save_data(file_manager::TOKEN_FILE_NAME, &auth_token)
                 .context("Failed to save token")?;
 
