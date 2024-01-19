@@ -1,5 +1,4 @@
-use anyhow::{Context, Result};
-
+use anyhow::Context;
 use crate::app::{file_manager, App};
 
 impl App {
@@ -9,7 +8,7 @@ impl App {
         code: String,
         email: bool,
         two_fa_code: Option<String>,
-    ) -> Result<()> {
+    ) ->  anyhow::Result<()> {
         if let Some(phone) = phone {
             let result = self
                 .client
@@ -103,7 +102,7 @@ impl App {
         Ok(())
     }
 
-    pub async fn user_logout(&self) -> Result<()> {
+    pub async fn user_logout(&self) -> anyhow::Result<()> {
         file_manager::remove_data(file_manager::TOKEN_FILE_NAME).context("Failed to log out")?;
         println!("User logged out successfully!");
         Ok(())
