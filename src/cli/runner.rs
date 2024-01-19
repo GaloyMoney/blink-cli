@@ -11,8 +11,13 @@ pub async fn run() -> anyhow::Result<()> {
         Command::Globals => {
             app.globals().await?;
         }
-        Command::Login { phone, code, email } => {
-            app.user_login(phone, code, email).await?;
+        Command::Login {
+            phone,
+            code,
+            email,
+            two_fa_code,
+        } => {
+            app.user_login(phone, code, email, two_fa_code).await?;
         }
         Command::Logout => {
             app.user_logout().await?;
