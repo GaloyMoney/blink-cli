@@ -34,6 +34,8 @@ pub enum Command {
         email: bool,
         #[clap(short, long)]
         code: String,
+        #[clap(short = 't', long = "two-fa-code", value_parser)]
+        two_fa_code: Option<String>,
     },
     /// Logout the current user by removing the auth token
     Logout,
