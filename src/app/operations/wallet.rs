@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use anyhow::{Context, Result};
+use anyhow::Context;
 
 use crate::{
     app::{errors::payment_error::PaymentError, App},
@@ -11,7 +11,7 @@ use crate::{
 };
 
 impl App {
-    pub async fn default_wallet(&self, username: String) -> Result<()> {
+    pub async fn default_wallet(&self, username: String) -> anyhow::Result<()> {
         let result = self
             .client
             .default_wallet(username.clone())
@@ -26,7 +26,7 @@ impl App {
         &self,
         wallet: Option<Wallet>,
         wallet_id: Option<String>,
-    ) -> Result<()> {
+    ) -> anyhow::Result<()> {
         let wallet_id = if let Some(wallet_id) = wallet_id {
             wallet_id
         } else {
@@ -59,7 +59,7 @@ impl App {
         btc: bool,
         usd: bool,
         wallet_ids: Vec<String>,
-    ) -> Result<()> {
+    ) -> anyhow::Result<()> {
         let me = self.client.me().await?;
         let default_wallet_id = me.default_account.default_wallet_id;
         let wallets = &me.default_account.wallets;
@@ -95,7 +95,7 @@ impl App {
         Ok(())
     }
 
-    pub async fn get_user_btc_wallet_id(&self) -> Result<String> {
+    pub async fn get_user_btc_wallet_id(&self) -> anyhow::Result<String> {
         let me = self.client.me().await?;
         let wallets = me.default_account.wallets;
 
@@ -108,7 +108,7 @@ impl App {
         Ok(btc_wallet_id)
     }
 
-    pub async fn get_user_usd_wallet_id(&self) -> Result<String> {
+    pub async fn get_user_usd_wallet_id(&self) -> anyhow::Result<String> {
         let me = self.client.me().await?;
         let wallets = me.default_account.wallets;
 

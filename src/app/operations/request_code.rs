@@ -1,4 +1,4 @@
-use anyhow::{Context, Result};
+use anyhow::Context;
 use std::net::TcpListener;
 use webbrowser;
 
@@ -7,7 +7,7 @@ use crate::app::{file_manager, server::server::run, App};
 const PORT: u16 = 42909;
 
 impl App {
-    pub async fn request_phone_code(&self, phone: String) -> Result<()> {
+    pub async fn request_phone_code(&self, phone: String) -> anyhow::Result<()> {
         let listener = TcpListener::bind(format!("127.0.0.1:{}", PORT))?;
 
         let url = format!("http://127.0.0.1:{}/login", PORT);
@@ -26,7 +26,7 @@ impl App {
         .await?
     }
 
-    pub async fn request_email_code(&self, email: String) -> Result<()> {
+    pub async fn request_email_code(&self, email: String) -> anyhow::Result<()> {
         let result = self
             .client
             .request_email_code(email)

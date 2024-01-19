@@ -1,4 +1,4 @@
-use anyhow::{Context, Result};
+use anyhow::Context;
 use rust_decimal::Decimal;
 
 use crate::{
@@ -14,7 +14,7 @@ impl App {
         cents: Option<Decimal>,
         sats: Option<Decimal>,
         memo: Option<String>,
-    ) -> Result<()> {
+    ) -> anyhow::Result<()> {
         match (wallet, sats, cents) {
             (Wallet::Btc, Some(sats), _) => {
                 let btc_wallet_id = self.get_user_btc_wallet_id().await?;

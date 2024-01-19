@@ -1,4 +1,4 @@
-use anyhow::{Context, Result};
+use anyhow::Context;
 
 use rust_decimal::Decimal;
 
@@ -12,7 +12,7 @@ impl App {
         cents: Option<Decimal>,
         sats: Option<Decimal>,
         memo: Option<String>,
-    ) -> Result<()> {
+    ) -> anyhow::Result<()> {
         let recipient_wallet_id = self.client.default_wallet(username.clone()).await?;
 
         match (wallet, sats, cents) {
