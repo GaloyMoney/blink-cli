@@ -1,5 +1,5 @@
-use anyhow::Context;
 use crate::app::{file_manager, App};
+use anyhow::Context;
 
 impl App {
     pub async fn user_login(
@@ -8,7 +8,7 @@ impl App {
         code: String,
         email: bool,
         two_fa_code: Option<String>,
-    ) ->  anyhow::Result<()> {
+    ) -> anyhow::Result<()> {
         if let Some(phone) = phone {
             let result = self
                 .client
