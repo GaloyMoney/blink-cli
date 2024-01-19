@@ -55,7 +55,7 @@ impl QueryMeMe {
     }
 
     pub fn get_default_wallet_currency(&self) -> Option<&WalletCurrency> {
-        let default_wallet_id = &self.default_account.default_wallet_id;
+        let default_wallet_id = &self.default_account.id;
         self.default_account
             .wallets
             .iter()
@@ -173,8 +173,8 @@ pub fn validate_csv(
             }
 
             let currency = match currency {
-                "SATS" => AmountCurrency::SATS,
-                "USD" => AmountCurrency::USD,
+                "SATS" => AmountCurrency::Sats,
+                "USD" => AmountCurrency::Usd,
                 _ => return Err(PaymentError::IncorrectCSVFormat),
             };
 
@@ -186,14 +186,14 @@ pub fn validate_csv(
 
             //amount for SATS will be whole number and for USD max 2 decimals
             let formatted_amount = match currency {
-                AmountCurrency::SATS => amount.round_dp(0),
-                AmountCurrency::USD => {
+                AmountCurrency::Sats => amount.round_dp(0),
+                AmountCurrency::Usd => {
                     amount.round_dp_with_strategy(2, RoundingStrategy::MidpointAwayFromZero)
                 }
             };
 
             //if currency is SATS then wallet should be BTC
-            if currency == AmountCurrency::SATS && wallet_currency != WalletCurrency::BTC {
+            if currency == AmountCurrency::Sats && wallet_currency != WalletCurrency::BTC {
                 return Err(PaymentError::IncorrectCSVFormat);
             }
 
@@ -339,11 +339,11 @@ impl App {
             let currency = &record.currency;
             let wallet_type = &record.wallet_currency;
 
-            if currency == &AmountCurrency::SATS && wallet_type == &WalletCurrency::BTC {
+            if currency == &AmountCurrency::Sats && wallet_type == &WalletCurrency::BTC {
                 total_amount_payable.btc_wallet.sats += amount;
-            } else if currency == &AmountCurrency::USD && wallet_type == &WalletCurrency::BTC {
+            } else if currency == &AmountCurrency::Usd && wallet_type == &WalletCurrency::BTC {
                 total_amount_payable.btc_wallet.usd += amount;
-            } else if currency == &AmountCurrency::USD && wallet_type == &WalletCurrency::USD {
+            } else if currency == &AmountCurrency::Usd && wallet_type == &WalletCurrency::USD {
                 total_amount_payable.usd_wallet.usd += amount;
             }
 
@@ -423,7 +423,7 @@ impl App {
                 }
                 WalletCurrency::BTC => {
                     let mut final_amount = amount;
-                    if currency == AmountCurrency::USD {
+                    if currency == AmountCurrency::Usd {
                         final_amount = convert_usd_to_btc_sats(amount, &btc_sat_price);
                     }
                     self.client

@@ -44,9 +44,9 @@ impl GaloyClient {
                 .collect::<Vec<String>>()
                 .join(", ");
 
-            return Err(ClientError::ApiError(ApiError::RequestFailedWithError(
+            Err(ClientError::ApiError(ApiError::RequestFailedWithError(
                 error_string,
-            )));
+            )))
         } else {
             Ok(())
         }
@@ -91,9 +91,9 @@ impl GaloyClient {
                 .collect::<Vec<String>>()
                 .join(", ");
 
-            return Err(ClientError::ApiError(ApiError::RequestFailedWithError(
+            Err(ClientError::ApiError(ApiError::RequestFailedWithError(
                 error_string,
-            )));
+            )))
         } else {
             Ok(())
         }

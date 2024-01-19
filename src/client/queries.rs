@@ -66,7 +66,7 @@ impl TryFrom<ResponseData> for CaptchaChallenge {
 
     fn try_from(response: ResponseData) -> Result<Self, Self::Error> {
         let result = response.captcha_create_challenge.result;
-        let challenge = result.ok_or_else(|| CaptchaError::EmptyCaptcha)?;
+        let challenge = result.ok_or(CaptchaError::EmptyCaptcha)?;
 
         let (id, challenge_code, new_captcha, failback_mode) = (
             challenge.id,
