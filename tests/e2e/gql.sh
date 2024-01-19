@@ -3,7 +3,7 @@ GALOY_ENDPOINT="http://localhost:4455/graphql"
 
 
 gql_file() {
-  echo "${REPO_ROOT}/vendor/galoy-quickstart/galoy/test/bats/gql/$1.gql"
+  echo "${REPO_ROOT}/vendor/galoy-quickstart/graphql/gql/$1.gql"
 }
 
 gql_query() {
