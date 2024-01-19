@@ -2,10 +2,10 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'refactor(core): cleanup old notification code (#3866)...'
-      sha: 87302ead3d5f75ce4f9dadda122bf119bd1f0b30
+      commitTitle: 'chore(release): [ci skip] bump quickstart image to sha256@db6cadaf07496da7a06e545c3d7b9c526c88a4d9eb9ba085cd7ce4b0d6fb1e02'
+      sha: 944635e78eec2c086a3e8f191e3239dfcfe7ffa4
       tags:
-      - 0.20.9
+      - 0.20.17
     path: galoy-quickstart
   path: vendor
 kind: LockConfig
