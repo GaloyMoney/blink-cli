@@ -1,5 +1,5 @@
 use actix_web::{web, App, HttpResponse, HttpServer, Responder};
-use anyhow::Result;
+use anyhow;
 use mime_guess::from_path;
 use rust_embed::RustEmbed;
 use serde::{Deserialize, Serialize};
@@ -96,7 +96,7 @@ pub async fn run(
     phone: String,
     api: String,
     captcha_challenge_result: CaptchaChallenge,
-) -> Result<()> {
+) -> anyhow::Result<()> {
     let mut tera = Tera::default();
     tera.add_raw_template("login.tera.html", include_str!("./public/login.tera.html"))?;
 
