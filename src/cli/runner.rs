@@ -11,8 +11,13 @@ pub async fn run() -> anyhow::Result<()> {
         Command::Globals => {
             app.globals().await?;
         }
-        Command::Login { phone, code } => {
-            app.user_login(phone, code).await?;
+        Command::Login {
+            phone,
+            code,
+            email,
+            two_fa_code,
+        } => {
+            app.user_login(phone, code, email, two_fa_code).await?;
         }
         Command::Logout => {
             app.user_logout().await?;
@@ -63,8 +68,13 @@ pub async fn run() -> anyhow::Result<()> {
         } => {
             app.batch_payment(file, skip_confirmation).await?;
         }
-        Command::RequestPhoneCode { phone } => {
-            app.request_phone_code(phone).await?;
+        Command::RequestCode { phone, email } => {
+            if let Some(phone) = phone {
+                app.request_phone_code(phone).await?;
+            }
+            if let Some(email) = email {
+                app.request_email_code(email).await?;
+            }
         }
     }
 

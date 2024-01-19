@@ -1,11 +1,15 @@
 REPO_ROOT=$(git rev-parse --show-toplevel)
+source "${REPO_ROOT}/tests/e2e/register-email.bash"
 
 USER_A_PHONE="+16505554321"
 USER_A_CODE="000000"
 USER_A_USERNAME="alice"
+USER_A_EMAIL="test@galoy.com"
+
 USER_B_PHONE="+16505554322"
 USER_B_CODE="000000"
 USER_B_USERNAME="bob"
+
 USER_C_PHONE="+16505554323"
 USER_C_CODE="000000"
 USER_C_USERNAME="charlie"
@@ -47,11 +51,27 @@ login_user() {
   local user=$1
 
   if [[ "$user" == "A" ]]; then
-    galoy_cli_cmd login ${USER_A_PHONE} ${USER_A_CODE}
+    galoy_cli_cmd login --phone ${USER_A_PHONE} --code ${USER_A_CODE}
   elif [[ "$user" == "B" ]]; then
-    galoy_cli_cmd login ${USER_B_PHONE} ${USER_B_CODE}
+    galoy_cli_cmd login --phone ${USER_B_PHONE} --code ${USER_B_CODE}
   elif [[ "$user" == "C" ]]; then
-    galoy_cli_cmd login ${USER_C_PHONE} ${USER_C_CODE}
+    galoy_cli_cmd login --phone ${USER_C_PHONE} --code ${USER_C_CODE}
+  else
+    echo "Invalid user: $user"
+    exit 1
+  fi
+}
+
+login_user_with_email() {
+  local user=$1
+  if [[ "$user" == "A" ]]; then
+
+    register_email $USER_A_PHONE $USER_A_EMAIL
+    galoy_cli_cmd request-code --email ${USER_A_EMAIL} 
+
+    local email_code=$(get_email_code "$USER_A_EMAIL")
+    galoy_cli_cmd login --email --code ${email_code} 
+
   else
     echo "Invalid user: $user"
     exit 1

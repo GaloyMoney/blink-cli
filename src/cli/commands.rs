@@ -27,7 +27,16 @@ pub enum Command {
     /// Get global values from the instance
     Globals,
     /// Get auth token of an account
-    Login { phone: String, code: String },
+    Login {
+        #[clap(short, long, value_parser)]
+        phone: Option<String>,
+        #[clap(long, conflicts_with("phone"))]
+        email: bool,
+        #[clap(short, long)]
+        code: String,
+        #[clap(short = 't', long = "two-fa-code", value_parser)]
+        two_fa_code: Option<String>,
+    },
     /// Logout the current user by removing the auth token
     Logout,
     /// Execute Me query
@@ -124,9 +133,11 @@ pub enum Command {
         #[clap(action, long)]
         skip_confirmation: bool,
     },
-    /// Request a code from a Phone number
-    RequestPhoneCode {
-        #[clap(value_parser)]
-        phone: String,
+    /// Request a code from a Phone number or Email
+    RequestCode {
+        #[clap(short, long, value_parser, conflicts_with("email"))]
+        phone: Option<String>,
+        #[clap(short, long, value_parser)]
+        email: Option<String>,
     },
 }

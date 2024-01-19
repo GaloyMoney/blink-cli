@@ -1,8 +1,8 @@
-use anyhow::Result;
+use anyhow::{Context, Result};
 use std::net::TcpListener;
 use webbrowser;
 
-use crate::app::{server::server::run, App};
+use crate::app::{file_manager, server::server::run, App};
 
 const PORT: u16 = 42909;
 
@@ -24,5 +24,18 @@ impl App {
             rt.block_on(run(listener, phone, api, captcha_challenge))
         })
         .await?
+    }
+
+    pub async fn request_email_code(&self, email: String) -> Result<()> {
+        let result = self
+            .client
+            .request_email_code(email)
+            .await
+            .context("Failed to request email code")?;
+
+        let _ = file_manager::save_data(file_manager::EMAIL_LOGIN_ID_FILE_NAME, &result);
+        println!("Code successfully sent to the email!");
+
+        Ok(())
     }
 }

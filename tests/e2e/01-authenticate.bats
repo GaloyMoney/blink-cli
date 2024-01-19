@@ -6,6 +6,11 @@ setup_file() {
   galoy_cli_setup
 }
 
+@test "auth: login A using email" {
+  login_user_with_email A
+  logout_user
+}
+
 @test "auth: login/logout A and set username" {
   redis_cli FLUSHALL > /dev/null 2>&1 || true
   login_user A
@@ -30,3 +35,4 @@ setup_file() {
   [[ "$username" == "${USER_C_USERNAME}" ]] || exit 1
   logout_user
 }
+
