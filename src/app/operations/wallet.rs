@@ -61,7 +61,8 @@ impl App {
         wallet_ids: Vec<String>,
     ) -> anyhow::Result<()> {
         let me = self.client.me().await?;
-        let default_wallet_id = me.default_account.id;
+        #[allow(deprecated)]
+        let default_wallet_id = me.default_account.default_wallet_id;
         let wallets = &me.default_account.wallets;
 
         let wallet_ids_set: HashSet<_> = wallet_ids.into_iter().collect();

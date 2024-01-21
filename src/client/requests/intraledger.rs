@@ -44,12 +44,11 @@ impl GaloyClient {
                 .collect::<Vec<String>>()
                 .join(", ");
 
-            Err(ClientError::ApiError(ApiError::RequestFailedWithError(
+            return Err(ClientError::ApiError(ApiError::RequestFailedWithError(
                 error_string,
-            )))
-        } else {
-            Ok(())
+            )));
         }
+        Ok(())
     }
 
     pub async fn intraleger_send_usd(
@@ -91,11 +90,10 @@ impl GaloyClient {
                 .collect::<Vec<String>>()
                 .join(", ");
 
-            Err(ClientError::ApiError(ApiError::RequestFailedWithError(
+            return Err(ClientError::ApiError(ApiError::RequestFailedWithError(
                 error_string,
-            )))
-        } else {
-            Ok(())
+            )));
         }
+        Ok(())
     }
 }

@@ -30,11 +30,10 @@ impl GaloyClient {
                 .collect::<Vec<String>>()
                 .join(", ");
 
-            Err(ClientError::ApiError(ApiError::RequestFailedWithError(
+            return Err(ClientError::ApiError(ApiError::RequestFailedWithError(
                 error_string,
-            )))
-        } else {
-            Ok(())
+            )));
         }
+        Ok(())
     }
 }

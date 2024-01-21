@@ -140,7 +140,6 @@ impl GaloyClient {
 
         let response = Client::new().post(&url).json(&request_body).send().await;
 
-        // TODO status code coming from backend are not appropriate need, will update this when correct status codes are added.
         match response {
             Ok(resp) => match resp.status() {
                 StatusCode::OK => Ok(true),
@@ -151,12 +150,11 @@ impl GaloyClient {
                         .await
                         .unwrap_or_else(|_| "Unknown error".to_string());
                     if error_details.contains("Request failed with status code 400") {
-                        Ok(false)
-                    } else {
-                        Err(ClientError::ApiError(ApiError::RequestFailedWithError(
-                            error_details,
-                        )))
+                        return Ok(false);
                     }
+                    Err(ClientError::ApiError(ApiError::RequestFailedWithError(
+                        error_details,
+                    )))
                 }
                 _ => {
                     let status = resp.status();

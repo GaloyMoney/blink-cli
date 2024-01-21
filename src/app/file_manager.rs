@@ -22,10 +22,9 @@ pub fn get_data(file_type: &str) -> Result<Option<String>, AppError> {
     if file_path.exists() {
         let data = fs::read_to_string(&file_path)
             .map_err(|_| TokenError::FailedToReadToken(file_path.clone()))?;
-        Ok(Some(data))
-    } else {
-        Ok(None)
+        return Ok(Some(data));
     }
+    Ok(None)
 }
 
 pub fn save_data(file_type: &str, data: &str) -> Result<(), AppError> {
@@ -48,8 +47,7 @@ pub fn remove_data(file_type: &str) -> Result<(), AppError> {
     if file_path.exists() {
         fs::remove_file(&file_path)
             .map_err(|_| TokenError::FailedToDeleteFile(file_path.clone()))?;
-        Ok(())
-    } else {
-        Err(AppError::TokenError(TokenError::TokenFileNotFound))
+        return Ok(());
     }
+    Err(AppError::TokenError(TokenError::TokenFileNotFound))
 }

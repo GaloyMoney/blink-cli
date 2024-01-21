@@ -55,7 +55,8 @@ impl QueryMeMe {
     }
 
     pub fn get_default_wallet_currency(&self) -> Option<&WalletCurrency> {
-        let default_wallet_id = &self.default_account.id;
+        #[allow(deprecated)]
+        let default_wallet_id = &self.default_account.default_wallet_id;
         self.default_account
             .wallets
             .iter()
