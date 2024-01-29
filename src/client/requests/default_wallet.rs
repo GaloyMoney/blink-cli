@@ -58,8 +58,7 @@ impl GaloyClient {
             return Err(ClientError::ApiError(ApiError::RequestFailedWithError(
                 error_string,
             )));
-        } else {
-            Ok(())
         }
+        Ok(())
     }
 }

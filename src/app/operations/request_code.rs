@@ -2,7 +2,7 @@ use anyhow::Context;
 use std::net::TcpListener;
 use webbrowser;
 
-use crate::app::{file_manager, server::server::run, App};
+use crate::app::{file_manager, server::run, App};
 
 const PORT: u16 = 42909;
 

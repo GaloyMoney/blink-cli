@@ -7,6 +7,8 @@ use crate::client::{
 };
 
 impl GaloyClient {
+    #[allow(deprecated)]
+    // TODO remove this after updating user_update_username
     pub async fn set_username(&self, username: String) -> Result<(), ClientError> {
         let input = UserUpdateUsernameInput { username };
 
@@ -31,8 +33,7 @@ impl GaloyClient {
             return Err(ClientError::ApiError(ApiError::RequestFailedWithError(
                 error_string,
             )));
-        } else {
-            Ok(())
         }
+        Ok(())
     }
 }

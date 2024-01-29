@@ -34,7 +34,6 @@ pub use self::query_globals::QueryGlobalsGlobals;
 )]
 pub(super) struct UserLogin;
 pub use self::user_login::UserLoginInput;
-pub use self::user_login::UserLoginUserLogin;
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -43,7 +42,6 @@ pub use self::user_login::UserLoginUserLogin;
     response_derives = "Debug, Serialize"
 )]
 pub(super) struct UserLogout;
-pub use self::user_logout::UserLogoutInput;
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -52,7 +50,6 @@ pub use self::user_logout::UserLogoutInput;
     response_derives = "Debug, Serialize"
 )]
 pub struct CaptchaCreateChallenge;
-pub use self::captcha_create_challenge::*;
 
 pub struct CaptchaChallenge {
     pub id: String,
@@ -66,7 +63,7 @@ impl TryFrom<ResponseData> for CaptchaChallenge {
 
     fn try_from(response: ResponseData) -> Result<Self, Self::Error> {
         let result = response.captcha_create_challenge.result;
-        let challenge = result.ok_or_else(|| CaptchaError::EmptyCaptcha)?;
+        let challenge = result.ok_or(CaptchaError::EmptyCaptcha)?;
 
         let (id, challenge_code, new_captcha, failback_mode) = (
             challenge.id,
@@ -90,8 +87,6 @@ impl TryFrom<ResponseData> for CaptchaChallenge {
     response_derives = "Debug, Serialize"
 )]
 pub struct CaptchaRequestAuthCode;
-pub use self::captcha_request_auth_code::CaptchaRequestAuthCodeCaptchaRequestAuthCode;
-pub use self::captcha_request_auth_code::CaptchaRequestAuthCodeInput;
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -127,7 +122,6 @@ pub use self::account_update_default_wallet_id::AccountUpdateDefaultWalletIdInpu
     response_derives = "Debug, Serialize"
 )]
 pub(super) struct QueryDefaultWallet;
-pub use self::query_default_wallet::QueryDefaultWalletAccountDefaultWallet;
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -136,7 +130,6 @@ pub use self::query_default_wallet::QueryDefaultWalletAccountDefaultWallet;
     response_derives = "Debug, Serialize"
 )]
 pub(super) struct IntraLedgerPaymentSend;
-pub use self::intra_ledger_payment_send::IntraLedgerPaymentSendInput;
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -156,8 +149,6 @@ use super::errors::captcha_error::CaptchaError;
     response_derives = "Debug, Serialize"
 )]
 pub(super) struct OnChainAddressCurrent;
-pub use self::on_chain_address_current::OnChainAddressCurrentInput;
-pub use self::on_chain_address_current::OnChainAddressCurrentOnChainAddressCurrent;
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -167,7 +158,6 @@ pub use self::on_chain_address_current::OnChainAddressCurrentOnChainAddressCurre
 )]
 pub(super) struct OnChainPaymentSend;
 pub use self::on_chain_payment_send::OnChainPaymentSendInput;
-pub use self::on_chain_payment_send::OnChainPaymentSendOnChainPaymentSend;
 pub use self::on_chain_payment_send::PayoutSpeed;
 
 #[derive(GraphQLQuery)]
@@ -179,4 +169,3 @@ pub use self::on_chain_payment_send::PayoutSpeed;
 pub(super) struct RealtimePrice;
 pub use self::realtime_price::RealtimePriceRealtimePrice;
 pub use self::realtime_price::RealtimePriceRealtimePriceBtcSatPrice;
-pub use self::realtime_price::RealtimePriceRealtimePriceUsdCentPrice;

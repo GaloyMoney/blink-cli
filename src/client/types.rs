@@ -9,8 +9,8 @@ pub enum Wallet {
 
 #[derive(Debug, Clone, clap::ValueEnum, PartialEq, Eq)]
 pub enum AmountCurrency {
-    SATS,
-    USD,
+    Sats,
+    Usd,
 }
 
 #[derive(Debug, Serialize)]
