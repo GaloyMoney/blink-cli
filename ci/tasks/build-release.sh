@@ -28,11 +28,7 @@ OUT_DIR="${BINARY}-${TARGET}-${VERSION}"
 rm -rf "${OUT_DIR}" || true
 mkdir "${OUT_DIR}"
 
-if [[ $TARGET == "x86_64-pc-windows-gnu" ]]; then
-  mv ./${BINARY}.exe ${OUT_DIR}
-else
-  mv ./${BINARY} ${OUT_DIR}
-fi
+mv ./${BINARY} ${OUT_DIR}
 
 tar -czvf ${OUT_DIR}.tar.gz ${OUT_DIR}
 
