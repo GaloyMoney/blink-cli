@@ -956,7 +956,7 @@ dependencies = [
 
 [[package]]
 name = "galoy-cli"
-version = "0.1.7-dev"
+version = "0.1.7"
 dependencies = [
  "actix-web",
  "anyhow",

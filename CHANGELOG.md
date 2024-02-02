@@ -1,3 +1,26 @@
+# [galoy-cli release v0.1.7](https://github.com/GaloyMoney/galoy-cli/releases/tag/v0.1.7)
+
+
+### Bug Fixes
+
+- Add rust-toolchain.toml
+
+### Features
+
+- Request Code on EMail and Login using Email and TOTP login (#197)
+
+### Miscellaneous Tasks
+
+- Fix TARGET_CC and TARGET_AR
+- Add darwin targets to osxcross-compile
+- Check-code should fail on clippy warnings (#231)
+- Bump quickstart (#229)
+- Update quickstart yml and bump quickstart (#227)
+
+### Refactor
+
+- Anyhow result usage (#230)
+
 # [galoy-cli release v0.1.6](https://github.com/GaloyMoney/galoy-cli/releases/tag/v0.1.6)
 
 
