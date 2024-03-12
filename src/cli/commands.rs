@@ -14,7 +14,7 @@ pub struct Cli {
     #[clap(
         long,
         env = "GALOY_API",
-        default_value = "http://localhost:4455/graphql"
+        default_value = "https://api.blink.sv/graphql"
     )]
     pub api: String,
 
